@@ -37,6 +37,29 @@ takım liderine bildirilir.
 Aynı kural EF configuration için de geçerlidir:
   Infrastructure/Persistence/Configurations/{Entity}Configuration.cs
 
+## Doğrulama (Validation)
+Girdi doğrulaması FluentValidation ile yapılır (paket: AjandaAI.Application).
+Validator dosyaları: Application/{Kaynak}/Validators/{Dto}Validator.cs
+  Örnek: Application/Catalog/Validators/CategoryCreateDtoValidator.cs
+  (sınıf adı: CategoryCreateDtoValidator : AbstractValidator<CategoryCreateDto>)
+
+Otomatik pipeline KULLANILMAZ (AddFluentValidationAutoValidation yok).
+Servis validator'ı constructor'dan IValidator<XCreateDto> olarak alır ve
+ValidateAsync ile kendisi çağırır.
+
+Hata durumunda ApiResponse<T>.Fail(message, errors) döner, exception FIRLATILMAZ.
+errors, ValidationResult.Errors içindeki ErrorMessage değerlerinin listesidir:
+  var result = await _validator.ValidateAsync(dto, cancellationToken);
+  if (!result.IsValid)
+      return ApiResponse<T>.Fail("Doğrulama hatası.",
+          result.Errors.Select(e => e.ErrorMessage).ToList());
+
+Validator kaydı kaynağın kendi Module.cs dosyasında yapılır:
+  services.AddScoped<IValidator<XCreateDto>, XCreateDtoValidator>();
+
+Gerekçe: otomatik pipeline Program.cs'e kayıt gerektirir (paylaşılan
+dosya, çakışma riski). Elle çağırma her kaynağın kendi modülünde kalır.
+
 ## Paylaşılan Dosyalar — SADECE TAKIM LİDERİ
 Aşağıdaki dosyalara takım arkadaşları DOKUNAMAZ:
 - Program.cs
