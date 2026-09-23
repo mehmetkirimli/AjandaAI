@@ -1,0 +1,21 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: ajandaai-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ajandaai
+      POSTGRES_USER: ajandaai
+      POSTGRES_PASSWORD: ajandaai
+    ports:
+      - "5434:5432"
+    volumes:
+      - ajandaai-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ajandaai -d ajandaai"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  ajandaai-pgdata:

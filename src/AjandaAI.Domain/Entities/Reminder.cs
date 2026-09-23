@@ -6,9 +6,9 @@ namespace AjandaAI.Domain.Entities;
 
 public class Reminder
 {
-    public Guid Id { get; set; }
+    public int Id { get; set; }
 
-    public Guid ActivityId { get; set; }
+    public int ActivityId { get; set; }
 
     public DateTimeOffset RemindAt { get; set; }
 

@@ -38,3 +38,23 @@ ve __EFMigrationsHistory tablosunu bozar.
 ## Migration İsimlendirme
 Add{Entity}, Update{Entity}{Alan}, Remove{Entity} formatında.
 Örnek: AddActivity, AddCategoryLookup
+
+## İsimlendirme — snake_case
+Tüm tablo ve kolon adları PostgreSQL'de snake_case olarak saklanır.
+EFCore.NamingConventions paketi + UseSnakeCaseNamingConvention() ile
+otomatik uygulanır.
+
+C# tarafında property'ler PascalCase kalır (Activity.CreatedAt),
+veritabanında snake_case olur (activities.created_at).
+
+Configuration dosyalarında ToTable() veya HasColumnName() ile
+elle isim vermek YASAK. Convention bozulur.
+
+Gerekçe: PostgreSQL tırnaksız tanımlayıcıları küçük harfe çevirir.
+PascalCase kolonlar her sorguda çift tırnak gerektirir.
+
+## Yetkilendirme Notu — v2
+v1'de authentication yok. v2'de auth eklendiğinde, kullanıcıya ait
+kayıtları dönen HER sorguda UserId kontrolü zorunludur.
+Aksi halde IDOR açığı oluşur (/api/activities/6 ile başkasının
+verisine erişim).

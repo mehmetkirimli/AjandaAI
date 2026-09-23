@@ -8,11 +8,11 @@ namespace AjandaAI.Domain.Entities;
 
 public class Activity
 {
-    public Guid Id { get; set; }
+    public int Id { get; set; }
 
-    public Guid UserId { get; set; }
+    public int UserId { get; set; }
 
-    public Guid CategoryId { get; set; }
+    public int CategoryId { get; set; }
 
     public string Title { get; set; } = string.Empty;
 
