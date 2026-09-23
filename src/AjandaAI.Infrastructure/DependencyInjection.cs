@@ -2,8 +2,10 @@
 // Program.cs yalnızca AddInfrastructure(...) çağırır, iç sınıfları tanımaz.
 // DbContext, repository'ler ve Application'daki tüm IModule'ler burada kaydedilir.
 
+using AjandaAI.Application.Activities;
 using AjandaAI.Application.Catalog;
 using AjandaAI.Application.Common;
+using AjandaAI.Application.Reminders;
 using AjandaAI.Infrastructure.Persistence;
 using AjandaAI.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
@@ -25,6 +27,8 @@ public static class DependencyInjection
                    .UseSnakeCaseNamingConvention());
 
         services.AddScoped<ICategoryRepository, CategoryRepository>();
+        services.AddScoped<IActivityRepository, ActivityRepository>();
+        services.AddScoped<IReminderRepository, ReminderRepository>();
 
         AddModules(services);
 
