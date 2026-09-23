@@ -5,7 +5,7 @@ Her .cs dosyasının en üstünde, o dosyanın ne işe yaradığını anlatan
 maksimum 4 satırlık bir comment bloğu olur.
 
 ## İsimlendirme
-- Interface: I ile başlar (IActivityService)
+- Interface: I ile başlar (IActivityRepository)
 - Async metodlar: Async ile biter (GetByIdAsync)
 - DTO: {Entity}{Amaç}Dto (ActivityCreateDto, ActivityListDto)
 - Entity'ler tekil (Activity), DbSet'ler çoğul (Activities)
@@ -20,9 +20,19 @@ Servis kayıtları Program.cs'e veya ortak DependencyInjection.cs'e YAZILMAZ.
 
 Her kaynak kendi modül dosyasını alır:
   Application/{Kaynak}/{Kaynak}Module.cs  → IModule implement eder
+  (IModule: Application/Common/IModule.cs)
 
-DependencyInjection.cs assembly'deki tüm IModule'leri otomatik toplar.
-Bu dosyaya sadece takım lideri dokunur.
+Kayıtların yeri:
+- Servis kayıtları Application/{Kaynak}/{Kaynak}Module.cs'te yapılır.
+- Repository kayıtları Infrastructure/DependencyInjection.cs'te yapılır
+  (Application, Infrastructure'daki repository sınıflarını göremez).
+- Tek implementasyonu olan servisler için interface yazılmaz; somut sınıf
+  doğrudan kaydedilir: services.AddScoped<CategoryService>()
+
+Infrastructure/DependencyInjection.cs, Application assembly'deki tüm IModule'leri
+otomatik toplar (modüllerin parametresiz constructor'ı olmalı).
+Bu dosyaya sadece takım lideri dokunur; yeni repository kaydı gerekiyorsa
+takım liderine bildirilir.
 
 Aynı kural EF configuration için de geçerlidir:
   Infrastructure/Persistence/Configurations/{Entity}Configuration.cs
