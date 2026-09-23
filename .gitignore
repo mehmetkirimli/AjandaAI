@@ -1,0 +1,58 @@
+# Build sonuçları
+[Bb]in/
+[Oo]bj/
+[Dd]ebug/
+[Rr]elease/
+[Ll]og/
+[Ll]ogs/
+artifacts/
+
+# Visual Studio / Rider / VS Code
+.vs/
+.vscode/
+.idea/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+*.userprefs
+*.DotSettings.user
+
+# Test sonuçları
+[Tt]est[Rr]esult*/
+*.trx
+*.coverage
+*.coveragexml
+coverage*.json
+coverage*.xml
+coverage*.info
+
+# NuGet
+*.nupkg
+*.snupkg
+packages/
+!packages/build/
+*.nuget.props
+*.nuget.targets
+
+# Ortam / gizli ayarlar
+appsettings.Development.json
+appsettings.*.Local.json
+*.env
+.env
+
+# EF Core
+*.mdf
+*.ldf
+*.ndf
+
+# Çeşitli
+*.cache
+*.pidb
+*.svclog
+*.scc
+_ReSharper*/
+*.tmp
+*.bak
+Thumbs.db
+.DS_Store
