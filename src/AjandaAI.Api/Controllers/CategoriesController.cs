@@ -1,8 +1,8 @@
 // Category lookup tablosu için salt-okunur HTTP uç noktalarıdır.
 // Yanıtlar her zaman ApiResponse<T> zarfı içinde DTO olarak döner.
 
-using AjandaAI.Application.Catalog;
-using AjandaAI.Application.Catalog.Dtos;
+using AjandaAI.Application.Categories;
+using AjandaAI.Application.Categories.Dtos;
 using AjandaAI.Application.Common;
 using Microsoft.AspNetCore.Mvc;
 

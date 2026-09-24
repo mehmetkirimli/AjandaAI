@@ -3,7 +3,7 @@
 
 using AjandaAI.Domain.Entities;
 
-namespace AjandaAI.Application.Catalog;
+namespace AjandaAI.Application.Categories;
 
 public interface ICategoryRepository
 {

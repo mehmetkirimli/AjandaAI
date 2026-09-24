@@ -1,10 +1,10 @@
 // CategoryService okuma senaryolarının birim testleridir.
 // Repository, bellek içi bir fake ile değiştirilir.
 
-using AjandaAI.Application.Catalog;
+using AjandaAI.Application.Categories;
 using AjandaAI.Domain.Entities;
 
-namespace AjandaAI.Tests.Catalog;
+namespace AjandaAI.Tests.Categories;
 
 public class CategoryServiceTests
 {

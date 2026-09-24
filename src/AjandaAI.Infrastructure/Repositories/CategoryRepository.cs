@@ -1,7 +1,7 @@
 // ICategoryRepository'nin EF Core implementasyonudur.
 // Salt-okunur sorgular AsNoTracking ile çalışır.
 
-using AjandaAI.Application.Catalog;
+using AjandaAI.Application.Categories;
 using AjandaAI.Domain.Entities;
 using AjandaAI.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;

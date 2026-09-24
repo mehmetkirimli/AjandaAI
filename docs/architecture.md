@@ -22,15 +22,50 @@ Bu kasıtlı bir tasarımdır. Api'nin Infrastructure'a referansı "eksik" deği
 composition root desenidir. Kaldırmayın.
 
 ## Klasör Düzeni
-src/AjandaAI.Domain/Entities/
-src/AjandaAI.Domain/Enums/
-src/AjandaAI.Application/Interfaces/
-src/AjandaAI.Application/Services/
-src/AjandaAI.Application/DTOs/
-src/AjandaAI.Infrastructure/Persistence/
-src/AjandaAI.Infrastructure/Persistence/Configurations/
-src/AjandaAI.Infrastructure/Repositories/
-src/AjandaAI.Api/Controllers/
+```
+src/AjandaAI.Domain/
+  Entities/
+  Enums/
+
+src/AjandaAI.Application/
+  Common/                    (IModule, ApiResponse — paylaşılan, lead'in alanı)
+  {Entity çoğulu}/           (Categories, Users, Activities, Reminders)
+    I{Entity}Repository.cs
+    {Entity}Service.cs
+    {Entity}Module.cs
+    Dtos/
+    Validators/
+
+src/AjandaAI.Infrastructure/
+  Persistence/
+    AppDbContext.cs
+    Configurations/
+  Repositories/
+  DependencyInjection.cs
+
+src/AjandaAI.Api/
+  Controllers/
+  Program.cs
+
+tests/AjandaAI.Tests/
+  {Entity çoğulu}/
+```
+
+Her kaynak (entity) kendi klasöründedir; klasör adı entity adının çoğuludur.
+Örnek: Categories/ → ICategoryRepository, CategoryService, CategoryModule.
+Bir klasör yalnızca tek bir entity'nin dosyalarını tutar.
+
+## Klasör Kuralı
+Kod KAYNAK bazlı organize edilir, katman bazlı değil.
+Yani Application/Services/ veya Application/DTOs/ gibi klasörler AÇILMAZ.
+Her kaynak kendi klasöründe tüm dosyalarını tutar.
+
+Gerekçe: dikey dilim mimarisi. Bir agent tek klasörde çalışır,
+çakışma yüzeyi küçülür.
+
+Infrastructure/Repositories/ bunun istisnasıdır: tüm repository
+implementasyonları burada toplanır (katman bazlı), çünkü hepsi
+AppDbContext'e bağlıdır.
 
 ## Bağımlılık Kuralı
 Referanslar yukarıdaki yönde akar. Ters yönde referans YASAK.

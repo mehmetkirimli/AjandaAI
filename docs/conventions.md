@@ -40,7 +40,7 @@ Aynı kural EF configuration için de geçerlidir:
 ## Doğrulama (Validation)
 Girdi doğrulaması FluentValidation ile yapılır (paket: AjandaAI.Application).
 Validator dosyaları: Application/{Kaynak}/Validators/{Dto}Validator.cs
-  Örnek: Application/Catalog/Validators/CategoryCreateDtoValidator.cs
+  Örnek: Application/Categories/Validators/CategoryCreateDtoValidator.cs
   (sınıf adı: CategoryCreateDtoValidator : AbstractValidator<CategoryCreateDto>)
 
 Otomatik pipeline KULLANILMAZ (AddFluentValidationAutoValidation yok).

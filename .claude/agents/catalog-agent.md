@@ -21,14 +21,19 @@ Sen AjandaAI projesinde User ve Category kaynaklarının dikey dilimi sorumlusus
 
 User ve Category entity'leriyle ilgili tüm katmanlar:
 
-- `Application/Catalog/`
-- `Infrastructure/Repositories/UserRepository.cs`, `Infrastructure/Repositories/CategoryRepository.cs`
-- `Api/Controllers/UsersController.cs`, `Api/Controllers/CategoriesController.cs`
-- `Tests/Catalog/`
+- `Application/Categories/` ve `Application/Users/`
+- `Infrastructure/Repositories/CategoryRepository.cs`, `Infrastructure/Repositories/UserRepository.cs`
+- `Api/Controllers/CategoriesController.cs`, `Api/Controllers/UsersController.cs`
+- `Tests/Categories/` ve `Tests/Users/`
+
+Not: Bu agent iki kaynaktan sorumludur çünkü ikisi de küçük işlerdir,
+ancak klasör ve modül yapıları AYRIDIR. Bir kaynağın dosyasını diğerinin
+klasörüne koyma.
 
 ## Kurallar
 
-- DI kaydını `Application/Catalog/CatalogModule.cs` içinde yap (IModule deseni).
+- DI kayıtlarını her kaynağın kendi modülünde yap (IModule deseni):
+  `Application/Categories/CategoryModule.cs` ve `Application/Users/UserModule.cs`.
 - Migration ÜRETME. Entity değişikliği gerekirse db-agent'a bildir.
 - Controller'lar `ApiResponse<T>` döner; ham entity DÖNME.
 - Category bir lookup table'dır: silme işlemi yerine `IsActive = false` kullan.

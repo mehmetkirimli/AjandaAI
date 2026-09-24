@@ -2,10 +2,10 @@
 // Liste yalnızca aktif kategorileri döner; Id ile sorgu pasif kaydı da döner
 // (eski aktiviteler pasife alınmış kategoriye bağlı olabilir).
 
-using AjandaAI.Application.Catalog.Dtos;
+using AjandaAI.Application.Categories.Dtos;
 using AjandaAI.Domain.Entities;
 
-namespace AjandaAI.Application.Catalog;
+namespace AjandaAI.Application.Categories;
 
 public class CategoryService
 {

@@ -3,7 +3,7 @@
 // DbContext, repository'ler ve Application'daki tüm IModule'ler burada kaydedilir.
 
 using AjandaAI.Application.Activities;
-using AjandaAI.Application.Catalog;
+using AjandaAI.Application.Categories;
 using AjandaAI.Application.Common;
 using AjandaAI.Application.Reminders;
 using AjandaAI.Infrastructure.Persistence;
