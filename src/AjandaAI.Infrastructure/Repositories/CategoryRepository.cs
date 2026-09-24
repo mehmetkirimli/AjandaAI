@@ -34,6 +34,11 @@ public class CategoryRepository : ICategoryRepository
             .FirstOrDefaultAsync(c => c.Id == id, cancellationToken);
     }
 
+    public Task<bool> IsActiveAsync(int id, CancellationToken cancellationToken = default)
+    {
+        return _context.Categories.AnyAsync(c => c.Id == id && c.IsActive, cancellationToken);
+    }
+
     public async Task AddAsync(Category category, CancellationToken cancellationToken = default)
     {
         _context.Categories.Add(category);

@@ -21,8 +21,12 @@ public class CategoryConfiguration : IEntityTypeConfiguration<Category>
             .IsRequired()
             .HasMaxLength(100);
 
+        // Mevcut satırlar migration'da aktif kalsın diye DB default'u true.
+        // Sentinel true: false değeri INSERT'te atlanmaz, açıkça yazılır.
         builder.Property(c => c.IsActive)
-            .IsRequired();
+            .IsRequired()
+            .HasDefaultValue(true)
+            .HasSentinel(true);
 
         builder.Property(c => c.CreatedAt)
             .IsRequired();

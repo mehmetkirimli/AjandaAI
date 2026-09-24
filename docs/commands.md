@@ -33,3 +33,13 @@ Her değişiklikten sonra sırasıyla:
 2. dotnet test    → tüm testler geçmeli
 
 Bu zincir kırıksa iş tamamlanmış sayılmaz.
+
+## Bilinen Ortam Sorunları
+
+dotnet-ef PATH'te olmayabilir. Tam yol:
+%USERPROFILE%\.dotnet\tools\dotnet-ef.exe
+Kalıcı çözüm: bu klasörü kullanıcı PATH'ine ekleyin.
+
+Build almadan önce çalışan AjandaAI.Api process'ini kapatın.
+Çalışan uygulama bin/ altındaki DLL'leri kilitler ve
+build "dosya kopyalanamadı" hatası verir.

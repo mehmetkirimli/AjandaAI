@@ -12,6 +12,8 @@ public interface ICategoryRepository
 
     Task<Category?> GetByIdAsync(int id, CancellationToken cancellationToken = default);
 
+    Task<bool> IsActiveAsync(int id, CancellationToken cancellationToken = default);
+
     Task AddAsync(Category category, CancellationToken cancellationToken = default);
 
     Task<bool> NameExistsAsync(string name, int? excludeId = null, CancellationToken cancellationToken = default);

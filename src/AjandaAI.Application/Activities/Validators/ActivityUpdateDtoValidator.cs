@@ -17,7 +17,7 @@ public class ActivityUpdateDtoValidator : AbstractValidator<ActivityUpdateDto>
         _categories = categories;
 
         RuleFor(x => x.CategoryId)
-            .MustAsync(CategoryIsActiveAsync)
+            .MustAsync((id, ct) => _categories.IsActiveAsync(id, ct))
             .WithMessage("Kategori bulunamadı veya aktif değil.");
 
         RuleFor(x => x.Title)
@@ -41,11 +41,5 @@ public class ActivityUpdateDtoValidator : AbstractValidator<ActivityUpdateDto>
 
         RuleFor(x => x.EstimatedBudget)
             .GreaterThanOrEqualTo(0).WithMessage("Tahmini bütçe negatif olamaz.");
-    }
-
-    private async Task<bool> CategoryIsActiveAsync(int categoryId, CancellationToken cancellationToken)
-    {
-        var category = await _categories.GetByIdAsync(categoryId, cancellationToken);
-        return category is { IsActive: true };
     }
 }

@@ -53,6 +53,9 @@ public class ActivityServiceTests
         public Task<Category?> GetByIdAsync(int id, CancellationToken cancellationToken = default) =>
             Task.FromResult(_items.FirstOrDefault(c => c.Id == id));
 
+        public Task<bool> IsActiveAsync(int id, CancellationToken cancellationToken = default) =>
+            Task.FromResult(_items.Any(c => c.Id == id && c.IsActive));
+
         public Task AddAsync(Category category, CancellationToken cancellationToken = default) => Task.CompletedTask;
 
         public Task UpdateAsync(Category category, CancellationToken cancellationToken = default) => Task.CompletedTask;

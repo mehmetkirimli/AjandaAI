@@ -26,6 +26,6 @@ public class UserCreateDtoValidator : AbstractValidator<UserCreateDto>
             .Cascade(CascadeMode.Stop)
             .NotEmpty().WithMessage("Saat dilimi zorunludur.")
             .MaximumLength(64).WithMessage("Saat dilimi en fazla 64 karakter olabilir.")
-            .Must(TimeZoneRules.IsValid).WithMessage("Saat dilimi geçersiz.");
+            .Must(TimeZoneRules.IsValid).WithMessage("Saat dilimi geçersiz. IANA formatında olmalı, örn: Europe/Istanbul");
     }
 }

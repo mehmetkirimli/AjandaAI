@@ -22,6 +22,9 @@ public class CategoryServiceTests
         public Task<Category?> GetByIdAsync(int id, CancellationToken cancellationToken = default) =>
             Task.FromResult(Items.FirstOrDefault(c => c.Id == id));
 
+        public Task<bool> IsActiveAsync(int id, CancellationToken cancellationToken = default) =>
+            Task.FromResult(Items.Any(c => c.Id == id && c.IsActive));
+
         public Task AddAsync(Category category, CancellationToken cancellationToken = default)
         {
             category.Id = Items.Count == 0 ? 1 : Items.Max(c => c.Id) + 1;
