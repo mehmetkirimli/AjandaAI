@@ -36,6 +36,29 @@ src/AjandaAI.Api/Controllers/
 Referanslar yukarıdaki yönde akar. Ters yönde referans YASAK.
 Domain hiçbir şeye bağımlı değildir.
 
+## Kaynaklar Arası Bağımlılık
+Dikey dilimler birbirine bağımlı olabilir, ancak bağımlılık TEK YÖNLÜ olmalıdır.
+Yön, veritabanındaki foreign key yönüyle aynıdır.
+
+İzin verilen:
+- ActivityService / validator -> ICategoryRepository
+- ActivityService / validator -> IUserRepository
+- ReminderService / validator -> IActivityRepository
+
+YASAK (döngü oluşturur):
+- CategoryService -> IActivityRepository
+- UserService -> IActivityRepository
+- ActivityService -> IReminderRepository
+
+Bir kaynak, kendisine FK veren kaynağı TANIMAZ.
+
+## İlişkisel Doğrulama
+Var olan bir kaydı referans alan alanlar (CategoryId, UserId, ActivityId)
+FluentValidation validator'ında MustAsync ile doğrulanır.
+Validator ilgili repository'yi constructor'dan alır.
+
+Servis içinde tekrar kontrol edilmez.
+
 ## Tasarım Felsefesi
 Basit başla. Pattern, somut bir ihtiyaç doğduğunda eklenir.
 Spekülatif soyutlama yasak.
