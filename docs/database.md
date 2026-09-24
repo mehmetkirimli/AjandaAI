@@ -31,6 +31,10 @@ Diğer tüm agent'lar için YASAK komutlar:
 Migration ihtiyacı olan agent, kendi migration'ını üretmez.
 Bunun yerine takım lideri veya db-agent'a bildirir.
 
+Bu kural .claude/hooks/block-migrations.ps1 ile PreToolUse hook'u
+olarak zorlanır. Hook kazara ihlali önleyen bir korkuluktur;
+komutu dolaylı yoldan (script içinden) çağırmayı yakalamaz.
+
 Gerekçe: Migration dosyaları zaman damgalı ve zincirlemedir.
 Paralel üretilen iki migration, birbirini tanımayan iki dal oluşturur
 ve __EFMigrationsHistory tablosunu bozar.
