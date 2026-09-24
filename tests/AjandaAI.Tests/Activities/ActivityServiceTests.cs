@@ -1,7 +1,11 @@
-// ActivityService okuma senaryolarının birim testleridir.
-// Repository, bellek içi bir fake ile değiştirilir.
+// ActivityService okuma ve yazma senaryolarının birim testleridir.
+// Repository'ler bellek içi fake'lerle değiştirilir; validator'lar gerçektir.
 
 using AjandaAI.Application.Activities;
+using AjandaAI.Application.Activities.Dtos;
+using AjandaAI.Application.Activities.Validators;
+using AjandaAI.Application.Categories;
+using AjandaAI.Application.Users;
 using AjandaAI.Domain.Entities;
 using AjandaAI.Domain.Enums;
 
@@ -15,16 +19,81 @@ public class ActivityServiceTests
 
         public FakeActivityRepository(params Activity[] items) => _items = items.ToList();
 
-        public Task<IReadOnlyList<Activity>> GetAllAsync(CancellationToken cancellationToken = default) =>
-            Task.FromResult<IReadOnlyList<Activity>>(_items.ToList());
+        public Task<IReadOnlyList<Activity>> GetActiveAsync(CancellationToken cancellationToken = default) =>
+            Task.FromResult<IReadOnlyList<Activity>>(_items.Where(a => a.IsActive).ToList());
 
         public Task<Activity?> GetByIdAsync(int id, CancellationToken cancellationToken = default) =>
             Task.FromResult(_items.FirstOrDefault(a => a.Id == id));
+
+        public Task<bool> IsActiveAsync(int id, CancellationToken cancellationToken = default) =>
+            Task.FromResult(_items.Any(a => a.Id == id && a.IsActive));
+
+        public Task AddAsync(Activity activity, CancellationToken cancellationToken = default)
+        {
+            activity.Id = _items.Count == 0 ? 1 : _items.Max(a => a.Id) + 1;
+            _items.Add(activity);
+            return Task.CompletedTask;
+        }
+
+        public Task UpdateAsync(Activity activity, CancellationToken cancellationToken = default) => Task.CompletedTask;
+    }
+
+    private sealed class FakeCategoryRepository : ICategoryRepository
+    {
+        private readonly List<Category> _items = new()
+        {
+            new Category { Id = 1, Name = "Sosyal", IsActive = true },
+            new Category { Id = 6, Name = "Spor", IsActive = true },
+            new Category { Id = 9, Name = "Eski", IsActive = false }
+        };
+
+        public Task<IReadOnlyList<Category>> GetActiveAsync(CancellationToken cancellationToken = default) =>
+            Task.FromResult<IReadOnlyList<Category>>(_items.Where(c => c.IsActive).ToList());
+
+        public Task<Category?> GetByIdAsync(int id, CancellationToken cancellationToken = default) =>
+            Task.FromResult(_items.FirstOrDefault(c => c.Id == id));
+
+        public Task AddAsync(Category category, CancellationToken cancellationToken = default) => Task.CompletedTask;
+
+        public Task UpdateAsync(Category category, CancellationToken cancellationToken = default) => Task.CompletedTask;
+
+        public Task<bool> NameExistsAsync(string name, int? excludeId = null, CancellationToken cancellationToken = default) =>
+            Task.FromResult(false);
+    }
+
+    private sealed class FakeUserRepository : IUserRepository
+    {
+        private readonly List<User> _items = new() { new User { Id = 7 }, new User { Id = 8, IsActive = false } };
+
+        public Task<IReadOnlyList<User>> GetActiveAsync(CancellationToken cancellationToken = default) =>
+            Task.FromResult<IReadOnlyList<User>>(_items.Where(u => u.IsActive).ToList());
+
+        public Task<User?> GetByIdAsync(int id, CancellationToken cancellationToken = default) =>
+            Task.FromResult(_items.FirstOrDefault(u => u.Id == id));
+
+        public Task<bool> IsActiveAsync(int id, CancellationToken cancellationToken = default) =>
+            Task.FromResult(_items.Any(u => u.Id == id && u.IsActive));
+
+        public Task<bool> EmailExistsAsync(string email, int? excludeId = null, CancellationToken cancellationToken = default) =>
+            Task.FromResult(false);
+
+        public Task AddAsync(User user, CancellationToken cancellationToken = default) => Task.CompletedTask;
+
+        public Task UpdateAsync(User user, CancellationToken cancellationToken = default) => Task.CompletedTask;
     }
 
     private static readonly DateTimeOffset BaseTime = new(2026, 9, 1, 10, 0, 0, TimeSpan.Zero);
 
-    private static ActivityService CreateService() => new(new FakeActivityRepository(
+    private static ActivityService CreateService()
+    {
+        var categories = new FakeCategoryRepository();
+        return new ActivityService(
+            CreateRepository(),
+            new ActivityCreateDtoValidator(categories, new FakeUserRepository()),
+            new ActivityUpdateDtoValidator(categories));
+    }
+
+    private static FakeActivityRepository CreateRepository() => new(
         new Activity
         {
             Id = 1, UserId = 7, CategoryId = 6, Title = "Koşu", Description = "Sahil",
@@ -37,7 +106,18 @@ public class ActivityServiceTests
             Id = 2, UserId = 7, CategoryId = 1, Title = "Akşam yemeği",
             Status = ActivityStatus.Planned, Priority = Priority.Medium, EnergyLevel = EnergyLevel.Low,
             Start = BaseTime.AddDays(1), End = BaseTime.AddDays(1).AddHours(2), EstimatedBudget = 1500m
-        }));
+        });
+
+    private static ActivityCreateDto ValidCreate(
+        int userId = 7, int categoryId = 6, string title = "Yüzme",
+        ActivityStatus status = ActivityStatus.Planned, int? rating = null,
+        decimal budget = 0m, int durationHours = 1) =>
+        new(userId, categoryId, title, "", status, Priority.Low, EnergyLevel.Medium,
+            BaseTime, BaseTime.AddHours(durationHours), false, null, false, budget, rating, null);
+
+    private static ActivityUpdateDto ValidUpdate(ActivityStatus status = ActivityStatus.Completed, int? rating = 9) =>
+        new(6, "Koşu 2", "", status, Priority.Low, EnergyLevel.Medium,
+            BaseTime, BaseTime.AddHours(2), false, null, false, 0m, rating, true);
 
     [Fact]
     public async Task GetAllAsync_ReturnsAllMappedDtos()
@@ -79,5 +159,102 @@ public class ActivityServiceTests
     public async Task GetByIdAsync_Missing_ReturnsNull()
     {
         Assert.Null(await CreateService().GetByIdAsync(99));
+    }
+
+    [Fact]
+    public async Task CreateAsync_Valid_ReturnsOkWithNewId()
+    {
+        var service = CreateService();
+
+        var result = await service.CreateAsync(ValidCreate());
+
+        Assert.True(result.Success);
+        Assert.Equal(3, result.Data!.Id);
+        Assert.Equal("Planned", result.Data.Status);
+        Assert.NotNull(await service.GetByIdAsync(3));
+    }
+
+    [Theory]
+    [InlineData(99, 6, "Kullanıcı bulunamadı veya pasif.")]
+    [InlineData(8, 6, "Kullanıcı bulunamadı veya pasif.")]
+    [InlineData(7, 9, "Kategori bulunamadı veya aktif değil.")]
+    [InlineData(7, 42, "Kategori bulunamadı veya aktif değil.")]
+    public async Task CreateAsync_InvalidRelations_Fails(int userId, int categoryId, string expected)
+    {
+        var result = await CreateService().CreateAsync(ValidCreate(userId: userId, categoryId: categoryId));
+
+        Assert.False(result.Success);
+        Assert.Contains(expected, result.Errors);
+    }
+
+    [Fact]
+    public async Task CreateAsync_FieldRules_CollectsAllErrors()
+    {
+        var dto = ValidCreate(title: new string('x', 201), rating: 11, budget: -1m, durationHours: -1);
+
+        var result = await CreateService().CreateAsync(dto);
+
+        Assert.False(result.Success);
+        Assert.Contains("Başlık en fazla 200 karakter olabilir.", result.Errors);
+        Assert.Contains("Bitiş zamanı başlangıçtan sonra olmalıdır.", result.Errors);
+        Assert.Contains("Puan 1 ile 10 arasında olmalıdır.", result.Errors);
+        Assert.Contains("Puan yalnızca tamamlanan aktivitelere verilebilir.", result.Errors);
+        Assert.Contains("Tahmini bütçe negatif olamaz.", result.Errors);
+    }
+
+    [Fact]
+    public async Task CreateAsync_EmptyTitle_Fails()
+    {
+        var result = await CreateService().CreateAsync(ValidCreate(title: ""));
+
+        Assert.False(result.Success);
+        Assert.Contains("Başlık zorunludur.", result.Errors);
+    }
+
+    [Fact]
+    public async Task UpdateAsync_Existing_UpdatesFields()
+    {
+        var result = await CreateService().UpdateAsync(2, ValidUpdate());
+
+        Assert.NotNull(result);
+        Assert.True(result!.Success);
+        Assert.Equal("Koşu 2", result.Data!.Title);
+        Assert.Equal(9, result.Data.Rating);
+        Assert.Equal(7, result.Data.UserId);
+    }
+
+    [Fact]
+    public async Task UpdateAsync_RatingWithoutCompleted_Fails()
+    {
+        var result = await CreateService().UpdateAsync(1, ValidUpdate(status: ActivityStatus.InProgress, rating: 5));
+
+        Assert.NotNull(result);
+        Assert.False(result!.Success);
+        Assert.Contains("Puan yalnızca tamamlanan aktivitelere verilebilir.", result.Errors);
+    }
+
+    [Fact]
+    public async Task UpdateAsync_Missing_ReturnsNull()
+    {
+        Assert.Null(await CreateService().UpdateAsync(99, ValidUpdate()));
+    }
+
+    [Fact]
+    public async Task DeleteAsync_Existing_SetsIsActiveFalse_DoesNotRemove()
+    {
+        var service = CreateService();
+
+        Assert.True(await service.DeleteAsync(1));
+
+        var detail = await service.GetByIdAsync(1);
+        Assert.NotNull(detail);
+        Assert.False(detail!.IsActive);
+        Assert.DoesNotContain(await service.GetAllAsync(), a => a.Id == 1);
+    }
+
+    [Fact]
+    public async Task DeleteAsync_Missing_ReturnsFalse()
+    {
+        Assert.False(await CreateService().DeleteAsync(99));
     }
 }

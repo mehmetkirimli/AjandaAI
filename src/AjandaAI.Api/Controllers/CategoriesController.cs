@@ -1,4 +1,5 @@
-// Category lookup tablosu için salt-okunur HTTP uç noktalarıdır.
+// Category lookup tablosu için HTTP uç noktalarıdır (okuma + yazma).
+// DELETE gerçek silme yapmaz, kategoriyi pasife alır (IsActive = false).
 // Yanıtlar her zaman ApiResponse<T> zarfı içinde DTO olarak döner.
 
 using AjandaAI.Application.Categories;
@@ -35,9 +36,55 @@ public class CategoriesController : ControllerBase
         var category = await _service.GetByIdAsync(id, cancellationToken);
         if (category is null)
         {
-            return NotFound(ApiResponse<CategoryListDto>.Fail($"Category {id} bulunamadı."));
+            return NotFound(NotFoundResponse(id));
         }
 
         return Ok(ApiResponse<CategoryListDto>.Ok(category));
     }
+
+    [HttpPost]
+    [ProducesResponseType(typeof(ApiResponse<CategoryListDto>), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(ApiResponse<CategoryListDto>), StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<ApiResponse<CategoryListDto>>> CreateAsync(CategoryCreateDto dto, CancellationToken cancellationToken)
+    {
+        var response = await _service.CreateAsync(dto, cancellationToken);
+        if (!response.Success)
+        {
+            return BadRequest(response);
+        }
+
+        return StatusCode(StatusCodes.Status201Created, response);
+    }
+
+    [HttpPut("{id:int}")]
+    [ProducesResponseType(typeof(ApiResponse<CategoryListDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<CategoryListDto>), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ApiResponse<CategoryListDto>), StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<ApiResponse<CategoryListDto>>> UpdateAsync(int id, CategoryUpdateDto dto, CancellationToken cancellationToken)
+    {
+        var response = await _service.UpdateAsync(id, dto, cancellationToken);
+        if (response is null)
+        {
+            return NotFound(NotFoundResponse(id));
+        }
+
+        return response.Success ? Ok(response) : BadRequest(response);
+    }
+
+    [HttpDelete("{id:int}")]
+    [ProducesResponseType(typeof(ApiResponse<CategoryListDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<CategoryListDto>), StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<ApiResponse<CategoryListDto>>> DeleteAsync(int id, CancellationToken cancellationToken)
+    {
+        var response = await _service.DeactivateAsync(id, cancellationToken);
+        if (response is null)
+        {
+            return NotFound(NotFoundResponse(id));
+        }
+
+        return Ok(response);
+    }
+
+    private static ApiResponse<CategoryListDto> NotFoundResponse(int id) =>
+        ApiResponse<CategoryListDto>.Fail($"Category {id} bulunamadı.");
 }

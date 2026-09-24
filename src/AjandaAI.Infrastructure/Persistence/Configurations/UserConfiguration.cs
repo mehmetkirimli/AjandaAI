@@ -25,6 +25,13 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
             .IsRequired()
             .HasMaxLength(64);
 
+        // Mevcut satırlar migration'da aktif kalsın diye DB default'u true.
+        // Sentinel true: false değeri INSERT'te atlanmaz, açıkça yazılır.
+        builder.Property(u => u.IsActive)
+            .IsRequired()
+            .HasDefaultValue(true)
+            .HasSentinel(true);
+
         builder.Property(u => u.CreatedAt)
             .IsRequired();
 

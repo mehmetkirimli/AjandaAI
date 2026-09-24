@@ -32,7 +32,7 @@ Kayıtların yeri:
 Infrastructure/DependencyInjection.cs, Application assembly'deki tüm IModule'leri
 otomatik toplar (modüllerin parametresiz constructor'ı olmalı).
 Bu dosyaya sadece takım lideri dokunur; yeni repository kaydı gerekiyorsa
-takım liderine bildirilir.
+takım liderine bildirilir (SendMessage, to: "main" — bkz. Takım Lideri Adresi).
 
 Aynı kural EF configuration için de geçerlidir:
   Infrastructure/Persistence/Configurations/{Entity}Configuration.cs
@@ -60,6 +60,20 @@ Validator kaydı kaynağın kendi Module.cs dosyasında yapılır:
 Gerekçe: otomatik pipeline Program.cs'e kayıt gerektirir (paylaşılan
 dosya, çakışma riski). Elle çağırma her kaynağın kendi modülünde kalır.
 
+## Silme Politikası
+Başka bir kaydın FK verdiği entity'ler SOFT delete edilir (IsActive = false).
+Hiçbir kaydın FK vermediği entity'ler HARD delete edilir.
+
+Mevcut durum:
+- Category: soft (Activity FK veriyor)
+- User: soft (Activity FK veriyor)
+- Activity: soft (Reminder FK veriyor)
+- Reminder: hard (kimse FK vermiyor)
+
+Soft delete edilen bir entity'ye FK veren tüm validator'lar,
+ExistsAsync değil IsActiveAsync kullanır. Pasif kayda yeni
+bağlantı kurulamaz.
+
 ## Paylaşılan Dosyalar — SADECE TAKIM LİDERİ
 Aşağıdaki dosyalara takım arkadaşları DOKUNAMAZ:
 - Program.cs
@@ -67,7 +81,12 @@ Aşağıdaki dosyalara takım arkadaşları DOKUNAMAZ:
 - DependencyInjection.cs (her katmandaki)
 - *.csproj
 - docker-compose.yml
-Değişiklik gerekiyorsa takım liderine bildirilir.
+Değişiklik gerekiyorsa takım liderine bildirilir (SendMessage, to: "main").
+
+## Takım Lideri Adresi
+Takım liderinin adresi "main"dir. Takım liderine bildirim, SendMessage ile
+"main" adresine mesaj gönderilerek yapılır.
+"team-lead", "lead", "takım lideri" gibi adlar ÇÖZÜLMEZ; mesaj ulaşmaz.
 
 ## Tasarım Kuralı
 Basit başla. Spekülatif soyutlama yasak.

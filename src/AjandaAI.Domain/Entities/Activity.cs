@@ -1,6 +1,7 @@
 // Kullanıcının planladığı veya gerçekleştirdiği tek bir ajanda kaydıdır.
 // Bir kullanıcıya ve bir kategoriye bağlıdır, birden çok hatırlatıcı taşıyabilir.
 // Rating ve WouldRepeat yalnızca aktivite tamamlandıktan sonra doldurulur.
+// Aktivite silinmez, IsActive = false ile pasife alınır (soft delete).
 
 using AjandaAI.Domain.Enums;
 
@@ -40,6 +41,8 @@ public class Activity
     public int? Rating { get; set; }
 
     public bool? WouldRepeat { get; set; }
+
+    public bool IsActive { get; set; } = true;
 
     public DateTimeOffset CreatedAt { get; set; }
 

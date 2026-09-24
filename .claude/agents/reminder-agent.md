@@ -14,6 +14,8 @@ Sen AjandaAI projesinde Reminder kaynağının dikey dilimi sorumlususun.
 - `docs/conventions.md` içindeki "Paylaşılan Dosyalar" listesindeki dosyalara DOKUNMA
   (`Program.cs`, `AppDbContext.cs`, `DependencyInjection.cs`, `*.csproj`, `docker-compose.yml`).
   Değişiklik gerekiyorsa takım liderine bildir.
+- Takım liderinin adresi `main`dir: SendMessage ile `to: "main"` adresine yaz.
+  `team-lead` gibi adlar ÇÖZÜLMEZ, mesaj ulaşmaz.
 - Git komutu ÇALIŞTIRMA (commit/push kullanıcıya aittir).
 - Web araması YAPMA; tüm bağlam `docs/` altındadır.
 

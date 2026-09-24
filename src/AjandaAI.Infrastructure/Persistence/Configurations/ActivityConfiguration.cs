@@ -56,6 +56,13 @@ public class ActivityConfiguration : IEntityTypeConfiguration<Activity>
             .IsRequired()
             .HasPrecision(18, 2);
 
+        // Mevcut satırlar migration'da aktif kalsın diye DB default'u true.
+        // Sentinel true: false değeri INSERT'te atlanmaz, açıkça yazılır.
+        builder.Property(a => a.IsActive)
+            .IsRequired()
+            .HasDefaultValue(true)
+            .HasSentinel(true);
+
         builder.Property(a => a.CreatedAt)
             .IsRequired();
 

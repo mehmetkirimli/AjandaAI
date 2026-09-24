@@ -6,6 +6,7 @@ using AjandaAI.Application.Activities;
 using AjandaAI.Application.Categories;
 using AjandaAI.Application.Common;
 using AjandaAI.Application.Reminders;
+using AjandaAI.Application.Users;
 using AjandaAI.Infrastructure.Persistence;
 using AjandaAI.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
@@ -29,6 +30,7 @@ public static class DependencyInjection
         services.AddScoped<ICategoryRepository, CategoryRepository>();
         services.AddScoped<IActivityRepository, ActivityRepository>();
         services.AddScoped<IReminderRepository, ReminderRepository>();
+        services.AddScoped<IUserRepository, UserRepository>();
 
         AddModules(services);
 

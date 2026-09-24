@@ -1,4 +1,4 @@
-// Reminder kayıtları için salt-okunur HTTP uç noktalarıdır.
+// Reminder kayıtları için okuma ve yazma (POST/PUT/DELETE) HTTP uç noktalarıdır.
 // Yanıtlar her zaman ApiResponse<T> zarfı içinde DTO olarak döner.
 
 using AjandaAI.Application.Common;
@@ -39,5 +39,47 @@ public class RemindersController : ControllerBase
         }
 
         return Ok(ApiResponse<ReminderDetailDto>.Ok(reminder));
+    }
+
+    [HttpPost]
+    [ProducesResponseType(typeof(ApiResponse<ReminderDetailDto>), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(ApiResponse<ReminderDetailDto>), StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<ApiResponse<ReminderDetailDto>>> CreateAsync(ReminderCreateDto dto, CancellationToken cancellationToken)
+    {
+        var response = await _service.CreateAsync(dto, cancellationToken);
+        if (!response.Success)
+        {
+            return BadRequest(response);
+        }
+
+        return StatusCode(StatusCodes.Status201Created, response);
+    }
+
+    [HttpPut("{id:int}")]
+    [ProducesResponseType(typeof(ApiResponse<ReminderDetailDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<ReminderDetailDto>), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ApiResponse<ReminderDetailDto>), StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<ApiResponse<ReminderDetailDto>>> UpdateAsync(int id, ReminderUpdateDto dto, CancellationToken cancellationToken)
+    {
+        var response = await _service.UpdateAsync(id, dto, cancellationToken);
+        if (response is null)
+        {
+            return NotFound(ApiResponse<ReminderDetailDto>.Fail($"Reminder {id} bulunamadı."));
+        }
+
+        return response.Success ? Ok(response) : BadRequest(response);
+    }
+
+    [HttpDelete("{id:int}")]
+    [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<ApiResponse<bool>>> DeleteAsync(int id, CancellationToken cancellationToken)
+    {
+        if (!await _service.DeleteAsync(id, cancellationToken))
+        {
+            return NotFound(ApiResponse<bool>.Fail($"Reminder {id} bulunamadı."));
+        }
+
+        return Ok(ApiResponse<bool>.Ok(true, "Reminder silindi."));
     }
 }

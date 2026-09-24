@@ -26,6 +26,11 @@ EstimatedBudget
 Rating (1-10, nullable), WouldRepeat (nullable bool)
 CreatedAt, UpdatedAt
 
+Aktivitenin sahibi değiştirilemez. Bir aktiviteye birden çok
+kullanıcının katılması v2'deki davet sistemiyle gelecek
+(ActivityParticipant tablosu). Kimin ne değiştirdiği bilgisi
+v2'de audit log ile tutulacak.
+
 ## v2'ye ertelenenler
 - Rating entity (analiz ajanı tarafından üretilecek)
 - Plan / aktivite gruplama

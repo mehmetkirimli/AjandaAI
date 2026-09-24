@@ -21,5 +21,6 @@ public record ActivityDetailDto(
     decimal EstimatedBudget,
     int? Rating,
     bool? WouldRepeat,
+    bool IsActive,
     DateTimeOffset CreatedAt,
     DateTimeOffset UpdatedAt);
