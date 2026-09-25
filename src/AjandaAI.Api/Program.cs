@@ -67,3 +67,6 @@ static string ToFieldMessage(string key, IEnumerable<string> parameterNames)
         ? "Geçersiz istek gövdesi."
         : $"{field} alanı geçersiz.";
 }
+
+// WebApplicationFactory<Program> için top-level Program sınıfını test projelerine açar.
+public partial class Program { }

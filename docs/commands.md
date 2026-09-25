@@ -7,8 +7,24 @@ dotnet clean                          → build çıktılarını siler
 dotnet restore                        → paketleri geri yükler
 
 ## Test
-dotnet test                           → tüm testleri çalıştırır
+dotnet test                                    → hepsi (unit + entegrasyon)
+dotnet test tests/AjandaAI.Tests               → sadece unit testler (sahte repository, DB gerekmez)
+dotnet test tests/AjandaAI.IntegrationTests    → sadece entegrasyon testleri (gerçek HTTP + PostgreSQL)
 dotnet test --filter "FullyQualifiedName~Activity"  → sadece Activity testleri
+
+### Entegrasyon testleri
+ÖN KOŞUL: Docker ayakta olmalı (docker compose up -d) ve ajandaai_test
+veritabanı mevcut olmalı (bkz. "Test veritabanı"). Postgres kapalıysa
+entegrasyon testlerinin hepsi bağlantı hatasıyla kırılır; unit testler etkilenmez.
+
+- API, WebApplicationFactory<Program> ile bellekte "Test" ortamında açılır → ajandaai_test.
+- Bağlanılan veritabanı ajandaai_test değilse testler hiçbir şey silmeden durur.
+- Her test sınıfı başlamadan: bekleyen migration'lar uygulanır, ardından
+  TRUNCATE reminders, activities, users RESTART IDENTITY CASCADE.
+  Seed kategoriler (categories) korunur.
+- Sınıflar aynı veritabanını paylaştığı için paralel çalışma kapalıdır.
+- MigrationTests geçici bir ajandaai_migration_{guid} veritabanı açıp tüm
+  migration'ları baştan uygular ve test sonunda siler.
 
 ## Çalıştırma
 dotnet run --project src/AjandaAI.Api
