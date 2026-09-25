@@ -1,6 +1,7 @@
 // CategoryService okuma ve yazma senaryolarının birim testleridir.
 // Repository bellek içi bir fake ile değiştirilir; validator'lar gerçek sınıflardır.
 
+using AjandaAI.Application.Common;
 using AjandaAI.Application.Categories;
 using AjandaAI.Application.Categories.Dtos;
 using AjandaAI.Application.Categories.Validators;
@@ -56,7 +57,7 @@ public class CategoryServiceTests
     [Fact]
     public async Task GetAllAsync_ReturnsOnlyActiveCategories()
     {
-        var result = await CreateService().GetAllAsync();
+        var result = (await CreateService().GetAllAsync()).Data!;
 
         Assert.Equal(new[] { 1, 3 }, result.Select(c => c.Id));
         Assert.All(result, c => Assert.True(c.IsActive));
@@ -65,7 +66,7 @@ public class CategoryServiceTests
     [Fact]
     public async Task GetByIdAsync_Existing_ReturnsMappedDto()
     {
-        var result = await CreateService().GetByIdAsync(1);
+        var result = (await CreateService().GetByIdAsync(1)).Data;
 
         Assert.NotNull(result);
         Assert.Equal("Spor", result!.Name);
@@ -74,7 +75,7 @@ public class CategoryServiceTests
     [Fact]
     public async Task GetByIdAsync_Inactive_StillReturned()
     {
-        var result = await CreateService().GetByIdAsync(2);
+        var result = (await CreateService().GetByIdAsync(2)).Data;
 
         Assert.NotNull(result);
         Assert.False(result!.IsActive);
@@ -83,7 +84,7 @@ public class CategoryServiceTests
     [Fact]
     public async Task GetByIdAsync_Missing_ReturnsNull()
     {
-        Assert.Null(await CreateService().GetByIdAsync(99));
+        Assert.Equal(ResultType.NotFound, (await CreateService().GetByIdAsync(99)).ResultType);
     }
 
     [Fact]
@@ -128,7 +129,7 @@ public class CategoryServiceTests
     [Fact]
     public async Task UpdateAsync_Missing_ReturnsNull()
     {
-        Assert.Null(await CreateService().UpdateAsync(99, new CategoryUpdateDto("X", true)));
+        Assert.Equal(ResultType.NotFound, (await CreateService().UpdateAsync(99, new CategoryUpdateDto("X", true))).ResultType);
     }
 
     [Fact]
@@ -146,6 +147,6 @@ public class CategoryServiceTests
     [Fact]
     public async Task DeactivateAsync_Missing_ReturnsNull()
     {
-        Assert.Null(await CreateService().DeactivateAsync(99));
+        Assert.Equal(ResultType.NotFound, (await CreateService().DeactivateAsync(99)).ResultType);
     }
 }

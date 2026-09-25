@@ -1,6 +1,7 @@
 // ActivityService okuma ve yazma senaryolarının birim testleridir.
 // Repository'ler bellek içi fake'lerle değiştirilir; validator'lar gerçektir.
 
+using AjandaAI.Application.Common;
 using AjandaAI.Application.Activities;
 using AjandaAI.Application.Activities.Dtos;
 using AjandaAI.Application.Activities.Validators;
@@ -125,7 +126,7 @@ public class ActivityServiceTests
     [Fact]
     public async Task GetAllAsync_ReturnsAllMappedDtos()
     {
-        var result = await CreateService().GetAllAsync();
+        var result = (await CreateService().GetAllAsync()).Data!;
 
         Assert.Equal(new[] { 1, 2 }, result.Select(a => a.Id));
         Assert.Equal("Koşu", result[0].Title);
@@ -136,7 +137,7 @@ public class ActivityServiceTests
     [Fact]
     public async Task GetByIdAsync_Existing_ReturnsDetailDto()
     {
-        var result = await CreateService().GetByIdAsync(1);
+        var result = (await CreateService().GetByIdAsync(1)).Data;
 
         Assert.NotNull(result);
         Assert.Equal("Koşu", result!.Title);
@@ -149,7 +150,7 @@ public class ActivityServiceTests
     [Fact]
     public async Task GetByIdAsync_NullableFieldsEmpty_MappedAsNull()
     {
-        var result = await CreateService().GetByIdAsync(2);
+        var result = (await CreateService().GetByIdAsync(2)).Data;
 
         Assert.NotNull(result);
         Assert.Null(result!.Location);
@@ -161,7 +162,7 @@ public class ActivityServiceTests
     [Fact]
     public async Task GetByIdAsync_Missing_ReturnsNull()
     {
-        Assert.Null(await CreateService().GetByIdAsync(99));
+        Assert.Equal(ResultType.NotFound, (await CreateService().GetByIdAsync(99)).ResultType);
     }
 
     [Fact]
@@ -174,7 +175,7 @@ public class ActivityServiceTests
         Assert.True(result.Success);
         Assert.Equal(3, result.Data!.Id);
         Assert.Equal("Planned", result.Data.Status);
-        Assert.NotNull(await service.GetByIdAsync(3));
+        Assert.NotNull((await service.GetByIdAsync(3)).Data);
     }
 
     [Theory]
@@ -239,7 +240,7 @@ public class ActivityServiceTests
     [Fact]
     public async Task UpdateAsync_Missing_ReturnsNull()
     {
-        Assert.Null(await CreateService().UpdateAsync(99, ValidUpdate()));
+        Assert.Equal(ResultType.NotFound, (await CreateService().UpdateAsync(99, ValidUpdate())).ResultType);
     }
 
     [Fact]
@@ -247,17 +248,17 @@ public class ActivityServiceTests
     {
         var service = CreateService();
 
-        Assert.True(await service.DeleteAsync(1));
+        Assert.True((await service.DeleteAsync(1)).Success);
 
-        var detail = await service.GetByIdAsync(1);
+        var detail = (await service.GetByIdAsync(1)).Data;
         Assert.NotNull(detail);
         Assert.False(detail!.IsActive);
-        Assert.DoesNotContain(await service.GetAllAsync(), a => a.Id == 1);
+        Assert.DoesNotContain((await service.GetAllAsync()).Data!, a => a.Id == 1);
     }
 
     [Fact]
     public async Task DeleteAsync_Missing_ReturnsFalse()
     {
-        Assert.False(await CreateService().DeleteAsync(99));
+        Assert.Equal(ResultType.NotFound, (await CreateService().DeleteAsync(99)).ResultType);
     }
 }

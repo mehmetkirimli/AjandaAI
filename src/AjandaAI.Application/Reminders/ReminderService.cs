@@ -1,6 +1,6 @@
 // Reminder okuma ve yazma senaryolarını yöneten uygulama servisidir.
 // Yazma işlemleri validator'ı elle çağırır; hata ApiResponse.Fail olarak döner.
-// Update/Delete'te kayıt yoksa null döner (controller 404'e çevirir).
+// Kayıt yoksa ApiResponse.NotFound döner; HTTP status kodunu ApiResponseFilter belirler.
 
 using AjandaAI.Application.Common;
 using AjandaAI.Application.Reminders.Dtos;
@@ -28,16 +28,19 @@ public class ReminderService
         _timeProvider = timeProvider;
     }
 
-    public async Task<IReadOnlyList<ReminderListDto>> GetAllAsync(CancellationToken cancellationToken = default)
+    public async Task<ApiResponse<IReadOnlyList<ReminderListDto>>> GetAllAsync(CancellationToken cancellationToken = default)
     {
         var reminders = await _repository.GetAllAsync(cancellationToken);
-        return reminders.Select(r => new ReminderListDto(r.Id, r.ActivityId, r.RemindAt, r.IsSent)).ToList();
+        return ApiResponse<IReadOnlyList<ReminderListDto>>.Ok(
+            reminders.Select(r => new ReminderListDto(r.Id, r.ActivityId, r.RemindAt, r.IsSent)).ToList());
     }
 
-    public async Task<ReminderDetailDto?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
+    public async Task<ApiResponse<ReminderDetailDto>> GetByIdAsync(int id, CancellationToken cancellationToken = default)
     {
         var reminder = await _repository.GetByIdAsync(id, cancellationToken);
-        return reminder is null ? null : ToDetailDto(reminder);
+        return reminder is null
+            ? ApiResponse<ReminderDetailDto>.NotFound(NotFoundMessage(id))
+            : ApiResponse<ReminderDetailDto>.Ok(ToDetailDto(reminder));
     }
 
     public async Task<ApiResponse<ReminderDetailDto>> CreateAsync(ReminderCreateDto dto, CancellationToken cancellationToken = default)
@@ -59,15 +62,15 @@ public class ReminderService
         await _repository.AddAsync(reminder, cancellationToken);
 
         var created = await _repository.GetByIdAsync(reminder.Id, cancellationToken);
-        return ApiResponse<ReminderDetailDto>.Ok(ToDetailDto(created!), "Reminder oluşturuldu.");
+        return ApiResponse<ReminderDetailDto>.Created(ToDetailDto(created!), "Reminder oluşturuldu.");
     }
 
-    public async Task<ApiResponse<ReminderDetailDto>?> UpdateAsync(int id, ReminderUpdateDto dto, CancellationToken cancellationToken = default)
+    public async Task<ApiResponse<ReminderDetailDto>> UpdateAsync(int id, ReminderUpdateDto dto, CancellationToken cancellationToken = default)
     {
         var reminder = await _repository.GetByIdAsync(id, cancellationToken);
         if (reminder is null)
         {
-            return null;
+            return ApiResponse<ReminderDetailDto>.NotFound(NotFoundMessage(id));
         }
 
         var result = await _updateValidator.ValidateAsync(dto, cancellationToken);
@@ -86,16 +89,18 @@ public class ReminderService
         return ApiResponse<ReminderDetailDto>.Ok(ToDetailDto(updated!), "Reminder güncellendi.");
     }
 
-    public async Task<bool> DeleteAsync(int id, CancellationToken cancellationToken = default)
+    public async Task<ApiResponse<bool>> DeleteAsync(int id, CancellationToken cancellationToken = default)
     {
         if (await _repository.GetByIdAsync(id, cancellationToken) is null)
         {
-            return false;
+            return ApiResponse<bool>.NotFound(NotFoundMessage(id));
         }
 
         await _repository.DeleteAsync(id, cancellationToken);
-        return true;
+        return ApiResponse<bool>.Ok(true, "Reminder silindi.");
     }
+
+    private static string NotFoundMessage(int id) => $"Reminder {id} bulunamadı.";
 
     private static ReminderDetailDto ToDetailDto(Reminder r) => new(
         r.Id, r.ActivityId, r.Activity.Title, r.RemindAt, r.IsSent, r.SentAt, r.Note, r.CreatedAt);

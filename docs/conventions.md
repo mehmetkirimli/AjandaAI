@@ -15,6 +15,54 @@ Tüm controller'lar ApiResponse<T> döner:
   Success (bool), Data (T), Message (string), Errors (List<string>)
 Ham entity dönmek YASAK. Her zaman DTO döner.
 
+### ApiResponse<T> + ResultType
+ApiResponse<T> ayrıca bir ResultType taşır (Application/Common/ResultType.cs).
+ResultType [JsonIgnore]'dur, JSON'a yazılmaz; yalnızca iç kullanım içindir.
+Servisler sonucu yardımcılarla üretir:
+
+| Yardımcı                  | ResultType      | HTTP |
+|---------------------------|-----------------|------|
+| Ok(data, message)         | Success         | 200  |
+| Created(data, message)    | Created         | 201  |
+| NoContent(message)        | NoContent       | 204  |
+| Fail(message, errors)     | ValidationError | 400  |
+| NotFound(message)         | NotFound        | 404  |
+| Conflict(message)         | Conflict        | 409  |
+| Error(message, errors)    | Error           | 500  |
+
+Servis kuralları:
+- Kayıt bulunamadı → NotFound (null DÖNÜLMEZ)
+- Validator hatası → Fail
+- POST başarılı → Created
+- DELETE başarılı (soft/hard) → Ok
+
+### Controller'lar ActionResult KULLANMAZ
+Dönüş tipi Task<ApiResponse<T>>'dir. Controller yalnızca servisi çağırır ve
+sonucu döner; Ok(), NotFound(), BadRequest(), StatusCode() gibi çağrılar ve
+status kodu hesaplaması YAPILMAZ. Swagger için [ProducesResponseType] eklenir.
+
+### Status kodu tek kaynaktan belirlenir
+HTTP status kodunu Api/Filters/ApiResponseFilter.cs (IAsyncResultFilter),
+ResultType'a bakarak belirler. Status kodu response body'ye YAZILMAZ
+(tek kaynak ilkesi: status yalnızca HTTP katmanında yaşar).
+NoContent'te 204 gövde taşıyamadığı için filter gövdesiz sonuç döner.
+
+### Exception'lar
+Servisler exception FIRLATMAZ; beklenen hatalar ResultType ile döner.
+Beklenmeyen exception'ları Api/Middleware/ExceptionHandlingMiddleware.cs
+yakalar ve ApiResponse.Error("Beklenmeyen bir hata oluştu.") ile 500 döner.
+Exception mesajı ve stack trace YALNIZCA Development ortamında errors'a
+eklenir; Production'da ham hata sızdırılmaz.
+
+## Hata Mesajları
+Hata mesajları iç tip adı, namespace, stack trace veya dosya yolu
+İÇERMEZ. Bu detaylar sadece Development ortamında gösterilir.
+Kullanıcıya dönen mesajlar Türkçe ve anlaşılır olmalıdır.
+
+Uygulama: ExceptionHandlingMiddleware (exception detayı) ve Program.cs'teki
+InvalidModelStateResponseFactory (model-binding hataları: "{alan} alanı geçersiz."
+veya "Geçersiz istek gövdesi.") bu kurala göre ortam kontrolü yapar.
+
 ## Modül Deseni — ÇAKIŞMA ÖNLEME
 Servis kayıtları Program.cs'e veya ortak DependencyInjection.cs'e YAZILMAZ.
 

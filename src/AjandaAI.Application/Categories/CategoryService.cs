@@ -1,7 +1,7 @@
 // Category okuma ve yazma senaryolarını yöneten uygulama servisidir.
 // Liste yalnızca aktifleri döner; Id ile sorgu pasif kaydı da döner.
 // Silme gerçek silme değildir: IsActive = false yapılır (lookup table).
-// Yazma metodları kayıt yoksa null döner; controller bunu 404'e çevirir.
+// Kayıt yoksa ApiResponse.NotFound döner; HTTP status kodunu ApiResponseFilter belirler.
 
 using AjandaAI.Application.Categories.Dtos;
 using AjandaAI.Application.Categories.Validators;
@@ -27,16 +27,16 @@ public class CategoryService
         _updateValidator = updateValidator;
     }
 
-    public async Task<IReadOnlyList<CategoryListDto>> GetAllAsync(CancellationToken cancellationToken = default)
+    public async Task<ApiResponse<IReadOnlyList<CategoryListDto>>> GetAllAsync(CancellationToken cancellationToken = default)
     {
         var categories = await _repository.GetActiveAsync(cancellationToken);
-        return categories.Select(ToDto).ToList();
+        return ApiResponse<IReadOnlyList<CategoryListDto>>.Ok(categories.Select(ToDto).ToList());
     }
 
-    public async Task<CategoryListDto?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
+    public async Task<ApiResponse<CategoryListDto>> GetByIdAsync(int id, CancellationToken cancellationToken = default)
     {
         var category = await _repository.GetByIdAsync(id, cancellationToken);
-        return category is null ? null : ToDto(category);
+        return category is null ? NotFound(id) : ApiResponse<CategoryListDto>.Ok(ToDto(category));
     }
 
     public async Task<ApiResponse<CategoryListDto>> CreateAsync(CategoryCreateDto dto, CancellationToken cancellationToken = default)
@@ -53,14 +53,14 @@ public class CategoryService
             CreatedAt = DateTimeOffset.UtcNow
         };
         await _repository.AddAsync(category, cancellationToken);
-        return ApiResponse<CategoryListDto>.Ok(ToDto(category), "Kategori oluşturuldu.");
+        return ApiResponse<CategoryListDto>.Created(ToDto(category), "Kategori oluşturuldu.");
     }
 
-    public async Task<ApiResponse<CategoryListDto>?> UpdateAsync(int id, CategoryUpdateDto dto, CancellationToken cancellationToken = default)
+    public async Task<ApiResponse<CategoryListDto>> UpdateAsync(int id, CategoryUpdateDto dto, CancellationToken cancellationToken = default)
     {
         var category = await _repository.GetByIdAsync(id, cancellationToken);
         if (category is null)
-            return null;
+            return NotFound(id);
 
         var context = new ValidationContext<CategoryUpdateDto>(dto);
         context.RootContextData[CategoryUpdateDtoValidator.IdKey] = id;
@@ -75,11 +75,11 @@ public class CategoryService
         return ApiResponse<CategoryListDto>.Ok(ToDto(category), "Kategori güncellendi.");
     }
 
-    public async Task<ApiResponse<CategoryListDto>?> DeactivateAsync(int id, CancellationToken cancellationToken = default)
+    public async Task<ApiResponse<CategoryListDto>> DeactivateAsync(int id, CancellationToken cancellationToken = default)
     {
         var category = await _repository.GetByIdAsync(id, cancellationToken);
         if (category is null)
-            return null;
+            return NotFound(id);
 
         if (category.IsActive)
         {
@@ -88,6 +88,9 @@ public class CategoryService
         }
         return ApiResponse<CategoryListDto>.Ok(ToDto(category), "Kategori pasife alındı.");
     }
+
+    private static ApiResponse<CategoryListDto> NotFound(int id) =>
+        ApiResponse<CategoryListDto>.NotFound($"Category {id} bulunamadı.");
 
     private static CategoryListDto ToDto(Category c) => new(c.Id, c.Name, c.IsActive);
 }

@@ -1,6 +1,7 @@
 // UserService okuma ve yazma senaryolarının birim testleridir.
 // Repository bellek içi bir fake ile değiştirilir; validator'lar gerçek sınıflardır.
 
+using AjandaAI.Application.Common;
 using AjandaAI.Application.Users;
 using AjandaAI.Application.Users.Dtos;
 using AjandaAI.Application.Users.Validators;
@@ -54,7 +55,7 @@ public class UserServiceTests
     [Fact]
     public async Task GetAllAsync_ReturnsOnlyActiveUsers()
     {
-        var result = await Create().Service.GetAllAsync();
+        var result = (await Create().Service.GetAllAsync()).Data!;
 
         Assert.Equal(new[] { 1, 2 }, result.Select(u => u.Id));
     }
@@ -62,7 +63,7 @@ public class UserServiceTests
     [Fact]
     public async Task GetByIdAsync_InactiveUser_IsReturned()
     {
-        var result = await Create().Service.GetByIdAsync(3);
+        var result = (await Create().Service.GetByIdAsync(3)).Data;
 
         Assert.NotNull(result);
         Assert.False(result!.IsActive);
@@ -71,7 +72,7 @@ public class UserServiceTests
     [Fact]
     public async Task GetByIdAsync_Missing_ReturnsNull()
     {
-        Assert.Null(await Create().Service.GetByIdAsync(99));
+        Assert.Equal(ResultType.NotFound, (await Create().Service.GetByIdAsync(99)).ResultType);
     }
 
     [Fact]
@@ -125,7 +126,7 @@ public class UserServiceTests
     [Fact]
     public async Task UpdateAsync_Missing_ReturnsNull()
     {
-        Assert.Null(await Create().Service.UpdateAsync(99, new UserUpdateDto("x@example.com", "X", ValidTz)));
+        Assert.Equal(ResultType.NotFound, (await Create().Service.UpdateAsync(99, new UserUpdateDto("x@example.com", "X", ValidTz))).ResultType);
     }
 
     [Fact]
@@ -142,6 +143,6 @@ public class UserServiceTests
     [Fact]
     public async Task DeleteAsync_Missing_ReturnsNull()
     {
-        Assert.Null(await Create().Service.DeleteAsync(99));
+        Assert.Equal(ResultType.NotFound, (await Create().Service.DeleteAsync(99)).ResultType);
     }
 }

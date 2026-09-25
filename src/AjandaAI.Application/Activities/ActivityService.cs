@@ -26,16 +26,18 @@ public class ActivityService
         _updateValidator = updateValidator;
     }
 
-    public async Task<IReadOnlyList<ActivityListDto>> GetAllAsync(CancellationToken cancellationToken = default)
+    public async Task<ApiResponse<IReadOnlyList<ActivityListDto>>> GetAllAsync(CancellationToken cancellationToken = default)
     {
         var activities = await _repository.GetActiveAsync(cancellationToken);
-        return activities.Select(ToListDto).ToList();
+        return ApiResponse<IReadOnlyList<ActivityListDto>>.Ok(activities.Select(ToListDto).ToList());
     }
 
-    public async Task<ActivityDetailDto?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
+    public async Task<ApiResponse<ActivityDetailDto>> GetByIdAsync(int id, CancellationToken cancellationToken = default)
     {
         var activity = await _repository.GetByIdAsync(id, cancellationToken);
-        return activity is null ? null : ToDetailDto(activity);
+        return activity is null
+            ? ApiResponse<ActivityDetailDto>.NotFound(NotFoundMessage(id))
+            : ApiResponse<ActivityDetailDto>.Ok(ToDetailDto(activity));
     }
 
     public async Task<ApiResponse<ActivityDetailDto>> CreateAsync(ActivityCreateDto dto, CancellationToken cancellationToken = default)
@@ -58,16 +60,15 @@ public class ActivityService
             dto.Start, dto.End, dto.IsAllDay, dto.Location, dto.IsFlexible, dto.EstimatedBudget, dto.Rating, dto.WouldRepeat);
 
         await _repository.AddAsync(activity, cancellationToken);
-        return ApiResponse<ActivityDetailDto>.Ok(ToDetailDto(activity), "Aktivite oluşturuldu.");
+        return ApiResponse<ActivityDetailDto>.Created(ToDetailDto(activity), "Aktivite oluşturuldu.");
     }
 
-    /// <summary>Kayıt yoksa null döner (controller 404'e çevirir).</summary>
-    public async Task<ApiResponse<ActivityDetailDto>?> UpdateAsync(int id, ActivityUpdateDto dto, CancellationToken cancellationToken = default)
+    public async Task<ApiResponse<ActivityDetailDto>> UpdateAsync(int id, ActivityUpdateDto dto, CancellationToken cancellationToken = default)
     {
         var activity = await _repository.GetByIdAsync(id, cancellationToken);
         if (activity is null)
         {
-            return null;
+            return ApiResponse<ActivityDetailDto>.NotFound(NotFoundMessage(id));
         }
 
         var result = await _updateValidator.ValidateAsync(dto, cancellationToken);
@@ -85,13 +86,12 @@ public class ActivityService
         return ApiResponse<ActivityDetailDto>.Ok(ToDetailDto(activity), "Aktivite güncellendi.");
     }
 
-    /// <summary>Kayıt yoksa false döner.</summary>
-    public async Task<bool> DeleteAsync(int id, CancellationToken cancellationToken = default)
+    public async Task<ApiResponse<bool>> DeleteAsync(int id, CancellationToken cancellationToken = default)
     {
         var activity = await _repository.GetByIdAsync(id, cancellationToken);
         if (activity is null)
         {
-            return false;
+            return ApiResponse<bool>.NotFound(NotFoundMessage(id));
         }
 
         if (activity.IsActive)
@@ -100,8 +100,10 @@ public class ActivityService
             activity.UpdatedAt = DateTimeOffset.UtcNow;
             await _repository.UpdateAsync(activity, cancellationToken);
         }
-        return true;
+        return ApiResponse<bool>.Ok(true, "Aktivite silindi.");
     }
+
+    private static string NotFoundMessage(int id) => $"Activity {id} bulunamadı.";
 
     private static void Apply(
         Activity a, int categoryId, string title, string description,

@@ -2,6 +2,7 @@
 // Repository'ler bellek içi fake'lerle, saat sabit bir TimeProvider ile değiştirilir.
 // Validator'lar gerçek sınıflardır (ilişkisel kurallar da test edilir).
 
+using AjandaAI.Application.Common;
 using AjandaAI.Application.Activities;
 using AjandaAI.Application.Reminders;
 using AjandaAI.Application.Reminders.Dtos;
@@ -112,7 +113,7 @@ public class ReminderServiceTests
     [Fact]
     public async Task GetAllAsync_ReturnsAllMapped()
     {
-        var result = await _service.GetAllAsync();
+        var result = (await _service.GetAllAsync()).Data!;
 
         Assert.Equal(new[] { 1, 2 }, result.Select(r => r.Id));
         Assert.True(result[1].IsSent);
@@ -121,7 +122,7 @@ public class ReminderServiceTests
     [Fact]
     public async Task GetByIdAsync_Existing_IncludesActivityTitle()
     {
-        var result = await _service.GetByIdAsync(1);
+        var result = (await _service.GetByIdAsync(1)).Data;
 
         Assert.NotNull(result);
         Assert.Equal("Koşu", result!.ActivityTitle);
@@ -132,7 +133,7 @@ public class ReminderServiceTests
     [Fact]
     public async Task GetByIdAsync_Missing_ReturnsNull()
     {
-        Assert.Null(await _service.GetByIdAsync(99));
+        Assert.Equal(ResultType.NotFound, (await _service.GetByIdAsync(99)).ResultType);
     }
 
     [Fact]
@@ -208,14 +209,14 @@ public class ReminderServiceTests
     [Fact]
     public async Task UpdateAsync_Missing_ReturnsNull()
     {
-        Assert.Null(await _service.UpdateAsync(99, new ReminderUpdateDto(10, Now.AddHours(1), null)));
+        Assert.Equal(ResultType.NotFound, (await _service.UpdateAsync(99, new ReminderUpdateDto(10, Now.AddHours(1), null))).ResultType);
     }
 
     [Fact]
     public async Task DeleteAsync_ExistingAndMissing()
     {
-        Assert.True(await _service.DeleteAsync(1));
-        Assert.False(await _service.DeleteAsync(1));
+        Assert.True((await _service.DeleteAsync(1)).Success);
+        Assert.Equal(ResultType.NotFound, (await _service.DeleteAsync(1)).ResultType);
         Assert.Single(_reminders.Items);
     }
 }

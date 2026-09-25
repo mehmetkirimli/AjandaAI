@@ -1,6 +1,6 @@
 // User okuma ve yazma senaryolarını yöneten uygulama servisidir.
 // Doğrulama validator'larla elle yapılır; hata ApiResponse.Fail olarak döner.
-// Update/Delete kayıt yoksa null döner; controller bunu 404'e çevirir.
+// Kayıt yoksa ApiResponse.NotFound döner; HTTP status kodunu ApiResponseFilter belirler.
 // Liste yalnızca aktifleri döner; Delete gerçek silme yapmaz, IsActive = false yapar.
 
 using AjandaAI.Application.Common;
@@ -27,16 +27,19 @@ public class UserService
         _updateValidator = updateValidator;
     }
 
-    public async Task<IReadOnlyList<UserListDto>> GetAllAsync(CancellationToken cancellationToken = default)
+    public async Task<ApiResponse<IReadOnlyList<UserListDto>>> GetAllAsync(CancellationToken cancellationToken = default)
     {
         var users = await _repository.GetActiveAsync(cancellationToken);
-        return users.Select(u => new UserListDto(u.Id, u.Email, u.DisplayName)).ToList();
+        return ApiResponse<IReadOnlyList<UserListDto>>.Ok(
+            users.Select(u => new UserListDto(u.Id, u.Email, u.DisplayName)).ToList());
     }
 
-    public async Task<UserDetailDto?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
+    public async Task<ApiResponse<UserDetailDto>> GetByIdAsync(int id, CancellationToken cancellationToken = default)
     {
         var user = await _repository.GetByIdAsync(id, cancellationToken);
-        return user is null ? null : ToDetail(user);
+        return user is null
+            ? ApiResponse<UserDetailDto>.NotFound(NotFoundMessage(id))
+            : ApiResponse<UserDetailDto>.Ok(ToDetail(user));
     }
 
     public async Task<ApiResponse<UserDetailDto>> CreateAsync(UserCreateDto dto, CancellationToken cancellationToken = default)
@@ -56,14 +59,14 @@ public class UserService
             UpdatedAt = now
         };
         await _repository.AddAsync(user, cancellationToken);
-        return ApiResponse<UserDetailDto>.Ok(ToDetail(user), "Kullanıcı oluşturuldu.");
+        return ApiResponse<UserDetailDto>.Created(ToDetail(user), "Kullanıcı oluşturuldu.");
     }
 
-    public async Task<ApiResponse<UserDetailDto>?> UpdateAsync(int id, UserUpdateDto dto, CancellationToken cancellationToken = default)
+    public async Task<ApiResponse<UserDetailDto>> UpdateAsync(int id, UserUpdateDto dto, CancellationToken cancellationToken = default)
     {
         var user = await _repository.GetByIdAsync(id, cancellationToken);
         if (user is null)
-            return null;
+            return ApiResponse<UserDetailDto>.NotFound(NotFoundMessage(id));
 
         var context = new ValidationContext<UserUpdateDto>(dto);
         context.RootContextData[UserUpdateDtoValidator.IdKey] = id;
@@ -80,11 +83,11 @@ public class UserService
         return ApiResponse<UserDetailDto>.Ok(ToDetail(user), "Kullanıcı güncellendi.");
     }
 
-    public async Task<ApiResponse<bool>?> DeleteAsync(int id, CancellationToken cancellationToken = default)
+    public async Task<ApiResponse<bool>> DeleteAsync(int id, CancellationToken cancellationToken = default)
     {
         var user = await _repository.GetByIdAsync(id, cancellationToken);
         if (user is null)
-            return null;
+            return ApiResponse<bool>.NotFound(NotFoundMessage(id));
 
         if (user.IsActive)
         {
@@ -94,6 +97,8 @@ public class UserService
         }
         return ApiResponse<bool>.Ok(true, "Kullanıcı pasife alındı.");
     }
+
+    private static string NotFoundMessage(int id) => $"User {id} bulunamadı.";
 
     private static UserDetailDto ToDetail(User u) =>
         new(u.Id, u.Email, u.DisplayName, u.TimeZoneId, u.IsActive, u.CreatedAt, u.UpdatedAt);
