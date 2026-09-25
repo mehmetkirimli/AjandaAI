@@ -27,10 +27,10 @@ public class CategoryService
         _updateValidator = updateValidator;
     }
 
-    public async Task<ApiResponse<IReadOnlyList<CategoryListDto>>> GetAllAsync(CancellationToken cancellationToken = default)
+    public async Task<ApiResponse<PagedResult<CategoryListDto>>> GetAllAsync(CategoryFilterDto filter, CancellationToken cancellationToken = default)
     {
-        var categories = await _repository.GetActiveAsync(cancellationToken);
-        return ApiResponse<IReadOnlyList<CategoryListDto>>.Ok(categories.Select(ToDto).ToList());
+        var page = await _repository.GetPagedAsync(filter, cancellationToken);
+        return ApiResponse<PagedResult<CategoryListDto>>.Ok(page.Map(ToDto));
     }
 
     public async Task<ApiResponse<CategoryListDto>> GetByIdAsync(int id, CancellationToken cancellationToken = default)

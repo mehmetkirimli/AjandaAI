@@ -3,6 +3,8 @@
 // Update yalnızca skaler alanları kopyalar (navigation graph'i takibe alınmaz).
 
 using AjandaAI.Application.Reminders;
+using AjandaAI.Application.Reminders.Dtos;
+using AjandaAI.Application.Common;
 using AjandaAI.Domain.Entities;
 using AjandaAI.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
@@ -18,13 +20,20 @@ public class ReminderRepository : IReminderRepository
         _context = context;
     }
 
-    public async Task<IReadOnlyList<Reminder>> GetAllAsync(CancellationToken cancellationToken = default)
+    public async Task<PagedResult<Reminder>> GetPagedAsync(ReminderFilterDto filter, CancellationToken cancellationToken = default)
     {
-        return await _context.Reminders
-            .AsNoTracking()
+        var query = _context.Reminders.AsNoTracking();
+        if (filter.ActivityId.HasValue) query = query.Where(r => r.ActivityId == filter.ActivityId.Value);
+        if (filter.IsSent.HasValue) query = query.Where(r => r.IsSent == filter.IsSent.Value);
+
+        var totalCount = await query.CountAsync(cancellationToken);
+        var items = await query
             .OrderBy(r => r.RemindAt)
             .ThenBy(r => r.Id)
+            .Skip(filter.Skip)
+            .Take(filter.PageSize)
             .ToListAsync(cancellationToken);
+        return new PagedResult<Reminder>(items, totalCount, filter.Page, filter.PageSize);
     }
 
     public Task<Reminder?> GetByIdAsync(int id, CancellationToken cancellationToken = default)

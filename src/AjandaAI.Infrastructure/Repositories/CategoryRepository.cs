@@ -3,6 +3,8 @@
 // Delete yoktur: kategori UpdateAsync ile pasife alınır.
 
 using AjandaAI.Application.Categories;
+using AjandaAI.Application.Categories.Dtos;
+using AjandaAI.Application.Common;
 using AjandaAI.Domain.Entities;
 using AjandaAI.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
@@ -18,13 +20,17 @@ public class CategoryRepository : ICategoryRepository
         _context = context;
     }
 
-    public async Task<IReadOnlyList<Category>> GetActiveAsync(CancellationToken cancellationToken = default)
+    public async Task<PagedResult<Category>> GetPagedAsync(CategoryFilterDto filter, CancellationToken cancellationToken = default)
     {
-        return await _context.Categories
-            .AsNoTracking()
-            .Where(c => c.IsActive)
+        var query = _context.Categories.AsNoTracking().Where(c => c.IsActive);
+
+        var totalCount = await query.CountAsync(cancellationToken);
+        var items = await query
             .OrderBy(c => c.Id)
+            .Skip(filter.Skip)
+            .Take(filter.PageSize)
             .ToListAsync(cancellationToken);
+        return new PagedResult<Category>(items, totalCount, filter.Page, filter.PageSize);
     }
 
     public Task<Category?> GetByIdAsync(int id, CancellationToken cancellationToken = default)

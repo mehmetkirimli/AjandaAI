@@ -116,8 +116,8 @@ public class UsersEndpointTests : IntegrationTestBase
         var inactiveId = await CreateUserAsync();
         await Client.DeleteAsync($"/api/users/{inactiveId}");
 
-        var ids = (await ReadDataAsync(await Client.GetAsync("/api/users")))
-            .EnumerateArray().Select(u => u.GetProperty("id").GetInt32()).ToList();
+        var ids = (await ReadDataAsync(await Client.GetAsync("/api/users?pageSize=100")))
+            .GetProperty("items").EnumerateArray().Select(u => u.GetProperty("id").GetInt32()).ToList();
 
         Assert.Contains(activeId, ids);
         Assert.DoesNotContain(inactiveId, ids);

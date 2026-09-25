@@ -4,6 +4,7 @@
 
 using AjandaAI.Application.Common;
 using AjandaAI.Application.Activities;
+using AjandaAI.Application.Activities.Dtos;
 using AjandaAI.Application.Reminders;
 using AjandaAI.Application.Reminders.Dtos;
 using AjandaAI.Application.Reminders.Validators;
@@ -26,8 +27,11 @@ public class ReminderServiceTests
 
         public IReadOnlyList<Reminder> Items => _items;
 
-        public Task<IReadOnlyList<Reminder>> GetAllAsync(CancellationToken cancellationToken = default) =>
-            Task.FromResult<IReadOnlyList<Reminder>>(_items.ToList());
+        public Task<PagedResult<Reminder>> GetPagedAsync(ReminderFilterDto filter, CancellationToken cancellationToken = default)
+        {
+            var all = _items.ToList();
+            return Task.FromResult(new PagedResult<Reminder>(all.Skip(filter.Skip).Take(filter.PageSize).ToList(), all.Count, filter.Page, filter.PageSize));
+        }
 
         public Task<Reminder?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
         {
@@ -62,8 +66,11 @@ public class ReminderServiceTests
 
         public FakeActivityRepository(List<Activity> items) => _items = items;
 
-        public Task<IReadOnlyList<Activity>> GetActiveAsync(CancellationToken cancellationToken = default) =>
-            Task.FromResult<IReadOnlyList<Activity>>(_items.Where(a => a.IsActive).ToList());
+        public Task<PagedResult<Activity>> GetPagedAsync(ActivityFilterDto filter, CancellationToken cancellationToken = default)
+        {
+            var all = _items.Where(a => a.IsActive).ToList();
+            return Task.FromResult(new PagedResult<Activity>(all.Skip(filter.Skip).Take(filter.PageSize).ToList(), all.Count, filter.Page, filter.PageSize));
+        }
 
         public Task<Activity?> GetByIdAsync(int id, CancellationToken cancellationToken = default) =>
             Task.FromResult(_items.FirstOrDefault(a => a.Id == id));
@@ -113,7 +120,7 @@ public class ReminderServiceTests
     [Fact]
     public async Task GetAllAsync_ReturnsAllMapped()
     {
-        var result = (await _service.GetAllAsync()).Data!;
+        var result = (await _service.GetAllAsync(new ReminderFilterDto())).Data!.Items;
 
         Assert.Equal(new[] { 1, 2 }, result.Select(r => r.Id));
         Assert.True(result[1].IsSent);

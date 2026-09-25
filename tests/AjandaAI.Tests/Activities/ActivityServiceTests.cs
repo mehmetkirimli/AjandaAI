@@ -6,7 +6,9 @@ using AjandaAI.Application.Activities;
 using AjandaAI.Application.Activities.Dtos;
 using AjandaAI.Application.Activities.Validators;
 using AjandaAI.Application.Categories;
+using AjandaAI.Application.Categories.Dtos;
 using AjandaAI.Application.Users;
+using AjandaAI.Application.Users.Dtos;
 using AjandaAI.Domain.Entities;
 using AjandaAI.Domain.Enums;
 
@@ -20,8 +22,11 @@ public class ActivityServiceTests
 
         public FakeActivityRepository(params Activity[] items) => _items = items.ToList();
 
-        public Task<IReadOnlyList<Activity>> GetActiveAsync(CancellationToken cancellationToken = default) =>
-            Task.FromResult<IReadOnlyList<Activity>>(_items.Where(a => a.IsActive).ToList());
+        public Task<PagedResult<Activity>> GetPagedAsync(ActivityFilterDto filter, CancellationToken cancellationToken = default)
+        {
+            var all = _items.Where(a => a.IsActive).ToList();
+            return Task.FromResult(new PagedResult<Activity>(all.Skip(filter.Skip).Take(filter.PageSize).ToList(), all.Count, filter.Page, filter.PageSize));
+        }
 
         public Task<Activity?> GetByIdAsync(int id, CancellationToken cancellationToken = default) =>
             Task.FromResult(_items.FirstOrDefault(a => a.Id == id));
@@ -48,8 +53,11 @@ public class ActivityServiceTests
             new Category { Id = 9, Name = "Eski", IsActive = false }
         };
 
-        public Task<IReadOnlyList<Category>> GetActiveAsync(CancellationToken cancellationToken = default) =>
-            Task.FromResult<IReadOnlyList<Category>>(_items.Where(c => c.IsActive).ToList());
+        public Task<PagedResult<Category>> GetPagedAsync(CategoryFilterDto filter, CancellationToken cancellationToken = default)
+        {
+            var all = _items.Where(c => c.IsActive).ToList();
+            return Task.FromResult(new PagedResult<Category>(all.Skip(filter.Skip).Take(filter.PageSize).ToList(), all.Count, filter.Page, filter.PageSize));
+        }
 
         public Task<Category?> GetByIdAsync(int id, CancellationToken cancellationToken = default) =>
             Task.FromResult(_items.FirstOrDefault(c => c.Id == id));
@@ -69,8 +77,11 @@ public class ActivityServiceTests
     {
         private readonly List<User> _items = new() { new User { Id = 7 }, new User { Id = 8, IsActive = false } };
 
-        public Task<IReadOnlyList<User>> GetActiveAsync(CancellationToken cancellationToken = default) =>
-            Task.FromResult<IReadOnlyList<User>>(_items.Where(u => u.IsActive).ToList());
+        public Task<PagedResult<User>> GetPagedAsync(UserFilterDto filter, CancellationToken cancellationToken = default)
+        {
+            var all = _items.Where(u => u.IsActive).ToList();
+            return Task.FromResult(new PagedResult<User>(all.Skip(filter.Skip).Take(filter.PageSize).ToList(), all.Count, filter.Page, filter.PageSize));
+        }
 
         public Task<User?> GetByIdAsync(int id, CancellationToken cancellationToken = default) =>
             Task.FromResult(_items.FirstOrDefault(u => u.Id == id));
@@ -94,7 +105,8 @@ public class ActivityServiceTests
         return new ActivityService(
             CreateRepository(),
             new ActivityCreateDtoValidator(categories, new FakeUserRepository()),
-            new ActivityUpdateDtoValidator(categories));
+            new ActivityUpdateDtoValidator(categories),
+            new ActivityFilterDtoValidator());
     }
 
     private static FakeActivityRepository CreateRepository() => new(
@@ -126,7 +138,7 @@ public class ActivityServiceTests
     [Fact]
     public async Task GetAllAsync_ReturnsAllMappedDtos()
     {
-        var result = (await CreateService().GetAllAsync()).Data!;
+        var result = (await CreateService().GetAllAsync(new ActivityFilterDto())).Data!.Items;
 
         Assert.Equal(new[] { 1, 2 }, result.Select(a => a.Id));
         Assert.Equal("Koşu", result[0].Title);
@@ -253,7 +265,7 @@ public class ActivityServiceTests
         var detail = (await service.GetByIdAsync(1)).Data;
         Assert.NotNull(detail);
         Assert.False(detail!.IsActive);
-        Assert.DoesNotContain((await service.GetAllAsync()).Data!, a => a.Id == 1);
+        Assert.DoesNotContain((await service.GetAllAsync(new ActivityFilterDto())).Data!.Items, a => a.Id == 1);
     }
 
     [Fact]

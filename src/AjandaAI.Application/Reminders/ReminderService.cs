@@ -28,11 +28,10 @@ public class ReminderService
         _timeProvider = timeProvider;
     }
 
-    public async Task<ApiResponse<IReadOnlyList<ReminderListDto>>> GetAllAsync(CancellationToken cancellationToken = default)
+    public async Task<ApiResponse<PagedResult<ReminderListDto>>> GetAllAsync(ReminderFilterDto filter, CancellationToken cancellationToken = default)
     {
-        var reminders = await _repository.GetAllAsync(cancellationToken);
-        return ApiResponse<IReadOnlyList<ReminderListDto>>.Ok(
-            reminders.Select(r => new ReminderListDto(r.Id, r.ActivityId, r.RemindAt, r.IsSent)).ToList());
+        var page = await _repository.GetPagedAsync(filter, cancellationToken);
+        return ApiResponse<PagedResult<ReminderListDto>>.Ok(page.Map(r => new ReminderListDto(r.Id, r.ActivityId, r.RemindAt, r.IsSent)));
     }
 
     public async Task<ApiResponse<ReminderDetailDto>> GetByIdAsync(int id, CancellationToken cancellationToken = default)

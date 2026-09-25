@@ -21,8 +21,8 @@ public class UsersController : ControllerBase
     }
 
     [HttpGet]
-    public Task<ApiResponse<IReadOnlyList<UserListDto>>> GetAllAsync(CancellationToken cancellationToken) =>
-        _service.GetAllAsync(cancellationToken);
+    public Task<ApiResponse<PagedResult<UserListDto>>> GetAllAsync([FromQuery] UserFilterDto filter, CancellationToken cancellationToken) =>
+        _service.GetAllAsync(filter, cancellationToken);
 
     [HttpGet("{id:int}")]
     public Task<ApiResponse<UserDetailDto>> GetByIdAsync(int id, CancellationToken cancellationToken) =>

@@ -21,8 +21,8 @@ public class CategoriesController : ControllerBase
     }
 
     [HttpGet]
-    public Task<ApiResponse<IReadOnlyList<CategoryListDto>>> GetAllAsync(CancellationToken cancellationToken) =>
-        _service.GetAllAsync(cancellationToken);
+    public Task<ApiResponse<PagedResult<CategoryListDto>>> GetAllAsync([FromQuery] CategoryFilterDto filter, CancellationToken cancellationToken) =>
+        _service.GetAllAsync(filter, cancellationToken);
 
     [HttpGet("{id:int}")]
     public Task<ApiResponse<CategoryListDto>> GetByIdAsync(int id, CancellationToken cancellationToken) =>

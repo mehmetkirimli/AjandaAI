@@ -144,3 +144,9 @@ Takım liderinin adresi "main"dir. Takım liderine bildirim, SendMessage ile
 ## Tasarım Kuralı
 Basit başla. Spekülatif soyutlama yasak.
 Rule of Three: aynı kod 3. kez tekrarlanmadan ortak yapıya çıkarma.
+
+## Sayfalama
+Tüm liste endpoint'leri PagedResult<T> döner.
+Varsayılan sayfa boyutu 20, maksimum 100'dür.
+Geçersiz sayfa parametreleri sessizce sınıra çekilir, hata dönülmez.
+Filtre parametreleri [FromQuery] ile alınır ve opsiyoneldir.

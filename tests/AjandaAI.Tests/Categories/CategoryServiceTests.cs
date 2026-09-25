@@ -17,8 +17,11 @@ public class CategoryServiceTests
 
         public FakeCategoryRepository(params Category[] items) => Items = items.ToList();
 
-        public Task<IReadOnlyList<Category>> GetActiveAsync(CancellationToken cancellationToken = default) =>
-            Task.FromResult<IReadOnlyList<Category>>(Items.Where(c => c.IsActive).ToList());
+        public Task<PagedResult<Category>> GetPagedAsync(CategoryFilterDto filter, CancellationToken cancellationToken = default)
+        {
+            var all = Items.Where(c => c.IsActive).ToList();
+            return Task.FromResult(new PagedResult<Category>(all.Skip(filter.Skip).Take(filter.PageSize).ToList(), all.Count, filter.Page, filter.PageSize));
+        }
 
         public Task<Category?> GetByIdAsync(int id, CancellationToken cancellationToken = default) =>
             Task.FromResult(Items.FirstOrDefault(c => c.Id == id));
@@ -57,7 +60,7 @@ public class CategoryServiceTests
     [Fact]
     public async Task GetAllAsync_ReturnsOnlyActiveCategories()
     {
-        var result = (await CreateService().GetAllAsync()).Data!;
+        var result = (await CreateService().GetAllAsync(new CategoryFilterDto())).Data!.Items;
 
         Assert.Equal(new[] { 1, 3 }, result.Select(c => c.Id));
         Assert.All(result, c => Assert.True(c.IsActive));

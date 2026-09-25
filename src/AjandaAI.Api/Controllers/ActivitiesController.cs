@@ -21,8 +21,8 @@ public class ActivitiesController : ControllerBase
     }
 
     [HttpGet]
-    public Task<ApiResponse<IReadOnlyList<ActivityListDto>>> GetAllAsync(CancellationToken cancellationToken) =>
-        _service.GetAllAsync(cancellationToken);
+    public Task<ApiResponse<PagedResult<ActivityListDto>>> GetAllAsync([FromQuery] ActivityFilterDto filter, CancellationToken cancellationToken) =>
+        _service.GetAllAsync(filter, cancellationToken);
 
     [HttpGet("{id:int}")]
     public Task<ApiResponse<ActivityDetailDto>> GetByIdAsync(int id, CancellationToken cancellationToken) =>

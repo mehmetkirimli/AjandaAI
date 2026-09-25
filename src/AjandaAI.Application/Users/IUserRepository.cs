@@ -3,13 +3,16 @@
 // Silme metodu yoktur: kullanıcı pasife alınır (IsActive = false, UpdateAsync ile).
 // Implementasyonu Infrastructure/Repositories/UserRepository.cs içindedir.
 
+using AjandaAI.Application.Users.Dtos;
+using AjandaAI.Application.Common;
 using AjandaAI.Domain.Entities;
 
 namespace AjandaAI.Application.Users;
 
 public interface IUserRepository
 {
-    Task<IReadOnlyList<User>> GetActiveAsync(CancellationToken cancellationToken = default);
+    /// <summary>Aktif kayıtları filtreleyip sayfalar (önce count, sonra Skip/Take).</summary>
+    Task<PagedResult<User>> GetPagedAsync(UserFilterDto filter, CancellationToken cancellationToken = default);
 
     Task<User?> GetByIdAsync(int id, CancellationToken cancellationToken = default);
 

@@ -1,7 +1,7 @@
 // Activity okuma ve yazma senaryolarını yöneten uygulama servisidir.
 // Girdiyi validator ile doğrular (ilişkisel kontroller validator'dadır, burada tekrarlanmaz).
 // Entity'leri DTO'ya çevirir; enum alanları string olarak döner.
-// Liste yalnızca aktifleri döner; Delete gerçek silme yapmaz, IsActive = false yapar.
+// Liste yalnızca aktifleri filtreli ve sayfalı döner; Delete gerçek silme yapmaz, IsActive = false yapar.
 
 using AjandaAI.Application.Activities.Dtos;
 using AjandaAI.Application.Common;
@@ -15,21 +15,31 @@ public class ActivityService
     private readonly IActivityRepository _repository;
     private readonly IValidator<ActivityCreateDto> _createValidator;
     private readonly IValidator<ActivityUpdateDto> _updateValidator;
+    private readonly IValidator<ActivityFilterDto> _filterValidator;
 
     public ActivityService(
         IActivityRepository repository,
         IValidator<ActivityCreateDto> createValidator,
-        IValidator<ActivityUpdateDto> updateValidator)
+        IValidator<ActivityUpdateDto> updateValidator,
+        IValidator<ActivityFilterDto> filterValidator)
     {
         _repository = repository;
         _createValidator = createValidator;
         _updateValidator = updateValidator;
+        _filterValidator = filterValidator;
     }
 
-    public async Task<ApiResponse<IReadOnlyList<ActivityListDto>>> GetAllAsync(CancellationToken cancellationToken = default)
+    public async Task<ApiResponse<PagedResult<ActivityListDto>>> GetAllAsync(ActivityFilterDto filter, CancellationToken cancellationToken = default)
     {
-        var activities = await _repository.GetActiveAsync(cancellationToken);
-        return ApiResponse<IReadOnlyList<ActivityListDto>>.Ok(activities.Select(ToListDto).ToList());
+        var result = await _filterValidator.ValidateAsync(filter, cancellationToken);
+        if (!result.IsValid)
+        {
+            return ApiResponse<PagedResult<ActivityListDto>>.Fail("Doğrulama hatası.",
+                result.Errors.Select(e => e.ErrorMessage).ToList());
+        }
+
+        var page = await _repository.GetPagedAsync(filter, cancellationToken);
+        return ApiResponse<PagedResult<ActivityListDto>>.Ok(page.Map(ToListDto));
     }
 
     public async Task<ApiResponse<ActivityDetailDto>> GetByIdAsync(int id, CancellationToken cancellationToken = default)

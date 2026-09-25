@@ -2,6 +2,8 @@
 // Okuma sorguları AsNoTracking ile çalışır; yazma metodları kendi SaveChanges'ını yapar.
 
 using AjandaAI.Application.Users;
+using AjandaAI.Application.Users.Dtos;
+using AjandaAI.Application.Common;
 using AjandaAI.Domain.Entities;
 using AjandaAI.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
@@ -18,13 +20,23 @@ public class UserRepository : IUserRepository
         _context = context;
     }
 
-    public async Task<IReadOnlyList<User>> GetActiveAsync(CancellationToken cancellationToken = default)
+    public async Task<PagedResult<User>> GetPagedAsync(UserFilterDto filter, CancellationToken cancellationToken = default)
     {
-        return await _context.Users
-            .AsNoTracking()
-            .Where(u => u.IsActive)
-            .OrderBy(u => u.Id)
+        var query = _context.Users.AsNoTracking().Where(u => u.IsActive);
+        if (!string.IsNullOrWhiteSpace(filter.Search))
+        {
+            var search = filter.Search.Trim().ToLower();
+            query = query.Where(u => u.Email.ToLower().Contains(search) || u.DisplayName.ToLower().Contains(search));
+        }
+
+        var totalCount = await query.CountAsync(cancellationToken);
+        var items = await query
+            .OrderByDescending(u => u.CreatedAt)
+            .ThenByDescending(u => u.Id)
+            .Skip(filter.Skip)
+            .Take(filter.PageSize)
             .ToListAsync(cancellationToken);
+        return new PagedResult<User>(items, totalCount, filter.Page, filter.PageSize);
     }
 
     public Task<User?> GetByIdAsync(int id, CancellationToken cancellationToken = default)

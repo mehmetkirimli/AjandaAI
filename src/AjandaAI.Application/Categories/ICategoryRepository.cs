@@ -2,13 +2,16 @@
 // Silme metodu yoktur: kategori pasife alınır (IsActive = false, UpdateAsync ile).
 // Implementasyonu Infrastructure/Repositories/CategoryRepository.cs içindedir.
 
+using AjandaAI.Application.Categories.Dtos;
+using AjandaAI.Application.Common;
 using AjandaAI.Domain.Entities;
 
 namespace AjandaAI.Application.Categories;
 
 public interface ICategoryRepository
 {
-    Task<IReadOnlyList<Category>> GetActiveAsync(CancellationToken cancellationToken = default);
+    /// <summary>Aktif kayıtları sayfalar (önce count, sonra Skip/Take).</summary>
+    Task<PagedResult<Category>> GetPagedAsync(CategoryFilterDto filter, CancellationToken cancellationToken = default);
 
     Task<Category?> GetByIdAsync(int id, CancellationToken cancellationToken = default);
 

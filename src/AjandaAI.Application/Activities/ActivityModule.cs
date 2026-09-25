@@ -16,5 +16,6 @@ public class ActivityModule : IModule
         services.AddScoped<ActivityService>();
         services.AddScoped<IValidator<ActivityCreateDto>, ActivityCreateDtoValidator>();
         services.AddScoped<IValidator<ActivityUpdateDto>, ActivityUpdateDtoValidator>();
+        services.AddScoped<IValidator<ActivityFilterDto>, ActivityFilterDtoValidator>();
     }
 }

@@ -28,11 +28,10 @@ public class UserService
         _updateValidator = updateValidator;
     }
 
-    public async Task<ApiResponse<IReadOnlyList<UserListDto>>> GetAllAsync(CancellationToken cancellationToken = default)
+    public async Task<ApiResponse<PagedResult<UserListDto>>> GetAllAsync(UserFilterDto filter, CancellationToken cancellationToken = default)
     {
-        var users = await _repository.GetActiveAsync(cancellationToken);
-        return ApiResponse<IReadOnlyList<UserListDto>>.Ok(
-            users.Select(u => new UserListDto(u.Id, u.Email, u.DisplayName)).ToList());
+        var page = await _repository.GetPagedAsync(filter, cancellationToken);
+        return ApiResponse<PagedResult<UserListDto>>.Ok(page.Map(u => new UserListDto(u.Id, u.Email, u.DisplayName)));
     }
 
     public async Task<ApiResponse<UserDetailDto>> GetByIdAsync(int id, CancellationToken cancellationToken = default)

@@ -21,8 +21,8 @@ public class RemindersController : ControllerBase
     }
 
     [HttpGet]
-    public Task<ApiResponse<IReadOnlyList<ReminderListDto>>> GetAllAsync(CancellationToken cancellationToken) =>
-        _service.GetAllAsync(cancellationToken);
+    public Task<ApiResponse<PagedResult<ReminderListDto>>> GetAllAsync([FromQuery] ReminderFilterDto filter, CancellationToken cancellationToken) =>
+        _service.GetAllAsync(filter, cancellationToken);
 
     [HttpGet("{id:int}")]
     public Task<ApiResponse<ReminderDetailDto>> GetByIdAsync(int id, CancellationToken cancellationToken) =>

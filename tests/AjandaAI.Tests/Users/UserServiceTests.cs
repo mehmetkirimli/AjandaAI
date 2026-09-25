@@ -19,8 +19,11 @@ public class UserServiceTests
 
         public FakeUserRepository(params User[] items) => Items = items.ToList();
 
-        public Task<IReadOnlyList<User>> GetActiveAsync(CancellationToken cancellationToken = default) =>
-            Task.FromResult<IReadOnlyList<User>>(Items.Where(u => u.IsActive).ToList());
+        public Task<PagedResult<User>> GetPagedAsync(UserFilterDto filter, CancellationToken cancellationToken = default)
+        {
+            var all = Items.Where(u => u.IsActive).ToList();
+            return Task.FromResult(new PagedResult<User>(all.Skip(filter.Skip).Take(filter.PageSize).ToList(), all.Count, filter.Page, filter.PageSize));
+        }
 
         public Task<User?> GetByIdAsync(int id, CancellationToken cancellationToken = default) =>
             Task.FromResult(Items.FirstOrDefault(u => u.Id == id));
@@ -61,7 +64,7 @@ public class UserServiceTests
     [Fact]
     public async Task GetAllAsync_ReturnsOnlyActiveUsers()
     {
-        var result = (await Create().Service.GetAllAsync()).Data!;
+        var result = (await Create().Service.GetAllAsync(new UserFilterDto())).Data!.Items;
 
         Assert.Equal(new[] { 1, 2 }, result.Select(u => u.Id));
     }
