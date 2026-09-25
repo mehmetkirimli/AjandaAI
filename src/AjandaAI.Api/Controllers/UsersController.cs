@@ -21,32 +21,22 @@ public class UsersController : ControllerBase
     }
 
     [HttpGet]
-    [ProducesResponseType(typeof(ApiResponse<IReadOnlyList<UserListDto>>), StatusCodes.Status200OK)]
     public Task<ApiResponse<IReadOnlyList<UserListDto>>> GetAllAsync(CancellationToken cancellationToken) =>
         _service.GetAllAsync(cancellationToken);
 
     [HttpGet("{id:int}")]
-    [ProducesResponseType(typeof(ApiResponse<UserDetailDto>), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ApiResponse<UserDetailDto>), StatusCodes.Status404NotFound)]
     public Task<ApiResponse<UserDetailDto>> GetByIdAsync(int id, CancellationToken cancellationToken) =>
         _service.GetByIdAsync(id, cancellationToken);
 
     [HttpPost]
-    [ProducesResponseType(typeof(ApiResponse<UserDetailDto>), StatusCodes.Status201Created)]
-    [ProducesResponseType(typeof(ApiResponse<UserDetailDto>), StatusCodes.Status400BadRequest)]
     public Task<ApiResponse<UserDetailDto>> CreateAsync(UserCreateDto dto, CancellationToken cancellationToken) =>
         _service.CreateAsync(dto, cancellationToken);
 
     [HttpPut("{id:int}")]
-    [ProducesResponseType(typeof(ApiResponse<UserDetailDto>), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ApiResponse<UserDetailDto>), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(typeof(ApiResponse<UserDetailDto>), StatusCodes.Status404NotFound)]
     public Task<ApiResponse<UserDetailDto>> UpdateAsync(int id, UserUpdateDto dto, CancellationToken cancellationToken) =>
         _service.UpdateAsync(id, dto, cancellationToken);
 
     [HttpDelete("{id:int}")]
-    [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status404NotFound)]
     public Task<ApiResponse<bool>> DeleteAsync(int id, CancellationToken cancellationToken) =>
         _service.DeleteAsync(id, cancellationToken);
 }

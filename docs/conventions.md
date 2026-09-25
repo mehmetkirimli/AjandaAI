@@ -36,10 +36,15 @@ Servis kuralları:
 - POST başarılı → Created
 - DELETE başarılı (soft/hard) → Ok
 
-### Controller'lar ActionResult KULLANMAZ
-Dönüş tipi Task<ApiResponse<T>>'dir. Controller yalnızca servisi çağırır ve
-sonucu döner; Ok(), NotFound(), BadRequest(), StatusCode() gibi çağrılar ve
-status kodu hesaplaması YAPILMAZ. Swagger için [ProducesResponseType] eklenir.
+## Controller Kuralları
+Controller metodları tek satırdır: servisi çağırır, sonucu döner.
+ActionResult KULLANILMAZ, dönüş tipi Task<ApiResponse<T>>'dir.
+[ProducesResponseType] attribute'u KULLANILMAZ.
+HTTP status kodu ApiResponseFilter tarafından belirlenir.
+
+İleride API dışarıya yayınlanır ve Swagger dokümantasyonu gerekirse,
+status kodları tek tek attribute ile değil, bir IOperationFilter ile
+merkezi olarak eklenir.
 
 ### Status kodu tek kaynaktan belirlenir
 HTTP status kodunu Api/Filters/ApiResponseFilter.cs (IAsyncResultFilter),
