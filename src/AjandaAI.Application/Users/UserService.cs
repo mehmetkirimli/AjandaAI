@@ -2,6 +2,7 @@
 // Doğrulama validator'larla elle yapılır; hata ApiResponse.Fail olarak döner.
 // Kayıt yoksa ApiResponse.NotFound döner; HTTP status kodunu ApiResponseFilter belirler.
 // Liste yalnızca aktifleri döner; Delete gerçek silme yapmaz, IsActive = false yapar.
+// Validator'ı atlatan eşzamanlı email çakışması DB index'ine takılır ve Conflict (409) döner.
 
 using AjandaAI.Application.Common;
 using AjandaAI.Application.Users.Dtos;
@@ -58,7 +59,14 @@ public class UserService
             CreatedAt = now,
             UpdatedAt = now
         };
-        await _repository.AddAsync(user, cancellationToken);
+        try
+        {
+            await _repository.AddAsync(user, cancellationToken);
+        }
+        catch (DuplicateEmailException)
+        {
+            return ApiResponse<UserDetailDto>.Conflict(DuplicateEmailMessage);
+        }
         return ApiResponse<UserDetailDto>.Created(ToDetail(user), "Kullanıcı oluşturuldu.");
     }
 
@@ -79,7 +87,14 @@ public class UserService
         user.DisplayName = dto.DisplayName.Trim();
         user.TimeZoneId = dto.TimeZoneId.Trim();
         user.UpdatedAt = DateTimeOffset.UtcNow;
-        await _repository.UpdateAsync(user, cancellationToken);
+        try
+        {
+            await _repository.UpdateAsync(user, cancellationToken);
+        }
+        catch (DuplicateEmailException)
+        {
+            return ApiResponse<UserDetailDto>.Conflict(DuplicateEmailMessage);
+        }
         return ApiResponse<UserDetailDto>.Ok(ToDetail(user), "Kullanıcı güncellendi.");
     }
 
@@ -97,6 +112,8 @@ public class UserService
         }
         return ApiResponse<bool>.Ok(true, "Kullanıcı pasife alındı.");
     }
+
+    private const string DuplicateEmailMessage = "Bu e-posta adresi zaten kullanılıyor.";
 
     private static string NotFoundMessage(int id) => $"User {id} bulunamadı.";
 

@@ -5,6 +5,7 @@ using AjandaAI.Application.Users;
 using AjandaAI.Domain.Entities;
 using AjandaAI.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
 
 namespace AjandaAI.Infrastructure.Repositories;
 
@@ -49,12 +50,25 @@ public class UserRepository : IUserRepository
     public async Task AddAsync(User user, CancellationToken cancellationToken = default)
     {
         _context.Users.Add(user);
-        await _context.SaveChangesAsync(cancellationToken);
+        await SaveChangesAsync(cancellationToken);
     }
 
     public async Task UpdateAsync(User user, CancellationToken cancellationToken = default)
     {
         _context.Users.Update(user);
-        await _context.SaveChangesAsync(cancellationToken);
+        await SaveChangesAsync(cancellationToken);
+    }
+
+    // users tablosundaki tek unique kısıt email index'idir; 23505 DuplicateEmailException'a çevrilir.
+    private async Task SaveChangesAsync(CancellationToken cancellationToken)
+    {
+        try
+        {
+            await _context.SaveChangesAsync(cancellationToken);
+        }
+        catch (DbUpdateException ex) when (ex.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation })
+        {
+            throw new DuplicateEmailException(ex);
+        }
     }
 }

@@ -43,6 +43,18 @@ ve __EFMigrationsHistory tablosunu bozar.
 Add{Entity}, Update{Entity}{Alan}, Remove{Entity} formatında.
 Örnek: AddActivity, AddCategoryLookup
 
+## Migration İsimlendirme — İstisna
+MakeUserEmailIndexCaseInsensitive migration'ı kalıba uymuyor
+(UpdateUserEmail olmalıydı). Uygulanmış olduğu için yeniden
+adlandırılmadı: uygulanmış bir migration'ın adı değiştirilirse
+__EFMigrationsHistory ile eşleşmez ve zincir bozulur.
+
+## Raw SQL ile Tanımlı Index'ler
+ix_users_email_lower index'i lower(email) üzerinde tanımlıdır ve
+EF Core 8 bu ifadeyi model içinde tanımlayamaz. Index migration'da
+raw SQL olarak durur. UserConfiguration'a Email unique index'i
+GERİ EKLEMEYİN, çift index oluşur.
+
 ## İsimlendirme — snake_case
 Tüm tablo ve kolon adları PostgreSQL'de snake_case olarak saklanır.
 EFCore.NamingConventions paketi + UseSnakeCaseNamingConvention() ile

@@ -1,5 +1,5 @@
 // User entity'sinin EF Core yapılandırması.
-// Tablo adı, alan kısıtları ve Email üzerindeki benzersizlik indeksi burada tanımlanır.
+// Tablo adı, alan kısıtları burada tanımlanır (Email indeksi için aşağıdaki nota bakın).
 
 using AjandaAI.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
@@ -38,7 +38,9 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
         builder.Property(u => u.UpdatedAt)
             .IsRequired();
 
-        builder.HasIndex(u => u.Email)
-            .IsUnique();
+        // Email benzersizligi buyuk/kucuk harfe duyarsizdir: DB'de lower(email) uzerinde
+        // UNIQUE expression index (ix_users_email_lower) vardir. EF Core 8 expression index
+        // desteklemedigi icin index model'de YOKTUR; MakeUserEmailIndexCaseInsensitive
+        // migration'inda raw SQL ile yonetilir. Buraya HasIndex(u => u.Email) geri EKLEMEYIN.
     }
 }

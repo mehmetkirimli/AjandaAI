@@ -32,8 +32,14 @@ public class UserServiceTests
             Task.FromResult(Items.Any(u =>
                 string.Equals(u.Email, email.Trim(), StringComparison.OrdinalIgnoreCase) && u.Id != excludeId));
 
+        // Validator'ı geçip DB unique index'ine takılan eşzamanlı isteği taklit eder.
+        public bool ThrowDuplicateOnAdd { get; set; }
+
         public Task AddAsync(User user, CancellationToken cancellationToken = default)
         {
+            if (ThrowDuplicateOnAdd)
+                throw new DuplicateEmailException(new InvalidOperationException("23505"));
+
             user.Id = Items.Count == 0 ? 1 : Items.Max(u => u.Id) + 1;
             Items.Add(user);
             return Task.CompletedTask;
@@ -95,6 +101,20 @@ public class UserServiceTests
 
         Assert.False(response.Success);
         Assert.Contains("Bu email ile kayıtlı bir kullanıcı zaten var.", response.Errors);
+    }
+
+    [Fact]
+    public async Task CreateAsync_RepositoryThrowsDuplicateEmail_ReturnsConflict()
+    {
+        var (service, repo) = Create();
+        repo.ThrowDuplicateOnAdd = true;
+
+        var response = await service.CreateAsync(new UserCreateDto("yaris@example.com", "Yarış", ValidTz));
+
+        Assert.False(response.Success);
+        Assert.Equal(ResultType.Conflict, response.ResultType);
+        Assert.Equal("Bu e-posta adresi zaten kullanılıyor.", response.Message);
+        Assert.Equal(3, repo.Items.Count);
     }
 
     [Fact]

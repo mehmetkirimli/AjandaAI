@@ -66,6 +66,37 @@ public class UsersEndpointTests : IntegrationTestBase
     }
 
     [Fact]
+    public async Task Post_SameEmailDifferentCase_Returns4xxNot500()
+    {
+        await CreateUserAsync("A@x.com");
+
+        var response = await Client.PostAsJsonAsync("/api/users",
+            new { Email = "a@x.com", DisplayName = "Küçük harf", TimeZoneId = "Europe/Istanbul" }, Json);
+
+        Assert.Contains(response.StatusCode, new[] { HttpStatusCode.BadRequest, HttpStatusCode.Conflict });
+    }
+
+    [Fact]
+    public async Task DifferentCaseEmail_BypassingValidator_IsRejectedByUniqueIndex()
+    {
+        await CreateUserAsync("Case@test.com");
+
+        var ex = await Assert.ThrowsAsync<DbUpdateException>(() => Factory.WithDbAsync(async db =>
+        {
+            var now = DateTimeOffset.UtcNow;
+            db.Users.Add(new User
+            {
+                Email = "case@TEST.com", DisplayName = "Doğrudan", TimeZoneId = "Europe/Istanbul",
+                CreatedAt = now, UpdatedAt = now
+            });
+            return await db.SaveChangesAsync();
+        }));
+
+        var pg = Assert.IsType<PostgresException>(ex.InnerException);
+        Assert.Equal(PostgresErrorCodes.UniqueViolation, pg.SqlState);
+    }
+
+    [Fact]
     public async Task Delete_SoftDeletes_RowRemainsInactive()
     {
         var id = await CreateUserAsync();
