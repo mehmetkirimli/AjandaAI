@@ -11,6 +11,8 @@ services:
       - "5434:5432"
     volumes:
       - ajandaai-pgdata:/var/lib/postgresql/data
+      # Yalnızca boş volume ile ilk başlatmada çalışır (ajandaai_test database'ini oluşturur).
+      - ./docker/postgres-init:/docker-entrypoint-initdb.d:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ajandaai -d ajandaai"]
       interval: 10s

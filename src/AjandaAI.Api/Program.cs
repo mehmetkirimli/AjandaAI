@@ -1,3 +1,4 @@
+using System.Data.Common;
 using System.Text.Json.Serialization;
 using AjandaAI.Api.Filters;
 using AjandaAI.Api.Middleware;
@@ -34,6 +35,14 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
+
+// Başlangıçta ortam ve veritabanı adı loglanır; connection string (şifre) loglanmaz.
+var dbName = new DbConnectionStringBuilder
+{
+    ConnectionString = app.Configuration.GetConnectionString("DefaultConnection") ?? string.Empty
+}.TryGetValue("Database", out var database) ? database : "(tanımsız)";
+app.Logger.LogInformation("Ortam: {EnvironmentName}, Veritabanı: {DatabaseName}",
+    app.Environment.EnvironmentName, dbName);
 
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 
