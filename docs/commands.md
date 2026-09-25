@@ -27,8 +27,8 @@ entegrasyon testlerinin hepsi bağlantı hatasıyla kırılır; unit testler etk
   migration'ları baştan uygular ve test sonunda siler.
 
 ## Çalıştırma
-dotnet run --project src/AjandaAI.Api
-Swagger: http://localhost:5000/swagger
+dotnet run --project src/AjandaAI.Api --launch-profile http
+Swagger: http://localhost:5250/swagger
 
 ## Ortam Yönetimi
 
@@ -93,6 +93,13 @@ dotnet ef database update --project src/AjandaAI.Infrastructure --startup-projec
 dotnet ef migrations list --project src/AjandaAI.Infrastructure --startup-project src/AjandaAI.Api
 
 Diğer agent'lar bu komutları ÇALIŞTIRAMAZ. Gerekçe: docs/database.md
+
+## Hook Testi
+Migration hook'u değiştirildiğinde regresyon testini çalıştırın:
+powershell -ExecutionPolicy Bypass -File .claude/hooks/hook-test.ps1
+
+17 senaryo test edilir: gerçek migration komutları engellenmeli,
+dosyaya metin yazan komutlar ve build/test komutları geçmeli.
 
 ## Doğrulama Zinciri
 Her değişiklikten sonra sırasıyla:
