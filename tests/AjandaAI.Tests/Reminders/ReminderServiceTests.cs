@@ -9,6 +9,7 @@ using AjandaAI.Application.Reminders;
 using AjandaAI.Application.Reminders.Dtos;
 using AjandaAI.Application.Reminders.Validators;
 using AjandaAI.Domain.Entities;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace AjandaAI.Tests.Reminders;
 
@@ -114,7 +115,8 @@ public class ReminderServiceTests
             _reminders,
             new ReminderCreateDtoValidator(activityRepo, time),
             new ReminderUpdateDtoValidator(activityRepo, time),
-            time);
+            time,
+            NullLogger<ReminderService>.Instance);
     }
 
     [Fact]

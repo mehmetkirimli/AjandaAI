@@ -23,9 +23,12 @@ public static class DependencyInjection
     {
         var connectionString = configuration.GetConnectionString("DefaultConnection");
 
-        services.AddDbContext<AppDbContext>(options =>
+        services.AddSingleton<SlowQueryInterceptor>();
+
+        services.AddDbContext<AppDbContext>((sp, options) =>
             options.UseNpgsql(connectionString)
-                   .UseSnakeCaseNamingConvention());
+                   .UseSnakeCaseNamingConvention()
+                   .AddInterceptors(sp.GetRequiredService<SlowQueryInterceptor>()));
 
         services.AddScoped<ICategoryRepository, CategoryRepository>();
         services.AddScoped<IActivityRepository, ActivityRepository>();

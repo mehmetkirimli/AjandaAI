@@ -7,6 +7,7 @@ using AjandaAI.Application.Activities.Dtos;
 using AjandaAI.Application.Common;
 using AjandaAI.Domain.Entities;
 using FluentValidation;
+using Microsoft.Extensions.Logging;
 
 namespace AjandaAI.Application.Activities;
 
@@ -16,17 +17,20 @@ public class ActivityService
     private readonly IValidator<ActivityCreateDto> _createValidator;
     private readonly IValidator<ActivityUpdateDto> _updateValidator;
     private readonly IValidator<ActivityFilterDto> _filterValidator;
+    private readonly ILogger<ActivityService> _logger;
 
     public ActivityService(
         IActivityRepository repository,
         IValidator<ActivityCreateDto> createValidator,
         IValidator<ActivityUpdateDto> updateValidator,
-        IValidator<ActivityFilterDto> filterValidator)
+        IValidator<ActivityFilterDto> filterValidator,
+        ILogger<ActivityService> logger)
     {
         _repository = repository;
         _createValidator = createValidator;
         _updateValidator = updateValidator;
         _filterValidator = filterValidator;
+        _logger = logger;
     }
 
     public async Task<ApiResponse<PagedResult<ActivityListDto>>> GetAllAsync(ActivityFilterDto filter, CancellationToken cancellationToken = default)
@@ -34,8 +38,8 @@ public class ActivityService
         var result = await _filterValidator.ValidateAsync(filter, cancellationToken);
         if (!result.IsValid)
         {
-            return ApiResponse<PagedResult<ActivityListDto>>.Fail("Doğrulama hatası.",
-                result.Errors.Select(e => e.ErrorMessage).ToList());
+            var errors = result.Errors.Select(e => e.ErrorMessage).ToList();
+            return ApiResponse<PagedResult<ActivityListDto>>.Fail("Doğrulama hatası.", errors);
         }
 
         var page = await _repository.GetPagedAsync(filter, cancellationToken);
@@ -55,8 +59,9 @@ public class ActivityService
         var result = await _createValidator.ValidateAsync(dto, cancellationToken);
         if (!result.IsValid)
         {
-            return ApiResponse<ActivityDetailDto>.Fail("Doğrulama hatası.",
-                result.Errors.Select(e => e.ErrorMessage).ToList());
+            var errors = result.Errors.Select(e => e.ErrorMessage).ToList();
+            _logger.LogWarning("Aktivite oluşturma doğrulama hatası {UserId} {@Errors}", dto.UserId, errors);
+            return ApiResponse<ActivityDetailDto>.Fail("Doğrulama hatası.", errors);
         }
 
         var now = DateTimeOffset.UtcNow;
@@ -70,6 +75,7 @@ public class ActivityService
             dto.Start, dto.End, dto.IsAllDay, dto.Location, dto.IsFlexible, dto.EstimatedBudget, dto.Rating, dto.WouldRepeat);
 
         await _repository.AddAsync(activity, cancellationToken);
+        _logger.LogInformation("Aktivite oluşturuldu {ActivityId} {UserId} {Title}", activity.Id, dto.UserId, activity.Title);
         return ApiResponse<ActivityDetailDto>.Created(ToDetailDto(activity), "Aktivite oluşturuldu.");
     }
 
@@ -84,8 +90,9 @@ public class ActivityService
         var result = await _updateValidator.ValidateAsync(dto, cancellationToken);
         if (!result.IsValid)
         {
-            return ApiResponse<ActivityDetailDto>.Fail("Doğrulama hatası.",
-                result.Errors.Select(e => e.ErrorMessage).ToList());
+            var errors = result.Errors.Select(e => e.ErrorMessage).ToList();
+            _logger.LogWarning("Aktivite güncelleme doğrulama hatası {ActivityId} {@Errors}", id, errors);
+            return ApiResponse<ActivityDetailDto>.Fail("Doğrulama hatası.", errors);
         }
 
         Apply(activity, dto.CategoryId, dto.Title, dto.Description, dto.Status, dto.Priority, dto.EnergyLevel,
@@ -93,6 +100,7 @@ public class ActivityService
         activity.UpdatedAt = DateTimeOffset.UtcNow;
 
         await _repository.UpdateAsync(activity, cancellationToken);
+        _logger.LogInformation("Aktivite güncellendi {ActivityId} {Title}", id, activity.Title);
         return ApiResponse<ActivityDetailDto>.Ok(ToDetailDto(activity), "Aktivite güncellendi.");
     }
 
@@ -109,6 +117,7 @@ public class ActivityService
             activity.IsActive = false;
             activity.UpdatedAt = DateTimeOffset.UtcNow;
             await _repository.UpdateAsync(activity, cancellationToken);
+            _logger.LogInformation("Aktivite pasife alındı {ActivityId}", id);
         }
         return ApiResponse<bool>.Ok(true, "Aktivite silindi.");
     }

@@ -127,14 +127,40 @@ Soft delete edilen bir entity'ye FK veren tüm validator'lar,
 ExistsAsync değil IsActiveAsync kullanır. Pasif kayda yeni
 bağlantı kurulamaz.
 
-## Paylaşılan Dosyalar — SADECE TAKIM LİDERİ
-Aşağıdaki dosyalara takım arkadaşları DOKUNAMAZ:
+## Paylaşılan Dosyalar
+Aşağıdaki dosyalara takım arkadaşları VARSAYILAN OLARAK dokunamaz:
 - Program.cs
 - AppDbContext.cs
 - DependencyInjection.cs (her katmandaki)
 - *.csproj
 - docker-compose.yml
-Değişiklik gerekiyorsa takım liderine bildirilir (SendMessage, to: "main").
+
+İSTİSNA: Altyapı görevlerinde (paket ekleme, servis kaydı, container tanımı)
+bu dosyalara dokunmak işin doğasıdır. Bu durumda:
+- Görev tanımında hangi dosyalara dokunulacağı AÇIKÇA yazılır
+- İzin tek seferlik ve o göreve özeldir
+- Teammate izin yoksa DURUR ve takım liderine ("main") bildirir
+  (SendMessage, to: "main")
+
+## Log Kuralları
+Structured logging kullanılır, string interpolation KULLANILMAZ.
+  DOĞRU:  _logger.LogInformation("Aktivite oluşturuldu {ActivityId} {UserId}", id, userId);
+  YANLIŞ: _logger.LogInformation($"Aktivite oluşturuldu {id}");
+Gerekçe: structured logging Mongo'da sorgulanabilir alanlar üretir.
+
+Kişisel veri MASKELENEREK loglanır, asla açık yazılmaz:
+email, telefon, adres, ad-soyad.
+MaskingHelper kullanılır (Application/Common/Logging/MaskingHelper.cs):
+  _logger.LogInformation("Kullanıcı oluşturuldu {UserId} {Email}",
+      user.Id, MaskingHelper.MaskEmail(user.Email));
+Serilog destructuring policy (Api/Logging/SensitiveDataDestructuringPolicy.cs)
+güvenlik ağıdır, ona güvenilmez; elle maskeleme esastır.
+
+Seviyeler:
+- Information: başarılı iş olayları
+- Warning: doğrulama hataları, beklenen başarısızlıklar (detayıyla)
+    _logger.LogWarning("Kategori oluşturma doğrulama hatası {@Errors}", errors);
+- Error: beklenmeyen hatalar
 
 ## Takım Lideri Adresi
 Takım liderinin adresi "main"dir. Takım liderine bildirim, SendMessage ile

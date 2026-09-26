@@ -6,6 +6,7 @@ using AjandaAI.Application.Users;
 using AjandaAI.Application.Users.Dtos;
 using AjandaAI.Application.Users.Validators;
 using AjandaAI.Domain.Entities;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace AjandaAI.Tests.Users;
 
@@ -57,7 +58,7 @@ public class UserServiceTests
             new User { Id = 1, Email = "ali@example.com", DisplayName = "Ali", TimeZoneId = ValidTz },
             new User { Id = 2, Email = "ayse@example.com", DisplayName = "Ayşe", TimeZoneId = ValidTz },
             new User { Id = 3, Email = "eski@example.com", DisplayName = "Eski", TimeZoneId = ValidTz, IsActive = false });
-        var service = new UserService(repo, new UserCreateDtoValidator(repo), new UserUpdateDtoValidator(repo));
+        var service = new UserService(repo, new UserCreateDtoValidator(repo), new UserUpdateDtoValidator(repo), NullLogger<UserService>.Instance);
         return (service, repo);
     }
 

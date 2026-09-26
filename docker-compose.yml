@@ -19,5 +19,22 @@ services:
       timeout: 5s
       retries: 5
 
+  mongo:
+    image: mongo:7
+    container_name: ajandaai-mongo
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_DATABASE: ajandaai_logs
+    ports:
+      - "27018:27017"
+    volumes:
+      - ajandaai-mongodata:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
 volumes:
   ajandaai-pgdata:
+  ajandaai-mongodata:

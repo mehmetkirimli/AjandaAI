@@ -1,12 +1,24 @@
 using System.Data.Common;
 using System.Text.Json.Serialization;
 using AjandaAI.Api.Filters;
+using AjandaAI.Api.Logging;
 using AjandaAI.Api.Middleware;
 using AjandaAI.Application.Common;
 using Microsoft.AspNetCore.Mvc;
 using AjandaAI.Infrastructure;
+using Serilog;
+using Serilog.Events;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Serilog yapılandırması tamamen appsettings*.json'daki "Serilog" bölümünden okunur;
+// burada sink/seviye hardcode edilmez. Elasticsearch gibi bir sink'e geçiş yalnızca
+// config değişikliği (appsettings + paket referansı) gerektirir.
+// Destructuring policy, {@Nesne} loglarındaki kişisel verileri maskeleyen güvenlik ağıdır.
+builder.Host.UseSerilog((context, services, configuration) => configuration
+    .ReadFrom.Configuration(context.Configuration)
+    .ReadFrom.Services(services)
+    .Destructure.With<SensitiveDataDestructuringPolicy>());
 
 builder.Services.AddInfrastructure(builder.Configuration);
 
@@ -43,6 +55,31 @@ var dbName = new DbConnectionStringBuilder
 }.TryGetValue("Database", out var database) ? database : "(tanımsız)";
 app.Logger.LogInformation("Ortam: {EnvironmentName}, Veritabanı: {DatabaseName}",
     app.Environment.EnvironmentName, dbName);
+
+// HTTP request logging: method, path, status code, süre (ms) Serilog tarafından otomatik
+// eklenir; ClientIp ve RequestId EnrichDiagnosticContext ile eklenir. /health ve /swagger
+// istekleri GetLevel ile Verbose'a düşürülüp gürültü azaltılır (MinimumLevel altında kalır).
+app.UseSerilogRequestLogging(options =>
+{
+    options.GetLevel = (httpContext, elapsed, ex) =>
+    {
+        if (ex is not null)
+        {
+            return LogEventLevel.Error;
+        }
+
+        var path = httpContext.Request.Path;
+        return path.StartsWithSegments("/health") || path.StartsWithSegments("/swagger")
+            ? LogEventLevel.Verbose
+            : LogEventLevel.Information;
+    };
+
+    options.EnrichDiagnosticContext = (diagnosticContext, httpContext) =>
+    {
+        diagnosticContext.Set("ClientIp", httpContext.Connection.RemoteIpAddress?.ToString());
+        diagnosticContext.Set("RequestId", httpContext.TraceIdentifier);
+    };
+});
 
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 

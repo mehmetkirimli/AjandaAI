@@ -5,10 +5,12 @@
 // Validator'ı atlatan eşzamanlı email çakışması DB index'ine takılır ve Conflict (409) döner.
 
 using AjandaAI.Application.Common;
+using AjandaAI.Application.Common.Logging;
 using AjandaAI.Application.Users.Dtos;
 using AjandaAI.Application.Users.Validators;
 using AjandaAI.Domain.Entities;
 using FluentValidation;
+using Microsoft.Extensions.Logging;
 
 namespace AjandaAI.Application.Users;
 
@@ -17,15 +19,18 @@ public class UserService
     private readonly IUserRepository _repository;
     private readonly IValidator<UserCreateDto> _createValidator;
     private readonly IValidator<UserUpdateDto> _updateValidator;
+    private readonly ILogger<UserService> _logger;
 
     public UserService(
         IUserRepository repository,
         IValidator<UserCreateDto> createValidator,
-        IValidator<UserUpdateDto> updateValidator)
+        IValidator<UserUpdateDto> updateValidator,
+        ILogger<UserService> logger)
     {
         _repository = repository;
         _createValidator = createValidator;
         _updateValidator = updateValidator;
+        _logger = logger;
     }
 
     public async Task<ApiResponse<PagedResult<UserListDto>>> GetAllAsync(UserFilterDto filter, CancellationToken cancellationToken = default)
@@ -46,8 +51,12 @@ public class UserService
     {
         var result = await _createValidator.ValidateAsync(dto, cancellationToken);
         if (!result.IsValid)
-            return ApiResponse<UserDetailDto>.Fail("Doğrulama hatası.",
-                result.Errors.Select(e => e.ErrorMessage).ToList());
+        {
+            var errors = result.Errors.Select(e => e.ErrorMessage).ToList();
+            _logger.LogWarning("Kullanıcı oluşturma doğrulama hatası {Email} {@Errors}",
+                MaskingHelper.MaskEmail(dto.Email), errors);
+            return ApiResponse<UserDetailDto>.Fail("Doğrulama hatası.", errors);
+        }
 
         var now = DateTimeOffset.UtcNow;
         var user = new User
@@ -66,6 +75,7 @@ public class UserService
         {
             return ApiResponse<UserDetailDto>.Conflict(DuplicateEmailMessage);
         }
+        _logger.LogInformation("Kullanıcı oluşturuldu {UserId} {Email}", user.Id, MaskingHelper.MaskEmail(user.Email));
         return ApiResponse<UserDetailDto>.Created(ToDetail(user), "Kullanıcı oluşturuldu.");
     }
 
@@ -79,8 +89,11 @@ public class UserService
         context.RootContextData[UserUpdateDtoValidator.IdKey] = id;
         var result = await _updateValidator.ValidateAsync(context, cancellationToken);
         if (!result.IsValid)
-            return ApiResponse<UserDetailDto>.Fail("Doğrulama hatası.",
-                result.Errors.Select(e => e.ErrorMessage).ToList());
+        {
+            var errors = result.Errors.Select(e => e.ErrorMessage).ToList();
+            _logger.LogWarning("Kullanıcı güncelleme doğrulama hatası {UserId} {@Errors}", id, errors);
+            return ApiResponse<UserDetailDto>.Fail("Doğrulama hatası.", errors);
+        }
 
         user.Email = dto.Email.Trim();
         user.DisplayName = dto.DisplayName.Trim();
@@ -94,6 +107,7 @@ public class UserService
         {
             return ApiResponse<UserDetailDto>.Conflict(DuplicateEmailMessage);
         }
+        _logger.LogInformation("Kullanıcı güncellendi {UserId} {Email}", id, MaskingHelper.MaskEmail(user.Email));
         return ApiResponse<UserDetailDto>.Ok(ToDetail(user), "Kullanıcı güncellendi.");
     }
 
@@ -108,6 +122,7 @@ public class UserService
             user.IsActive = false;
             user.UpdatedAt = DateTimeOffset.UtcNow;
             await _repository.UpdateAsync(user, cancellationToken);
+            _logger.LogInformation("Kullanıcı pasife alındı {UserId}", id);
         }
         return ApiResponse<bool>.Ok(true, "Kullanıcı pasife alındı.");
     }

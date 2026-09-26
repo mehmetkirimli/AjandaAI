@@ -8,6 +8,7 @@ using AjandaAI.Application.Categories.Validators;
 using AjandaAI.Application.Common;
 using AjandaAI.Domain.Entities;
 using FluentValidation;
+using Microsoft.Extensions.Logging;
 
 namespace AjandaAI.Application.Categories;
 
@@ -16,15 +17,18 @@ public class CategoryService
     private readonly ICategoryRepository _repository;
     private readonly IValidator<CategoryCreateDto> _createValidator;
     private readonly IValidator<CategoryUpdateDto> _updateValidator;
+    private readonly ILogger<CategoryService> _logger;
 
     public CategoryService(
         ICategoryRepository repository,
         IValidator<CategoryCreateDto> createValidator,
-        IValidator<CategoryUpdateDto> updateValidator)
+        IValidator<CategoryUpdateDto> updateValidator,
+        ILogger<CategoryService> logger)
     {
         _repository = repository;
         _createValidator = createValidator;
         _updateValidator = updateValidator;
+        _logger = logger;
     }
 
     public async Task<ApiResponse<PagedResult<CategoryListDto>>> GetAllAsync(CategoryFilterDto filter, CancellationToken cancellationToken = default)
@@ -43,8 +47,11 @@ public class CategoryService
     {
         var result = await _createValidator.ValidateAsync(dto, cancellationToken);
         if (!result.IsValid)
-            return ApiResponse<CategoryListDto>.Fail("Doğrulama hatası.",
-                result.Errors.Select(e => e.ErrorMessage).ToList());
+        {
+            var errors = result.Errors.Select(e => e.ErrorMessage).ToList();
+            _logger.LogWarning("Kategori oluşturma doğrulama hatası {@Errors}", errors);
+            return ApiResponse<CategoryListDto>.Fail("Doğrulama hatası.", errors);
+        }
 
         var category = new Category
         {
@@ -53,6 +60,7 @@ public class CategoryService
             CreatedAt = DateTimeOffset.UtcNow
         };
         await _repository.AddAsync(category, cancellationToken);
+        _logger.LogInformation("Kategori oluşturuldu {CategoryId} {Name}", category.Id, category.Name);
         return ApiResponse<CategoryListDto>.Created(ToDto(category), "Kategori oluşturuldu.");
     }
 
@@ -66,12 +74,16 @@ public class CategoryService
         context.RootContextData[CategoryUpdateDtoValidator.IdKey] = id;
         var result = await _updateValidator.ValidateAsync(context, cancellationToken);
         if (!result.IsValid)
-            return ApiResponse<CategoryListDto>.Fail("Doğrulama hatası.",
-                result.Errors.Select(e => e.ErrorMessage).ToList());
+        {
+            var errors = result.Errors.Select(e => e.ErrorMessage).ToList();
+            _logger.LogWarning("Kategori güncelleme doğrulama hatası {CategoryId} {@Errors}", id, errors);
+            return ApiResponse<CategoryListDto>.Fail("Doğrulama hatası.", errors);
+        }
 
         category.Name = dto.Name.Trim();
         category.IsActive = dto.IsActive;
         await _repository.UpdateAsync(category, cancellationToken);
+        _logger.LogInformation("Kategori güncellendi {CategoryId} {Name}", id, category.Name);
         return ApiResponse<CategoryListDto>.Ok(ToDto(category), "Kategori güncellendi.");
     }
 
@@ -85,6 +97,7 @@ public class CategoryService
         {
             category.IsActive = false;
             await _repository.UpdateAsync(category, cancellationToken);
+            _logger.LogInformation("Kategori pasife alındı {CategoryId}", id);
         }
         return ApiResponse<CategoryListDto>.Ok(ToDto(category), "Kategori pasife alındı.");
     }

@@ -11,6 +11,7 @@ using AjandaAI.Application.Users;
 using AjandaAI.Application.Users.Dtos;
 using AjandaAI.Domain.Entities;
 using AjandaAI.Domain.Enums;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace AjandaAI.Tests.Activities;
 
@@ -106,7 +107,8 @@ public class ActivityServiceTests
             CreateRepository(),
             new ActivityCreateDtoValidator(categories, new FakeUserRepository()),
             new ActivityUpdateDtoValidator(categories),
-            new ActivityFilterDtoValidator());
+            new ActivityFilterDtoValidator(),
+            NullLogger<ActivityService>.Instance);
     }
 
     private static FakeActivityRepository CreateRepository() => new(

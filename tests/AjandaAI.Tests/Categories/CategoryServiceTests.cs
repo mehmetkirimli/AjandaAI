@@ -6,6 +6,7 @@ using AjandaAI.Application.Categories;
 using AjandaAI.Application.Categories.Dtos;
 using AjandaAI.Application.Categories.Validators;
 using AjandaAI.Domain.Entities;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace AjandaAI.Tests.Categories;
 
@@ -51,7 +52,8 @@ public class CategoryServiceTests
             new Category { Id = 3, Name = "İş", IsActive = true });
         var service = new CategoryService(repo,
             new CategoryCreateDtoValidator(repo),
-            new CategoryUpdateDtoValidator(repo));
+            new CategoryUpdateDtoValidator(repo),
+            NullLogger<CategoryService>.Instance);
         return (service, repo);
     }
 

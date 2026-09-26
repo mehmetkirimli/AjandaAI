@@ -6,6 +6,7 @@ using AjandaAI.Application.Common;
 using AjandaAI.Application.Reminders.Dtos;
 using AjandaAI.Domain.Entities;
 using FluentValidation;
+using Microsoft.Extensions.Logging;
 
 namespace AjandaAI.Application.Reminders;
 
@@ -15,17 +16,20 @@ public class ReminderService
     private readonly IValidator<ReminderCreateDto> _createValidator;
     private readonly IValidator<ReminderUpdateDto> _updateValidator;
     private readonly TimeProvider _timeProvider;
+    private readonly ILogger<ReminderService> _logger;
 
     public ReminderService(
         IReminderRepository repository,
         IValidator<ReminderCreateDto> createValidator,
         IValidator<ReminderUpdateDto> updateValidator,
-        TimeProvider timeProvider)
+        TimeProvider timeProvider,
+        ILogger<ReminderService> logger)
     {
         _repository = repository;
         _createValidator = createValidator;
         _updateValidator = updateValidator;
         _timeProvider = timeProvider;
+        _logger = logger;
     }
 
     public async Task<ApiResponse<PagedResult<ReminderListDto>>> GetAllAsync(ReminderFilterDto filter, CancellationToken cancellationToken = default)
@@ -47,8 +51,9 @@ public class ReminderService
         var result = await _createValidator.ValidateAsync(dto, cancellationToken);
         if (!result.IsValid)
         {
-            return ApiResponse<ReminderDetailDto>.Fail("Doğrulama hatası.",
-                result.Errors.Select(e => e.ErrorMessage).ToList());
+            var errors = result.Errors.Select(e => e.ErrorMessage).ToList();
+            _logger.LogWarning("Hatırlatma oluşturma doğrulama hatası {ActivityId} {@Errors}", dto.ActivityId, errors);
+            return ApiResponse<ReminderDetailDto>.Fail("Doğrulama hatası.", errors);
         }
 
         var reminder = new Reminder
@@ -61,6 +66,7 @@ public class ReminderService
         await _repository.AddAsync(reminder, cancellationToken);
 
         var created = await _repository.GetByIdAsync(reminder.Id, cancellationToken);
+        _logger.LogInformation("Hatırlatma oluşturuldu {ReminderId} {ActivityId}", reminder.Id, dto.ActivityId);
         return ApiResponse<ReminderDetailDto>.Created(ToDetailDto(created!), "Reminder oluşturuldu.");
     }
 
@@ -75,8 +81,9 @@ public class ReminderService
         var result = await _updateValidator.ValidateAsync(dto, cancellationToken);
         if (!result.IsValid)
         {
-            return ApiResponse<ReminderDetailDto>.Fail("Doğrulama hatası.",
-                result.Errors.Select(e => e.ErrorMessage).ToList());
+            var errors = result.Errors.Select(e => e.ErrorMessage).ToList();
+            _logger.LogWarning("Hatırlatma güncelleme doğrulama hatası {ReminderId} {@Errors}", id, errors);
+            return ApiResponse<ReminderDetailDto>.Fail("Doğrulama hatası.", errors);
         }
 
         reminder.ActivityId = dto.ActivityId;
@@ -96,6 +103,7 @@ public class ReminderService
         }
 
         await _repository.DeleteAsync(id, cancellationToken);
+        _logger.LogInformation("Hatırlatma silindi {ReminderId}", id);
         return ApiResponse<bool>.Ok(true, "Reminder silindi.");
     }
 

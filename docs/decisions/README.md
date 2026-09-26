@@ -45,3 +45,5 @@ cevap burada olmalıdır. Bir kuralı değiştirmeden önce ilgili ADR okunur.
 - [0013 - Katman sınırında exception çevirimi](0013-katman-sinirinda-exception-cevirimi.md)
 - [0014 - Ortam ayrımı (Development/Test/Production)](0014-ortam-ayrimi.md)
 - [0015 - Offset tabanlı sayfalama](0015-offset-tabanli-sayfalama.md)
+- [0016 - Log altyapısı ve hassas veri maskeleme](0016-log-altyapisi-ve-maskeleme.md)
+- [0017 - Agent'lara model ataması](0017-agent-model-atamasi.md)
