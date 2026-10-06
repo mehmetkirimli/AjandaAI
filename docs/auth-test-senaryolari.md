@@ -46,7 +46,7 @@ böylece hangi senaryonun hangi testle karşılandığı aranabilir.
 | AUTH-30 | Access token süresi | 15 dakika |
 | AUTH-31 | Süresi dolmuş access token ile istek | 401 |
 | AUTH-32 | İmzası bozulmuş / başka anahtarla imzalanmış token | 401 |
-| AUTH-33 | Refresh | Yeni access + yeni refresh token döner; eski refresh token `IsRevoked` olur |
+| AUTH-33 | Refresh | Yeni access + yeni refresh token döner; eski refresh token'ın `RevokedAt` alanı dolar |
 | AUTH-34 | Revoke edilmiş refresh token tekrar kullanılır | Reddedilir **ve** kullanıcının tüm refresh token'ları revoke edilir |
 | AUTH-35 | 30 günü geçmiş refresh token | Reddedilir |
 | AUTH-36 | Refresh token DB'de | Düz metin değil, SHA-256 hash olarak durur |
@@ -65,6 +65,8 @@ böylece hangi senaryonun hangi testle karşılandığı aranabilir.
 | AUTH-45 | Kullanıcı A, B'nin aktivitesine hatırlatma ekler | Reddedilir (ActivityId sahipliği) |
 | AUTH-46 | Liste endpoint'leri | Yalnızca kendi kayıtları döner |
 | AUTH-47 | Aktivite oluştururken body'de başka bir `UserId` | Yok sayılır; sahip token'daki kullanıcıdır |
+| AUTH-48 | `[AllowAnonymous]` olmayan **her** endpoint'e token'sız istek (endpoint listesi elle değil, uygulamanın endpoint kaynağından toplanır) | 401 (FallbackPolicy, [ADR 0019](decisions/0019-current-user-erisimi.md)) |
+| AUTH-49 | Kimlik bilgisi olmadan `ICurrentUser.UserId` okunur | `InvalidOperationException`; middleware üzerinden 500 döner, 401 **dönmez** |
 
 ## Admin
 | Id | Senaryo | Beklenen |

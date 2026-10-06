@@ -48,3 +48,4 @@ cevap burada olmalıdır. Bir kuralı değiştirmeden önce ilgili ADR okunur.
 - [0016 - Log altyapısı ve hassas veri maskeleme](0016-log-altyapisi-ve-maskeleme.md)
 - [0017 - Agent'lara model ataması](0017-agent-model-atamasi.md)
 - [0018 - Authentication ve yetkilendirme (v2)](0018-authentication.md)
+- [0019 - Application katmanında "şu anki kullanıcı" erişimi](0019-current-user-erisimi.md)

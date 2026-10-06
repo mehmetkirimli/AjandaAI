@@ -28,7 +28,7 @@ kullanır. Cookie tabanlı session kullanılmaz.
 | Refresh token | Kriptografik rastgele değer (64 byte), 30 gün |
 | Saklama | Refresh token Postgres'te SHA-256 hash'i ile saklanır, düz metin saklanmaz |
 | Taşıma | Tüm istemcilerde request body (cookie yok) |
-| Rotation | Her yenilemede yeni refresh token üretilir, eskisi `IsRevoked` yapılır (silinmez) |
+| Rotation | Her yenilemede yeni refresh token üretilir, eskisinin `RevokedAt` alanı doldurulur (silinmez; bool yerine tarih, ne zaman revoke edildiği de bilinsin) |
 | Hırsızlık tespiti | Revoke edilmiş bir refresh token tekrar kullanılırsa kullanıcının TÜM refresh token'ları revoke edilir |
 | Logout | Refresh token revoke edilir; access token en fazla 15 dakika daha geçerli kalır |
 | Rol okuma | Login ve refresh, rolü token'dan değil DB'den okur |
@@ -167,7 +167,7 @@ Admin işlemleri ayrı controller'lardan geçer: `/api/admin/...`. Kullanıcı e
 - Mevcut endpoint'lerin çoğu değişir: `UserId` DTO'lardan çıkar, sorgular sahiplik koşulu alır,
   `POST /api/users` yerini `/auth/register`'a bırakır.
 - Application'ın "şu anki kullanıcı kim" bilgisine ihtiyacı var ama `HttpContext`'i tanıyamaz
-  (ADR 0001). Nasıl çözüleceği uygulama aşamasında kararlaştırılacak.
+  (ADR 0001). Çözümü: [ADR 0019](0019-current-user-erisimi.md).
 - **Bilinen risk:** Web'de refresh token'ın JavaScript'in erişebildiği bir yerde saklanması
   gerekecek; bir XSS açığı token'ı sızdırabilir. Azaltan önlemler: rotation ve yeniden kullanım
   tespiti, frontend'de CSP. Geri dönüş yolu: web için HttpOnly cookie eklemek mevcut sözleşmeyi

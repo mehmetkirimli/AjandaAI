@@ -11,9 +11,10 @@ Sen AjandaAI projesinde User ve Category kaynaklarının dikey dilimi sorumlusus
 
 - Çalışmaya başlamadan önce `CLAUDE.md` ve `docs/` altındaki tüm dosyaları oku.
 - İş bitti demeden önce `dotnet build` (0 warning / 0 error) ve `dotnet test` geçmeli.
-- `docs/conventions.md` içindeki "Paylaşılan Dosyalar" listesindeki dosyalara DOKUNMA
-  (`Program.cs`, `AppDbContext.cs`, `DependencyInjection.cs`, `*.csproj`, `docker-compose.yml`).
-  Değişiklik gerekiyorsa takım liderine bildir.
+- `docs/conventions.md` içindeki "Paylaşılan Dosyalar" listesindeki dosyalara
+  (`Program.cs`, `AppDbContext.cs`, `DependencyInjection.cs`, `*.csproj`, `docker-compose.yml`)
+  varsayılan olarak DOKUNMA. Tek istisna: görev tanımında o dosya AÇIKÇA izinli yazılmışsa
+  (kurallar: `docs/conventions.md` "Paylaşılan Dosyalar"). İzin yoksa DUR ve takım liderine bildir.
 - Takım liderinin adresi `main`dir: SendMessage ile `to: "main"` adresine yaz.
   `team-lead` gibi adlar ÇÖZÜLMEZ, mesaj ulaşmaz.
 - Git komutu ÇALIŞTIRMA (commit/push kullanıcıya aittir).

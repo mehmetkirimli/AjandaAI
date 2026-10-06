@@ -49,6 +49,10 @@ MakeUserEmailIndexCaseInsensitive migration'ı kalıba uymuyor
 adlandırılmadı: uygulanmış bir migration'ın adı değiştirilirse
 __EFMigrationsHistory ile eşleşmez ve zincir bozulur.
 
+## Migration İsimlendirme — İstisna 2
+AddAuthentication migration'ı kalıba uymuyor: birden fazla entity (RefreshToken,
+EmailVerificationToken) ve User alanları tek migration'da toplandığı için (ADR 0018).
+
 ## Raw SQL ile Tanımlı Index'ler
 ix_users_email_lower index'i lower(email) üzerinde tanımlıdır ve
 EF Core 8 bu ifadeyi model içinde tanımlayamaz. Index migration'da

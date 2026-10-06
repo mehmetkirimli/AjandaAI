@@ -3,6 +3,8 @@
 // TimeZoneId, kullanıcının yerel saat dilimini tutar (örn. "Europe/Istanbul").
 // Kullanıcı silinmez, IsActive = false ile pasife alınır (soft delete).
 
+using AjandaAI.Domain.Enums;
+
 namespace AjandaAI.Domain.Entities;
 
 public class User
@@ -14,6 +16,14 @@ public class User
     public string DisplayName { get; set; } = string.Empty;
 
     public string TimeZoneId { get; set; } = string.Empty;
+
+    // Şifre hash'i (PasswordHasher). Gerçek değer P2'de atanır.
+    public string PasswordHash { get; set; } = string.Empty;
+
+    public UserRole Role { get; set; } = UserRole.User;
+
+    // null = e-posta doğrulanmamış. IsActive'ten ayrı bir alandır (ADR 0018 Karar 8).
+    public DateTimeOffset? EmailConfirmedAt { get; set; }
 
     public bool IsActive { get; set; } = true;
 

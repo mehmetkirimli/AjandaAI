@@ -2,6 +2,7 @@
 // Tablo adı, alan kısıtları burada tanımlanır (Email indeksi için aşağıdaki nota bakın).
 
 using AjandaAI.Domain.Entities;
+using AjandaAI.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -24,6 +25,19 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
         builder.Property(u => u.TimeZoneId)
             .IsRequired()
             .HasMaxLength(64);
+
+        // Hash uzunlugu PasswordHasher cikti formatina baglidir; 512 rahat sigar.
+        builder.Property(u => u.PasswordHash)
+            .IsRequired()
+            .HasMaxLength(512);
+
+        builder.Property(u => u.Role)
+            .IsRequired()
+            .HasConversion<string>()
+            .HasMaxLength(20)
+            .HasDefaultValue(UserRole.User);
+
+        builder.Property(u => u.EmailConfirmedAt);
 
         // Mevcut satırlar migration'da aktif kalsın diye DB default'u true.
         // Sentinel true: false değeri INSERT'te atlanmaz, açıkça yazılır.
