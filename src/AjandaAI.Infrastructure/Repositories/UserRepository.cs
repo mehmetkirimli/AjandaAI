@@ -2,7 +2,6 @@
 // Okuma sorguları AsNoTracking ile çalışır; yazma metodları kendi SaveChanges'ını yapar.
 
 using AjandaAI.Application.Users;
-using AjandaAI.Application.Users.Dtos;
 using AjandaAI.Application.Common;
 using AjandaAI.Domain.Entities;
 using AjandaAI.Infrastructure.Persistence;
@@ -20,35 +19,11 @@ public class UserRepository : IUserRepository
         _context = context;
     }
 
-    public async Task<PagedResult<User>> GetPagedAsync(UserFilterDto filter, CancellationToken cancellationToken = default)
-    {
-        var query = _context.Users.AsNoTracking().Where(u => u.IsActive);
-        if (!string.IsNullOrWhiteSpace(filter.Search))
-        {
-            var search = filter.Search.Trim().ToLower();
-            query = query.Where(u => u.Email.ToLower().Contains(search) || u.DisplayName.ToLower().Contains(search));
-        }
-
-        var totalCount = await query.CountAsync(cancellationToken);
-        var items = await query
-            .OrderByDescending(u => u.CreatedAt)
-            .ThenByDescending(u => u.Id)
-            .Skip(filter.Skip)
-            .Take(filter.PageSize)
-            .ToListAsync(cancellationToken);
-        return new PagedResult<User>(items, totalCount, filter.Page, filter.PageSize);
-    }
-
     public Task<User?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
     {
         return _context.Users
             .AsNoTracking()
             .FirstOrDefaultAsync(u => u.Id == id, cancellationToken);
-    }
-
-    public Task<bool> IsActiveAsync(int id, CancellationToken cancellationToken = default)
-    {
-        return _context.Users.AnyAsync(u => u.Id == id && u.IsActive, cancellationToken);
     }
 
     public Task<bool> EmailExistsAsync(string email, int? excludeId = null, CancellationToken cancellationToken = default)

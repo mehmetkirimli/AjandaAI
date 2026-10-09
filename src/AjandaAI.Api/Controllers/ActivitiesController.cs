@@ -5,13 +5,10 @@
 using AjandaAI.Application.Activities;
 using AjandaAI.Application.Activities.Dtos;
 using AjandaAI.Application.Common;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AjandaAI.Api.Controllers;
 
-// GEÇİCİ: P4'te kaldırılacak (ADR 0019). Bu controller henüz token bilmiyor; AUTH-48 kalanı yakalar.
-[AllowAnonymous]
 [ApiController]
 [Route("api/activities")]
 public class ActivitiesController : ControllerBase

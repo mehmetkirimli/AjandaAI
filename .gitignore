@@ -56,3 +56,6 @@ _ReSharper*/
 *.bak
 Thumbs.db
 .DS_Store
+
+# Kalite kapısı çalışma kaydı (ADR 0020)
+.claude/hooks/quality-gate.log

@@ -19,8 +19,16 @@ public class SensitiveDataDestructuringPolicy : IDestructuringPolicy
             ["Phone"] = MaskingHelper.MaskPhone,
             ["PhoneNumber"] = MaskingHelper.MaskPhone,
             ["Address"] = MaskingHelper.MaskAddress,
-            ["DisplayName"] = v => MaskingHelper.MaskGeneric(v, 1, 0)
+            ["DisplayName"] = v => MaskingHelper.MaskGeneric(v, 1, 0),
+            // Gizli değerler hiç gösterilmez (ADR 0016, 0018): kısmi maske bile tahmin yüzeyini daraltır.
+            ["Password"] = _ => Secret,
+            ["PasswordHash"] = _ => Secret,
+            ["Token"] = _ => Secret,
+            ["AccessToken"] = _ => Secret,
+            ["RefreshToken"] = _ => Secret
         };
+
+    private const string Secret = "***";
 
     private static readonly ConcurrentDictionary<Type, PropertyInfo[]?> SensitiveTypes = new();
 

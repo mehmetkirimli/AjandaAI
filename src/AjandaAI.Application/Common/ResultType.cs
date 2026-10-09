@@ -11,5 +11,7 @@ public enum ResultType
     ValidationError,
     NotFound,
     Conflict,
-    Error
+    Error,
+    Accepted,
+    Unauthorized
 }

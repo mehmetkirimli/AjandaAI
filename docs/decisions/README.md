@@ -49,3 +49,5 @@ cevap burada olmalıdır. Bir kuralı değiştirmeden önce ilgili ADR okunur.
 - [0017 - Agent'lara model ataması](0017-agent-model-atamasi.md)
 - [0018 - Authentication ve yetkilendirme (v2)](0018-authentication.md)
 - [0019 - Application katmanında "şu anki kullanıcı" erişimi](0019-current-user-erisimi.md)
+- [0020 - Agent işlerinde kalite kapısı, review agent ve sıralı çalışma](0020-kalite-kapisi-ve-review-agent.md)
+- [0021 - Frontend (web istemcisi)](0021-frontend-web-istemcisi.md)

@@ -134,6 +134,8 @@ Aşağıdaki dosyalara takım arkadaşları VARSAYILAN OLARAK dokunamaz:
 - DependencyInjection.cs (her katmandaki)
 - *.csproj
 - docker-compose.yml
+- Application/Common/ altındaki her şey (ApiResponse, ResultType, ICurrentUser, JwtOptions...)
+- Api/Filters/, Api/Middleware/, Api/Auth/
 
 İSTİSNA: Altyapı görevlerinde (paket ekleme, servis kaydı, container tanımı)
 bu dosyalara dokunmak işin doğasıdır. Bu durumda:

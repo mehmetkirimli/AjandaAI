@@ -1,7 +1,9 @@
 // Activity okuma ve yazma senaryolarını yöneten uygulama servisidir.
 // Girdiyi validator ile doğrular (ilişkisel kontroller validator'dadır, burada tekrarlanmaz).
 // Entity'leri DTO'ya çevirir; enum alanları string olarak döner.
-// Liste yalnızca aktifleri filtreli ve sayfalı döner; Delete gerçek silme yapmaz, IsActive = false yapar.
+// Sahip her zaman ICurrentUser'dır; sahiplik koşulu repository sorgusundadır (ADR 0018), serviste ayrı if yoktur.
+// Başkasının kaydı "yok" ile aynı 404'tür; yalnızca bu hata yolunda ExistsAsync ile yetkisiz deneme loglanır.
+// Liste yalnızca kullanıcının aktiflerini filtreli ve sayfalı döner; Delete gerçek silme yapmaz, IsActive = false yapar.
 
 using AjandaAI.Application.Activities.Dtos;
 using AjandaAI.Application.Common;
@@ -17,6 +19,7 @@ public class ActivityService
     private readonly IValidator<ActivityCreateDto> _createValidator;
     private readonly IValidator<ActivityUpdateDto> _updateValidator;
     private readonly IValidator<ActivityFilterDto> _filterValidator;
+    private readonly ICurrentUser _currentUser;
     private readonly ILogger<ActivityService> _logger;
 
     public ActivityService(
@@ -24,9 +27,11 @@ public class ActivityService
         IValidator<ActivityCreateDto> createValidator,
         IValidator<ActivityUpdateDto> updateValidator,
         IValidator<ActivityFilterDto> filterValidator,
+        ICurrentUser currentUser,
         ILogger<ActivityService> logger)
     {
         _repository = repository;
+        _currentUser = currentUser;
         _createValidator = createValidator;
         _updateValidator = updateValidator;
         _filterValidator = filterValidator;
@@ -42,13 +47,13 @@ public class ActivityService
             return ApiResponse<PagedResult<ActivityListDto>>.Fail("Doğrulama hatası.", errors);
         }
 
-        var page = await _repository.GetPagedAsync(filter, cancellationToken);
+        var page = await _repository.GetPagedAsync(filter, _currentUser.UserId, cancellationToken);
         return ApiResponse<PagedResult<ActivityListDto>>.Ok(page.Map(ToListDto));
     }
 
     public async Task<ApiResponse<ActivityDetailDto>> GetByIdAsync(int id, CancellationToken cancellationToken = default)
     {
-        var activity = await _repository.GetByIdAsync(id, cancellationToken);
+        var activity = await FindOwnedAsync(id, cancellationToken);
         return activity is null
             ? ApiResponse<ActivityDetailDto>.NotFound(NotFoundMessage(id))
             : ApiResponse<ActivityDetailDto>.Ok(ToDetailDto(activity));
@@ -56,18 +61,19 @@ public class ActivityService
 
     public async Task<ApiResponse<ActivityDetailDto>> CreateAsync(ActivityCreateDto dto, CancellationToken cancellationToken = default)
     {
+        var userId = _currentUser.UserId;
         var result = await _createValidator.ValidateAsync(dto, cancellationToken);
         if (!result.IsValid)
         {
             var errors = result.Errors.Select(e => e.ErrorMessage).ToList();
-            _logger.LogWarning("Aktivite oluşturma doğrulama hatası {UserId} {@Errors}", dto.UserId, errors);
+            _logger.LogWarning("Aktivite oluşturma doğrulama hatası {UserId} {@Errors}", userId, errors);
             return ApiResponse<ActivityDetailDto>.Fail("Doğrulama hatası.", errors);
         }
 
         var now = DateTimeOffset.UtcNow;
         var activity = new Activity
         {
-            UserId = dto.UserId,
+            UserId = userId,
             CreatedAt = now,
             UpdatedAt = now
         };
@@ -75,13 +81,13 @@ public class ActivityService
             dto.Start, dto.End, dto.IsAllDay, dto.Location, dto.IsFlexible, dto.EstimatedBudget, dto.Rating, dto.WouldRepeat);
 
         await _repository.AddAsync(activity, cancellationToken);
-        _logger.LogInformation("Aktivite oluşturuldu {ActivityId} {UserId} {Title}", activity.Id, dto.UserId, activity.Title);
+        _logger.LogInformation("Aktivite oluşturuldu {ActivityId} {UserId} {Title}", activity.Id, userId, activity.Title);
         return ApiResponse<ActivityDetailDto>.Created(ToDetailDto(activity), "Aktivite oluşturuldu.");
     }
 
     public async Task<ApiResponse<ActivityDetailDto>> UpdateAsync(int id, ActivityUpdateDto dto, CancellationToken cancellationToken = default)
     {
-        var activity = await _repository.GetByIdAsync(id, cancellationToken);
+        var activity = await FindOwnedAsync(id, cancellationToken);
         if (activity is null)
         {
             return ApiResponse<ActivityDetailDto>.NotFound(NotFoundMessage(id));
@@ -106,7 +112,7 @@ public class ActivityService
 
     public async Task<ApiResponse<bool>> DeleteAsync(int id, CancellationToken cancellationToken = default)
     {
-        var activity = await _repository.GetByIdAsync(id, cancellationToken);
+        var activity = await FindOwnedAsync(id, cancellationToken);
         if (activity is null)
         {
             return ApiResponse<bool>.NotFound(NotFoundMessage(id));
@@ -120,6 +126,19 @@ public class ActivityService
             _logger.LogInformation("Aktivite pasife alındı {ActivityId}", id);
         }
         return ApiResponse<bool>.Ok(true, "Aktivite silindi.");
+    }
+
+    // Sahiplik sorgunun içindedir. Boş dönerse yalnızca bu hata yolunda ExistsAsync çalışır:
+    // kayıt başkasınındır -> Warning log (dışarıya yine aynı 404); kayıt hiç yok -> log yok.
+    private async Task<Activity?> FindOwnedAsync(int id, CancellationToken cancellationToken)
+    {
+        var userId = _currentUser.UserId;
+        var activity = await _repository.GetByIdForUserAsync(id, userId, cancellationToken);
+        if (activity is null && await _repository.ExistsAsync(id, cancellationToken))
+        {
+            _logger.LogWarning("Yetkisiz erişim denemesi {UserId} {ActivityId}", userId, id);
+        }
+        return activity;
     }
 
     private static string NotFoundMessage(int id) => $"Activity {id} bulunamadı.";

@@ -1,4 +1,5 @@
-// User kaynağının DI kayıtlarını yapan modüldür (servis + validator'lar).
+// User kaynağının DI kayıtlarını yapan modüldür. Kullanıcı yönetimi servisi Admin dilimindedir
+// (AdminUserService); burada yalnızca onun kullandığı güncelleme validator'ı kayıtlıdır.
 // IUserRepository kaydı Infrastructure/DependencyInjection.cs içinde yapılır (takım lideri).
 
 using AjandaAI.Application.Common;
@@ -13,8 +14,6 @@ public class UserModule : IModule
 {
     public void Register(IServiceCollection services)
     {
-        services.AddScoped<UserService>();
-        services.AddScoped<IValidator<UserCreateDto>, UserCreateDtoValidator>();
         services.AddScoped<IValidator<UserUpdateDto>, UserUpdateDtoValidator>();
     }
 }

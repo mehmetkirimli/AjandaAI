@@ -11,6 +11,9 @@ detaylarına bağımlı" gibi görünebilir ve referansın kaldırılması öner
 - Api, Infrastructure'ın iç sınıflarını doğrudan kullanmaz.
 - Infrastructure DI kayıtlarını `AddInfrastructure(this IServiceCollection, IConfiguration)`
   extension'ı ile sunar; Program.cs yalnızca `builder.Services.AddInfrastructure(builder.Configuration)` çağırır.
+- Ek (2026-10-09, v2 auth): ortama bağlı kayıtlar için ikinci bir extension vardır:
+  `AddDevelopmentInfrastructure()` (LogEmailSender). Ortam kararı Program.cs'te verilir, sınıf
+  adı yine Infrastructure içinde kalır.
 
 ## Gerekçe
 - Uygulamanın başladığı yer (Api) tüm implementasyonları DI container'a bağlamak zorundadır;

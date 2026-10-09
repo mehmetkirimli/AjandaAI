@@ -1,9 +1,8 @@
 // ActivityCreateDto için FluentValidation kurallarıdır.
-// İlişkisel alanlar (CategoryId, UserId) repository ile MustAsync üzerinden doğrulanır.
+// İlişkisel alan (CategoryId) repository ile MustAsync üzerinden doğrulanır; sahip token'dan geldiği için UserId kuralı yoktur.
 
 using AjandaAI.Application.Activities.Dtos;
 using AjandaAI.Application.Categories;
-using AjandaAI.Application.Users;
 using AjandaAI.Domain.Enums;
 using FluentValidation;
 
@@ -13,16 +12,9 @@ public class ActivityCreateDtoValidator : AbstractValidator<ActivityCreateDto>
 {
     private readonly ICategoryRepository _categories;
 
-    private readonly IUserRepository _users;
-
-    public ActivityCreateDtoValidator(ICategoryRepository categories, IUserRepository users)
+    public ActivityCreateDtoValidator(ICategoryRepository categories)
     {
         _categories = categories;
-        _users = users;
-
-        RuleFor(x => x.UserId)
-            .MustAsync((id, ct) => _users.IsActiveAsync(id, ct))
-            .WithMessage("Kullanıcı bulunamadı veya pasif.");
 
         RuleFor(x => x.CategoryId)
             .MustAsync((id, ct) => _categories.IsActiveAsync(id, ct))

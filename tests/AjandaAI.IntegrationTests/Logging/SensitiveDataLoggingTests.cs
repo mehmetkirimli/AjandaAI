@@ -3,7 +3,7 @@
 // Mongo sink yoktur, loglar DI'a eklenen InMemoryLogSink ile yakalanır.
 // Veritabanına dokunmaz; AjandaApiFactory.InitializeAsync çağrılmaz.
 
-using AjandaAI.Application.Users.Dtos;
+using AjandaAI.Application.Auth.Dtos;
 using AjandaAI.IntegrationTests.Infrastructure;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
@@ -23,7 +23,7 @@ public class SensitiveDataLoggingTests
             builder.ConfigureTestServices(services => services.AddSingleton<ILogEventSink>(sink)));
 
         var logger = factory.Services.GetRequiredService<ILogger<SensitiveDataLoggingTests>>();
-        var dto = new UserCreateDto("perihan945@hotmail.com", "Perihan Yılmaz", "Europe/Istanbul");
+        var dto = new RegisterDto("perihan945@hotmail.com", "Perihan Yılmaz", "Europe/Istanbul", "gizli-sifre-cumlesi-42");
 
         // Test ortamında minimum seviye Warning olduğu için Warning ile loglanır.
         logger.LogWarning("Maskeleme testi {@User}", dto);
@@ -35,6 +35,8 @@ public class SensitiveDataLoggingTests
         Assert.Equal("per*****45@hot****.com", props["Email"]);
         Assert.Equal("P*************", props["DisplayName"]);
         Assert.Equal("Europe/Istanbul", props["TimeZoneId"]);
+        Assert.Equal("***", props["Password"]);
         Assert.DoesNotContain("perihan945", logEvent.RenderMessage());
+        Assert.DoesNotContain("gizli-sifre-cumlesi-42", logEvent.RenderMessage());
     }
 }

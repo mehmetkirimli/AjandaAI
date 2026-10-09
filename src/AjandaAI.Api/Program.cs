@@ -29,6 +29,11 @@ builder.Host.UseSerilog((context, services, configuration) => configuration
 
 builder.Services.AddInfrastructure(builder.Configuration);
 
+if (builder.Environment.IsDevelopment())
+{
+    builder.Services.AddDevelopmentInfrastructure();
+}
+
 // Authentication: JWT Bearer (ADR 0018). Claim adları dönüştürülmez ("sub", "role" olduğu gibi kalır).
 // ClockSkew sıfır: 15 dakikalık access token süresi dolduğu anda reddedilir (AUTH-31).
 var jwtSection = builder.Configuration.GetSection(JwtOptions.SectionName);

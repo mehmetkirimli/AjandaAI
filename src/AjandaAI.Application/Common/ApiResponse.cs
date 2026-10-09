@@ -40,6 +40,14 @@ public class ApiResponse<T> : IApiResponse
     public static ApiResponse<T> Conflict(string message) =>
         new() { Success = false, Message = message, ResultType = ResultType.Conflict };
 
+    // 202: istek alındı, işlem arka planda sürüyor (örn. register doğrulama e-postası).
+    public static ApiResponse<T> Accepted(string message) =>
+        new() { Success = true, Message = message, ResultType = ResultType.Accepted };
+
+    // 401: kimlik doğrulama başarısız (login, refresh).
+    public static ApiResponse<T> Unauthorized(string message) =>
+        new() { Success = false, Message = message, ResultType = ResultType.Unauthorized };
+
     public static ApiResponse<T> Error(string message, List<string>? errors = null) =>
         new() { Success = false, Message = message, Errors = errors ?? new(), ResultType = ResultType.Error };
 }

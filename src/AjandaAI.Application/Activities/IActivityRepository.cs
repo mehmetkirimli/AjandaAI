@@ -11,12 +11,14 @@ namespace AjandaAI.Application.Activities;
 
 public interface IActivityRepository
 {
-    /// <summary>Aktif kayıtları filtreleyip sayfalar (önce count, sonra Skip/Take).</summary>
-    Task<PagedResult<Activity>> GetPagedAsync(ActivityFilterDto filter, CancellationToken cancellationToken = default);
+    /// <summary>Yalnızca verilen kullanıcının aktif kayıtlarını filtreleyip sayfalar (önce count, sonra Skip/Take).</summary>
+    Task<PagedResult<Activity>> GetPagedAsync(ActivityFilterDto filter, int userId, CancellationToken cancellationToken = default);
 
-    Task<Activity?> GetByIdAsync(int id, CancellationToken cancellationToken = default);
+    /// <summary>Sahiplik koşulu sorgunun içindedir: WHERE id = @id AND user_id = @userId (ADR 0018).</summary>
+    Task<Activity?> GetByIdForUserAsync(int id, int userId, CancellationToken cancellationToken = default);
 
-    Task<bool> IsActiveAsync(int id, CancellationToken cancellationToken = default);
+    /// <summary>Kayıt var mı (sahibi önemsiz). Yalnızca yetkisiz erişim logu için, hata yolunda çağrılır.</summary>
+    Task<bool> ExistsAsync(int id, CancellationToken cancellationToken = default);
 
     Task AddAsync(Activity activity, CancellationToken cancellationToken = default);
 

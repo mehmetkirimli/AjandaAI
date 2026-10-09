@@ -1,4 +1,5 @@
 // Yeni Activity oluşturmak için istemciden gelen yazma modelidir.
+// Sahip (UserId) istemciden alınmaz; token'daki kullanıcıdır (ICurrentUser, ADR 0018).
 // Kurallar Validators/ActivityCreateDtoValidator.cs içindedir.
 
 using AjandaAI.Domain.Enums;
@@ -6,7 +7,6 @@ using AjandaAI.Domain.Enums;
 namespace AjandaAI.Application.Activities.Dtos;
 
 public record ActivityCreateDto(
-    int UserId,
     int CategoryId,
     string Title,
     string Description,

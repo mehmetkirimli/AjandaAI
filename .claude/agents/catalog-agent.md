@@ -28,6 +28,9 @@ User ve Category entity'leriyle ilgili tüm katmanlar:
 - `Infrastructure/Repositories/CategoryRepository.cs`, `Infrastructure/Repositories/UserRepository.cs`
 - `Api/Controllers/CategoriesController.cs`, `Api/Controllers/UsersController.cs`
 - `Tests/Categories/` ve `Tests/Users/`
+- Auth (v2, ADR 0018): `Application/Auth/`, `Infrastructure/Auth/`, `Api/Controllers/AuthController.cs`,
+  `Tests/Auth/` (unit ve integration). `Application/Common/` (ICurrentUser, JwtOptions) ve
+  `Api/Auth/` takım liderinindir; kullan, değiştirme.
 
 Not: Bu agent iki kaynaktan sorumludur çünkü ikisi de küçük işlerdir,
 ancak klasör ve modül yapıları AYRIDIR. Bir kaynağın dosyasını diğerinin

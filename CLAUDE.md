@@ -5,14 +5,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Proje
 
 AjandaAI, .NET 8 üzerinde katmanlı mimari ile kurulmuş bir ajanda/takvim uygulamasıdır.
-Solution şu an iskelet aşamasındadır: entity, controller ve DbContext henüz yazılmamıştır.
-Katmanlar `src/` altında, testler `tests/` altında yer alır.
+v1 (CRUD, sayfalama, log) ve v2 Authentication (JWT, sahiplik, admin) tamamlandı.
+Sıradaki iş web frontend'dir (`web/`). Nerede olduğumuz ve sıra: [docs/roadmap.md](docs/roadmap.md).
 
 ## Stack
 
-- .NET 8 (`net8.0`) — makinede kurulu SDK: 9.0.102
-- ASP.NET Core Web API + Swashbuckle (Swagger)
-- xUnit
+- Backend: .NET 8 (`net8.0`) — makinede kurulu SDK: 9.0.102. ASP.NET Core Web API + Swagger,
+  EF Core + PostgreSQL, Serilog → MongoDB, xUnit.
+- Frontend (ADR 0021): TypeScript + React (Vite), Mantine, FullCalendar, TanStack Query. Node 20+.
 
 ## Yapı
 
@@ -24,24 +24,32 @@ src/
   AjandaAI.Infrastructure/  classlib  -> Application
   AjandaAI.Api/             webapi    -> Application, Infrastructure
 tests/
-  AjandaAI.Tests/           xunit     -> Application, Domain
+  AjandaAI.Tests/              xunit  -> Application, Domain (unit, sahte repository)
+  AjandaAI.IntegrationTests/   xunit  -> Api (gerçek HTTP + PostgreSQL)
+web/                        React istemcisi (ADR 0021) — .NET solution'ının parçası değildir
 ```
 
 Referans yönü tek yönlüdür ve yukarıdaki şemanın dışına çıkılmaz.
 Api → Infrastructure referansı **composition root desenidir**: Api, Infrastructure'ın
-iç sınıflarını kullanmaz, yalnızca `AddInfrastructure(...)` extension'ını çağırır.
+iç sınıflarını kullanmaz, yalnızca `AddInfrastructure(...)` (ve Development'ta
+`AddDevelopmentInfrastructure()`) extension'larını çağırır.
 Bu referansı kaldırmayın — detay için [docs/architecture.md](docs/architecture.md).
 
 ## Dokümantasyon
 
 Detaylar `docs/` altındadır — ilgili konuda çalışmadan önce o dosyayı oku:
 
+- [docs/roadmap.md](docs/roadmap.md) — aşamalar, durum, sıradaki adımlar
 - [docs/architecture.md](docs/architecture.md) — katman sorumlulukları, bağımlılık kuralları
-- [docs/conventions.md](docs/conventions.md) — kod stili, isimlendirme, klasör düzeni
+- [docs/conventions.md](docs/conventions.md) — kod stili, isimlendirme, klasör düzeni, paylaşılan dosyalar
 - [docs/database.md](docs/database.md) — veri erişimi, migration, şema
 - [docs/commands.md](docs/commands.md) — build, test, run komutları
 - [docs/domain.md](docs/domain.md) — iş alanı kavramları ve kuralları
+- [docs/auth-test-senaryolari.md](docs/auth-test-senaryolari.md) — auth kabul kriterleri (AUTH-xx)
 - [docs/decisions/](docs/decisions/README.md) — Architecture Decision Records: kararların
   NEDEN alındığı. Bir kuralı değiştirmeden önce ilgili ADR'yi oku.
 
-> Bu dosyalar henüz doldurulmadı; içerikleri yazıldıkça burası referans kalır.
+## Agent çalışması
+
+Agent'larla iş yapılırken kalite kapısı, review agent ve görev tanımı kuralları
+[ADR 0020](docs/decisions/0020-kalite-kapisi-ve-review-agent.md)'dedir.

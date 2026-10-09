@@ -1,0 +1,77 @@
+# quality-gate.ps1 için aktif aşamanın zorunlu senaryoları (bkz. docs/auth-test-senaryolari.md).
+# Takım lideri her aşamada günceller. Satır başına bir kimlik; # sonrası yorumdur.
+# Liste aşamalar ilerledikçe BİRİKİR: önceki aşamaların kimlikleri kalır (testleri silinmesin).
+# Aktif aşama: P7 Admin. Tamamlananlar: P2 (+ AUTH-49, P3), P4, P5, P6
+
+# P7 - Admin
+AUTH-39
+AUTH-50
+AUTH-51
+AUTH-52
+AUTH-53
+
+# P6 - Kategori yazma yalnızca Admin
+AUTH-54
+
+# P5 - Reminder sahipliği
+AUTH-45
+
+# P4 - Activity sahipliği
+AUTH-41
+AUTH-42
+AUTH-43
+AUTH-44
+AUTH-46
+AUTH-47
+
+# Kayıt
+AUTH-01
+AUTH-02
+AUTH-03
+AUTH-04
+AUTH-05
+AUTH-06
+# E-posta doğrulama
+AUTH-10
+AUTH-11
+AUTH-12
+AUTH-13
+AUTH-14
+AUTH-15
+# Login
+AUTH-20
+AUTH-21
+AUTH-22
+AUTH-23
+AUTH-24
+AUTH-25
+AUTH-26
+AUTH-27
+# Token
+AUTH-30
+AUTH-31
+AUTH-32
+AUTH-33
+AUTH-34
+AUTH-35
+AUTH-36
+AUTH-37
+AUTH-38
+# AUTH-39 (rol düşürmede revoke) P7'de: rolü admin endpoint'i değiştirir.
+# Genel koruma
+AUTH-40
+AUTH-48
+AUTH-49
+# Şifre kuralları
+AUTH-60
+AUTH-61
+AUTH-62
+AUTH-63
+AUTH-64
+AUTH-65
+AUTH-66
+AUTH-67
+AUTH-68
+# Log
+AUTH-70
+AUTH-71

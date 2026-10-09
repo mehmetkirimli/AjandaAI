@@ -1,22 +1,15 @@
 // User kaynağına okuma/yazma erişim sözleşmesidir.
-// IsActiveAsync, Activity validator'ının UserId doğrulaması için kullanılır.
+// Kullanıcı yönetimi /api/admin/users (AdminUserService) üzerindendir; liste sorgusu IAdminRepository'dedir.
 // Silme metodu yoktur: kullanıcı pasife alınır (IsActive = false, UpdateAsync ile).
 // Implementasyonu Infrastructure/Repositories/UserRepository.cs içindedir.
 
-using AjandaAI.Application.Users.Dtos;
-using AjandaAI.Application.Common;
 using AjandaAI.Domain.Entities;
 
 namespace AjandaAI.Application.Users;
 
 public interface IUserRepository
 {
-    /// <summary>Aktif kayıtları filtreleyip sayfalar (önce count, sonra Skip/Take).</summary>
-    Task<PagedResult<User>> GetPagedAsync(UserFilterDto filter, CancellationToken cancellationToken = default);
-
     Task<User?> GetByIdAsync(int id, CancellationToken cancellationToken = default);
-
-    Task<bool> IsActiveAsync(int id, CancellationToken cancellationToken = default);
 
     Task<bool> EmailExistsAsync(string email, int? excludeId = null, CancellationToken cancellationToken = default);
 

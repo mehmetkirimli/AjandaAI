@@ -19,9 +19,9 @@ public class ActivityRepository : IActivityRepository
         _context = context;
     }
 
-    public async Task<PagedResult<Activity>> GetPagedAsync(ActivityFilterDto filter, CancellationToken cancellationToken = default)
+    public async Task<PagedResult<Activity>> GetPagedAsync(ActivityFilterDto filter, int userId, CancellationToken cancellationToken = default)
     {
-        var query = _context.Activities.AsNoTracking().Where(a => a.IsActive);
+        var query = _context.Activities.AsNoTracking().Where(a => a.UserId == userId && a.IsActive);
         if (filter.From.HasValue) query = query.Where(a => a.Start >= filter.From.Value);
         if (filter.To.HasValue) query = query.Where(a => a.Start <= filter.To.Value);
         if (filter.Status.HasValue) query = query.Where(a => a.Status == filter.Status.Value);
@@ -38,16 +38,16 @@ public class ActivityRepository : IActivityRepository
         return new PagedResult<Activity>(items, totalCount, filter.Page, filter.PageSize);
     }
 
-    public Task<Activity?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
+    public Task<Activity?> GetByIdForUserAsync(int id, int userId, CancellationToken cancellationToken = default)
     {
         return _context.Activities
             .AsNoTracking()
-            .FirstOrDefaultAsync(a => a.Id == id, cancellationToken);
+            .FirstOrDefaultAsync(a => a.Id == id && a.UserId == userId, cancellationToken);
     }
 
-    public Task<bool> IsActiveAsync(int id, CancellationToken cancellationToken = default)
+    public Task<bool> ExistsAsync(int id, CancellationToken cancellationToken = default)
     {
-        return _context.Activities.AnyAsync(a => a.Id == id && a.IsActive, cancellationToken);
+        return _context.Activities.AnyAsync(a => a.Id == id, cancellationToken);
     }
 
     public async Task AddAsync(Activity activity, CancellationToken cancellationToken = default)

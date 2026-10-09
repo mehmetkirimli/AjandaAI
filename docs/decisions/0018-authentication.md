@@ -1,5 +1,5 @@
 # 0018 - Authentication ve yetkilendirme (v2)
-**Durum:** Kabul edildi (uygulama henüz yapılmadı)
+**Durum:** Kabul edildi (uygulandı: 2026-10-09, P1–P8)
 **Tarih:** 2026-09-28
 
 ## Bağlam
@@ -173,11 +173,28 @@ Admin işlemleri ayrı controller'lardan geçer: `/api/admin/...`. Kullanıcı e
   tespiti, frontend'de CSP. Geri dönüş yolu: web için HttpOnly cookie eklemek mevcut sözleşmeyi
   kırmaz, yeni bir seçenek ekler.
 - **Bilinen risk:** Rol düşürmede 15 dakikalık pencere.
+- **Bilinçli tercih:** Logout ile revoke edilmiş bir refresh token tekrar kullanılırsa bu da
+  yeniden kullanım sayılır ve kullanıcının tüm oturumları kapanır. Logout'u ayrı işaretlemek
+  (`RevokedReason`) değerlendirildi, reddedildi: ara sıra gereksiz çıkışın bedeli, çalınmış bir
+  token'ın sessizce reddedilip fark edilmemesinden düşüktür. (2026-10-09)
 - **Bilinen kısıt:** İlk admin elle SQL ile atanır; her yeni ortamda (yeni geliştirme ortamı,
   canlıya ilk çıkış) tekrarlanmalıdır. Son admin kendini User'a düşürürse düzeltme de DB'den yapılır.
 - **Bilinen kısıt:** Rate limiter bellek içidir; birden fazla sunucuya geçilirse ortak bir sayaç
   (ör. Redis) gerekir.
 - **Bilinen kısıt:** `LogEmailSender` log'a gizli bir link yazar; Production'da kayıtlı olmaması
   zorunludur.
+- **Bilinen kısıtlar (final review, 2026-10-09).** Dağıtım şekli netleşince ele alınacaklar:
+  - Rate limiter `RemoteIpAddress` ile bölümlenir. Reverse proxy arkasında tüm istemciler tek IP
+    görünür ve 10 istek herkesin login'ini kilitler. Proxy'ye geçerken `UseForwardedHeaders`,
+    `KnownProxies`/`KnownNetworks` ile birlikte açılmalıdır; aksi halde `X-Forwarded-For` taklidiyle
+    limit aşılır.
+  - Login'de e-posta/şifre uzunluk sınırı yok (register'da 256/128 var). Pratik etkisi küçük.
+  - Register'da yeni kayıt yolunda ek bir INSERT var, kayıtlı yolda yok. Hash baskın olduğu için
+    süre farkı küçük; istatistiksel ölçüm teorik olarak mümkün.
+  - Kabul edilenler: admin PUT ile e-posta doğrulaması aynı anda olursa `Update(entity)` doğrulamayı
+    ezebilir (dar pencere); pasife alınmış ama doğrulanmamış bir kayıt aynı e-postayla yeniden
+    register edilince yeni ve aktif bir kayıt oluşur; Swagger'da Bearer tanımı yok; zaman kaynağı
+    servisler arasında tutarsız (`UtcNow` / `TimeProvider`); refresh token'lar birikir, temizlik
+    bildirim altyapısıyla gelir.
 - JWT imzalama anahtarı git'e girmez; Production'da environment variable olarak verilir (ADR 0014).
 - Kabul testleri: [docs/auth-test-senaryolari.md](../auth-test-senaryolari.md).

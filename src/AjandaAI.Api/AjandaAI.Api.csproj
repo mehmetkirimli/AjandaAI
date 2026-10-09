@@ -20,6 +20,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- HttpCurrentUser (internal) AUTH-49 testinde doğrudan kullanılır. -->
+    <InternalsVisibleTo Include="AjandaAI.IntegrationTests" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\AjandaAI.Application\AjandaAI.Application.csproj" />
     <ProjectReference Include="..\AjandaAI.Infrastructure\AjandaAI.Infrastructure.csproj" />
   </ItemGroup>

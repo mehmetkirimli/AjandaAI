@@ -2,7 +2,7 @@
 // Validator'ın EmailExistsAsync kontrolü eşzamanlı isteklerde yarışı kaçırabilir; son savunma DB index'idir.
 // Application EF Core'u tanımaz: Infrastructure, Postgres 23505 hatasını bu tipe çevirir.
 
-namespace AjandaAI.Application.Users;
+namespace AjandaAI.Application.Common;
 
 public class DuplicateEmailException : Exception
 {
