@@ -1,10 +1,17 @@
 using System.Data.Common;
+using System.Text;
 using System.Text.Json.Serialization;
+using System.Threading.RateLimiting;
+using AjandaAI.Api.Auth;
 using AjandaAI.Api.Filters;
 using AjandaAI.Api.Logging;
 using AjandaAI.Api.Middleware;
 using AjandaAI.Application.Common;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.IdentityModel.Tokens;
 using AjandaAI.Infrastructure;
 using Serilog;
 using Serilog.Events;
@@ -21,6 +28,60 @@ builder.Host.UseSerilog((context, services, configuration) => configuration
     .Destructure.With<SensitiveDataDestructuringPolicy>());
 
 builder.Services.AddInfrastructure(builder.Configuration);
+
+// Authentication: JWT Bearer (ADR 0018). Claim adları dönüştürülmez ("sub", "role" olduğu gibi kalır).
+// ClockSkew sıfır: 15 dakikalık access token süresi dolduğu anda reddedilir (AUTH-31).
+var jwtSection = builder.Configuration.GetSection(JwtOptions.SectionName);
+builder.Services.Configure<JwtOptions>(jwtSection);
+var jwtOptions = jwtSection.Get<JwtOptions>() ?? new JwtOptions();
+if (Encoding.UTF8.GetByteCount(jwtOptions.SigningKey) < 32)
+{
+    throw new InvalidOperationException("Jwt:SigningKey tanımlı değil veya 32 byte'tan kısa.");
+}
+
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.MapInboundClaims = false;
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidIssuer = jwtOptions.Issuer,
+            ValidateAudience = true,
+            ValidAudience = jwtOptions.Audience,
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtOptions.SigningKey)),
+            ValidateLifetime = true,
+            ClockSkew = TimeSpan.Zero,
+            NameClaimType = JwtOptions.UserIdClaim,
+            RoleClaimType = JwtOptions.RoleClaim
+        };
+    });
+
+// Her endpoint varsayılan olarak kimlik ister; herkese açık olanlar [AllowAnonymous] alır (ADR 0019).
+builder.Services.AddAuthorization(options =>
+    options.FallbackPolicy = new AuthorizationPolicyBuilder()
+        .RequireAuthenticatedUser()
+        .Build());
+
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<ICurrentUser, HttpCurrentUser>();
+
+var authRateLimit = builder.Configuration.GetSection("RateLimiting:Auth");
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+    options.AddPolicy(AuthRateLimit.PolicyName, httpContext =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+            _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = authRateLimit.GetValue("PermitLimit", AuthRateLimit.DefaultPermitLimit),
+                Window = TimeSpan.FromSeconds(
+                    authRateLimit.GetValue("WindowSeconds", AuthRateLimit.DefaultWindowSeconds)),
+                QueueLimit = 0
+            }));
+});
 
 builder.Services.AddControllers(options =>
         options.Filters.Add<ApiResponseFilter>())
@@ -90,6 +151,10 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseAuthentication();
+app.UseAuthorization();
+app.UseRateLimiter();
 
 app.MapControllers();
 

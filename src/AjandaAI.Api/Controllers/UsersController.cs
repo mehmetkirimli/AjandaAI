@@ -5,10 +5,13 @@
 using AjandaAI.Application.Common;
 using AjandaAI.Application.Users;
 using AjandaAI.Application.Users.Dtos;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AjandaAI.Api.Controllers;
 
+// GEÇİCİ: P6'da kaldırılacak (ADR 0019). Bu controller henüz token bilmiyor; AUTH-48 kalanı yakalar.
+[AllowAnonymous]
 [ApiController]
 [Route("api/users")]
 public class UsersController : ControllerBase

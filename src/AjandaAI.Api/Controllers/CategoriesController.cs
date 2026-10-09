@@ -5,10 +5,13 @@
 using AjandaAI.Application.Categories;
 using AjandaAI.Application.Categories.Dtos;
 using AjandaAI.Application.Common;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AjandaAI.Api.Controllers;
 
+// GEÇİCİ: P6'da kaldırılacak (ADR 0019). Bu controller henüz token bilmiyor; AUTH-48 kalanı yakalar.
+[AllowAnonymous]
 [ApiController]
 [Route("api/categories")]
 public class CategoriesController : ControllerBase
