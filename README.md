@@ -45,12 +45,12 @@ docker compose up -d
 
 **3. Migration'ları uygula**
 ```
-dotnet ef database update --project src/AjandaAI.Infrastructure --startup-project src/AjandaAI.Api
+dotnet ef database update --project backend/src/AjandaAI.Infrastructure --startup-project backend/src/AjandaAI.Api
 ```
 
 **4. Uygulamayı çalıştır** (Development ortamı)
 ```
-dotnet run --project src/AjandaAI.Api --launch-profile http
+dotnet run --project backend/src/AjandaAI.Api --launch-profile http
 ```
 
 **5. Swagger:** http://localhost:5250/swagger
@@ -71,11 +71,11 @@ Ortam adı şu öncelikle belirlenir: `--environment` argümanı > `DOTNET_ENVIR
 
 Test ortamında çalıştırma (`--` şart):
 ```
-dotnet run --project src/AjandaAI.Api -- --environment Test
+dotnet run --project backend/src/AjandaAI.Api -- --environment Test
 ```
 
 Production'da connection string dosyaya değil environment variable'a yazılır
-(`ConnectionStrings__DefaultConnection`). Şablon: `src/AjandaAI.Api/appsettings.Production.example.json`.
+(`ConnectionStrings__DefaultConnection`). Şablon: `backend/src/AjandaAI.Api/appsettings.Production.example.json`.
 
 Detay: [docs/commands.md](docs/commands.md#ortam-yönetimi)
 
@@ -135,9 +135,9 @@ Kurallar: [docs/conventions.md](docs/conventions.md)
 ## Testler
 
 ```
-dotnet test                                    # hepsi
-dotnet test tests/AjandaAI.Tests               # unit testler (DB gerekmez)
-dotnet test tests/AjandaAI.IntegrationTests    # entegrasyon testleri
+dotnet test backend                                    # hepsi
+dotnet test backend/tests/AjandaAI.Tests               # unit testler (DB gerekmez)
+dotnet test backend/tests/AjandaAI.IntegrationTests    # entegrasyon testleri
 ```
 
 Entegrasyon testleri gerçek PostgreSQL kullanır. Çalıştırmadan önce **Docker ayakta
@@ -152,26 +152,29 @@ docker exec ajandaai-postgres psql -U ajandaai -d ajandaai -c "CREATE DATABASE a
 ## Proje Yapısı
 
 ```
-AjandaAI.sln
-docker-compose.yml               PostgreSQL 16 (port 5434)
+backend/                         .NET 8 API (komutlar repo kökünden: dotnet build backend)
+  AjandaAI.sln
+  src/
+    AjandaAI.Domain/             Entities/, Enums/
+    AjandaAI.Application/
+      Common/                    ApiResponse, PagedResult, PageRequest, IModule, ICurrentUser
+      Auth/ Admin/ Users/        her kaynak: servis, modül, repository interface'i,
+      Categories/ Activities/      Dtos/, Validators/
+      Reminders/
+    AjandaAI.Infrastructure/
+      Persistence/               AppDbContext, Configurations/
+      Repositories/              repository implementasyonları
+      Migrations/                EF Core migration'ları
+      DependencyInjection.cs     AddInfrastructure(...)
+    AjandaAI.Api/                Controllers/, Filters/, Middleware/, Auth/, Program.cs
+  tests/
+    AjandaAI.Tests/              unit testler (sahte repository)
+    AjandaAI.IntegrationTests/   HTTP + PostgreSQL entegrasyon testleri
+frontend/                        React web istemcisi (ADR 0021)
+docker-compose.yml               PostgreSQL 16 (port 5434), MongoDB (loglar)
 docker/postgres-init/            ilk başlatmada ajandaai_test veritabanını oluşturur
-src/
-  AjandaAI.Domain/               Entities/, Enums/
-  AjandaAI.Application/
-    Common/                      ApiResponse, PagedResult, PageRequest, IModule
-    Users/ Categories/           her kaynak: servis, modül, repository interface'i,
-    Activities/ Reminders/         Dtos/, Validators/
-  AjandaAI.Infrastructure/
-    Persistence/                 AppDbContext, Configurations/
-    Repositories/                repository implementasyonları
-    Migrations/                  EF Core migration'ları
-    DependencyInjection.cs       AddInfrastructure(...)
-  AjandaAI.Api/                  Controllers/, Filters/, Middleware/, Program.cs
-tests/
-  AjandaAI.Tests/                unit testler (sahte repository)
-  AjandaAI.IntegrationTests/     HTTP + PostgreSQL entegrasyon testleri
 docs/                            proje dokümantasyonu
-.claude/                         agent tanımları ve migration hook'u
+.claude/                         agent tanımları ve hook'lar
 ```
 
 ## Dokümantasyon

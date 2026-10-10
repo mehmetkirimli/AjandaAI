@@ -23,11 +23,11 @@ composition root desenidir. Kaldırmayın.
 
 ## Klasör Düzeni
 ```
-src/AjandaAI.Domain/
+backend/src/AjandaAI.Domain/
   Entities/
   Enums/
 
-src/AjandaAI.Application/
+backend/src/AjandaAI.Application/
   Common/                    (IModule, ApiResponse — paylaşılan, lead'in alanı)
   {Entity çoğulu}/           (Categories, Users, Activities, Reminders)
     I{Entity}Repository.cs
@@ -36,18 +36,18 @@ src/AjandaAI.Application/
     Dtos/
     Validators/
 
-src/AjandaAI.Infrastructure/
+backend/src/AjandaAI.Infrastructure/
   Persistence/
     AppDbContext.cs
     Configurations/
   Repositories/
   DependencyInjection.cs
 
-src/AjandaAI.Api/
+backend/src/AjandaAI.Api/
   Controllers/
   Program.cs
 
-tests/AjandaAI.Tests/
+backend/tests/AjandaAI.Tests/
   {Entity çoğulu}/
 ```
 

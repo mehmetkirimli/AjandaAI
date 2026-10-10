@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 AjandaAI, .NET 8 üzerinde katmanlı mimari ile kurulmuş bir ajanda/takvim uygulamasıdır.
 v1 (CRUD, sayfalama, log) ve v2 Authentication (JWT, sahiplik, admin) tamamlandı.
-Sıradaki iş web frontend'dir (`web/`). Nerede olduğumuz ve sıra: [docs/roadmap.md](docs/roadmap.md).
+Sıradaki iş web frontend'dir (`frontend/`). Nerede olduğumuz ve sıra: [docs/roadmap.md](docs/roadmap.md).
 
 ## Stack
 
@@ -16,17 +16,23 @@ Sıradaki iş web frontend'dir (`web/`). Nerede olduğumuz ve sıra: [docs/roadm
 
 ## Yapı
 
+Backend ve frontend ayrı klasörlerdedir (ADR 0021 Karar 6). Komutlar repo kökünden çalışır;
+kökte `.sln` yoktur: `dotnet build backend`, `dotnet test backend` (bkz. docs/commands.md).
+
 ```
-AjandaAI.sln
-src/
-  AjandaAI.Domain/          classlib
-  AjandaAI.Application/     classlib  -> Domain
-  AjandaAI.Infrastructure/  classlib  -> Application
-  AjandaAI.Api/             webapi    -> Application, Infrastructure
-tests/
-  AjandaAI.Tests/              xunit  -> Application, Domain (unit, sahte repository)
-  AjandaAI.IntegrationTests/   xunit  -> Api (gerçek HTTP + PostgreSQL)
-web/                        React istemcisi (ADR 0021) — .NET solution'ının parçası değildir
+backend/
+  AjandaAI.sln
+  src/
+    AjandaAI.Domain/          classlib
+    AjandaAI.Application/     classlib  -> Domain
+    AjandaAI.Infrastructure/  classlib  -> Application
+    AjandaAI.Api/             webapi    -> Application, Infrastructure
+  tests/
+    AjandaAI.Tests/              xunit  -> Application, Domain (unit, sahte repository)
+    AjandaAI.IntegrationTests/   xunit  -> Api (gerçek HTTP + PostgreSQL)
+frontend/                     React istemcisi (ADR 0021)
+docker/, docker-compose.yml   PostgreSQL + MongoDB (ortak altyapı)
+docs/                         dokümantasyon ve ADR'ler
 ```
 
 Referans yönü tek yönlüdür ve yukarıdaki şemanın dışına çıkılmaz.
@@ -53,3 +59,4 @@ Detaylar `docs/` altındadır — ilgili konuda çalışmadan önce o dosyayı o
 
 Agent'larla iş yapılırken kalite kapısı, review agent ve görev tanımı kuralları
 [ADR 0020](docs/decisions/0020-kalite-kapisi-ve-review-agent.md)'dedir.
+Backend agent'ları `backend/`, web-agent `frontend/` içinde çalışır.

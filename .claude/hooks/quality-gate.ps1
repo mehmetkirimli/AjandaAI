@@ -3,8 +3,9 @@
 # stderr üzerinden agent'a geri bildirir:
 #   1. dotnet build: 0 warning / 0 error
 #   2. dotnet test: tüm testler geçer
-#   3. Senaryo kapsamı: required-scenarios.txt içindeki her kimlik (AUTH-xx) tests/ altında
+#   3. Senaryo kapsamı: required-scenarios.txt içindeki her kimlik (AUTH-xx) backend/tests/ altında
 #      en az bir .cs dosyasında geçer (docs/auth-test-senaryolari.md: "testi yoksa iş bitmemiştir")
+#   4. frontend/ varsa: npm run build ve npm run lint (ADR 0021)
 # Kapsam listesi aşamaya göre takım lideri tarafından güncellenir. Liste boşsa 3. kontrol atlanır.
 # Korkuluktur, review'un yerini tutmaz: kimliğin geçmesi testin doğru olduğunu kanıtlamaz.
 
@@ -21,10 +22,14 @@ $ErrorActionPreference = 'Continue'
 $root = if ($env:CLAUDE_PROJECT_DIR) { $env:CLAUDE_PROJECT_DIR } else { $payload.cwd }
 Set-Location $root
 
+# Klasör ayrımı (ADR 0021): .NET solution backend/, web istemcisi frontend/ altındadır.
+$backend = Join-Path $root 'backend'
+$frontend = Join-Path $root 'frontend'
+
 $problems = @()
 
 # 1. Build
-$build = & dotnet build --nologo -v q 2>&1 | Out-String
+$build = & dotnet build $backend --nologo -v q 2>&1 | Out-String
 if ($LASTEXITCODE -ne 0 -or $build -notmatch '\b0 Warning\(s\)' -or $build -notmatch '\b0 Error\(s\)') {
     $lines = ($build -split "`r?`n") | Where-Object { $_ -match ': (warning|error) ' } | Select-Object -Unique -First 10
     $problems += "BUILD temiz değil (0 warning / 0 error olmalı):`n" + ($lines -join "`n")
@@ -32,7 +37,7 @@ if ($LASTEXITCODE -ne 0 -or $build -notmatch '\b0 Warning\(s\)' -or $build -notm
 
 # 2. Test (build başarısızsa anlamsız)
 if ($problems.Count -eq 0) {
-    $test = & dotnet test --nologo --no-build -v q 2>&1 | Out-String
+    $test = & dotnet test $backend --nologo --no-build -v q 2>&1 | Out-String
     if ($LASTEXITCODE -ne 0) {
         $lines = ($test -split "`r?`n") | Where-Object { $_ -match '^\s*Failed\s|Failed!' } | Select-Object -First 15
         $problems += "TEST başarısız:`n" + ($lines -join "`n")
@@ -44,7 +49,7 @@ $scopeFile = Join-Path $PSScriptRoot 'required-scenarios.txt'
 if (Test-Path $scopeFile) {
     $required = Get-Content $scopeFile | ForEach-Object { ($_ -replace '#.*$', '').Trim() } | Where-Object { $_ }
     if ($required.Count -gt 0) {
-        $testText = Get-ChildItem -Path (Join-Path $root 'tests') -Recurse -Filter *.cs |
+        $testText = Get-ChildItem -Path (Join-Path $backend 'tests') -Recurse -Filter *.cs |
             Where-Object { $_.FullName -notmatch '\\(obj|bin)\\' } |
             Get-Content -Raw | Out-String
         $missing = $required | Where-Object { $testText -notmatch "\b$([regex]::Escape($_))\b" }
@@ -53,6 +58,21 @@ if (Test-Path $scopeFile) {
                 "`n(Her senaryonun testi olmalı; kimlik test adında veya yorumunda geçer. docs/auth-test-senaryolari.md)"
         }
     }
+}
+
+# 4. Web istemcisi (ADR 0021): frontend/package.json varsa TypeScript build ve lint temiz olmalı.
+# node_modules yoksa önce npm ci çalışır (taze klonda kapı yanlışlıkla kırılmasın).
+if (Test-Path (Join-Path $frontend 'package.json')) {
+    Push-Location $frontend
+    if (-not (Test-Path 'node_modules')) { & npm ci --no-audit --no-fund 2>&1 | Out-Null }
+    foreach ($script in 'build', 'lint') {
+        $out = & npm run $script 2>&1 | Out-String
+        if ($LASTEXITCODE -ne 0) {
+            $lines = ($out -split "`r?`n") | Where-Object { $_ -match 'error|Error' } | Select-Object -Unique -First 15
+            $problems += "WEB npm run $script başarısız:`n" + ($lines -join "`n")
+        }
+    }
+    Pop-Location
 }
 
 # Her çalışma quality-gate.log'a bir satır yazar: hook'un gerçekten tetiklendiği buradan görülür.

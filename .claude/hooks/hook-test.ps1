@@ -17,7 +17,7 @@ $cases = @(
     @{ n = 8;  a = 'activity-agent'; e = 0; c = 'dotnet test' }
     @{ n = 9;  a = 'activity-agent'; e = 2; c = 'powershell -c "dotnet ef migrations add X"' }
     @{ n = 10; a = 'activity-agent'; e = 2; c = 'dotnet ef database update; echo done' }
-    @{ n = 11; a = 'activity-agent'; e = 2; c = 'dotnet ef --project src/AjandaAI.Infrastructure migrations add X' }
+    @{ n = 11; a = 'activity-agent'; e = 2; c = 'dotnet ef --project backend/src/AjandaAI.Infrastructure migrations add X' }
     @{ n = 12; a = 'activity-agent'; e = 2; c = "cat > a.md << EOF`ntext`nEOF`ndotnet ef database update" }
     @{ n = 13; a = 'activity-agent'; e = 2; c = "bash -c 'cd src && dotnet ef migrations add X'" }
     @{ n = 14; a = 'activity-agent'; e = 2; c = '& dotnet ef migrations add X' }

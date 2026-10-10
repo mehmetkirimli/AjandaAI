@@ -24,7 +24,7 @@ sistemi sonraki aşamaya ertelendi (bkz. docs/roadmap.md).
 | Takvim | FullCalendar (React), haftalık + aylık görünüm, sürükle-bırak |
 | Sunucu durumu / API | TanStack Query + tek bir `fetch` tabanlı API istemcisi |
 | Yönlendirme | React Router |
-| Konum | Aynı repo, `web/` klasörü (`src/` .NET'e ait kalır) |
+| Konum | Aynı repo: backend `backend/`, web istemcisi `frontend/` (Karar 6) |
 
 Mobil istemci geldiğinde React Native (Expo) ile yazılır; tipler ve API istemcisi paylaşılabilir.
 
@@ -57,14 +57,28 @@ Arayüz dili Türkçe. Backend'in hata mesajları (zaten Türkçe) form alanlar�
 - Swagger'a Bearer tanımı (review bulgusu, ADR 0018 "Bilinen kısıtlar").
 
 ### 5. Agent ve kalite kapısı
-- Yeni agent: `web-agent` (`.claude/agents/web-agent.md`). Sorumluluk alanı yalnızca `web/`;
-  `src/` ve `tests/`'e DOKUNMAZ, backend değişikliği gerekirse DURUR ve lidere bildirir.
+- Yeni agent: `web-agent` (`.claude/agents/web-agent.md`). Sorumluluk alanı yalnızca `frontend/`;
+  `backend/`.e DOKUNMAZ, backend değişikliği gerekirse DURUR ve lidere bildirir.
 - Model: Sonnet (ADR 0017: UI kararları yargı gerektirir).
 - Kalite kapısı (ADR 0020) `web-agent` için: `npm run build` (TypeScript hatası 0) ve
   `npm run lint` (0 hata). Backend kontrolleri de çalışır (frontend backend'i bozmamalı).
 - **Kabul ekranla verilir:** her aşamanın sonunda lider uygulamayı çalıştırır, kabul akışını
   tarayıcıda yürütür ve ekran görüntüleriyle ürün sahibine sunar. Ürün sahibi akış ve görünüm
   üzerinden onay verir; kod kalitesine review agent bakar.
+
+### 6. Klasör ayrımı: `backend/` + `frontend/` (2026-10-10)
+```
+backend/     AjandaAI.sln, src/, tests/   (.NET)
+frontend/    React istemcisi (Vite)
+docker/, docker-compose.yml               (iki tarafın ortak altyapısı, kökte)
+docs/, .claude/                           (kökte)
+```
+- İlk planda .NET `src/` + `tests/` kökte kalacak, frontend `web/` olacaktı. Ürün sahibi
+  isimlerin hangi tarafın ne olduğunu ilk bakışta söylemesini istedi; .NET kodu `git mv` ile
+  `backend/` altına taşındı (geçmiş korunur), frontend `frontend/` altında doğar.
+- Kökte `.sln` yoktur: komutlar `dotnet build backend`, `dotnet test backend`,
+  `dotnet ef ... --project backend/src/...` biçimindedir (docs/commands.md).
+- Agent sınırı klasörle örtüşür: backend agent'ları `backend/`, web-agent `frontend/` içinde çalışır.
 
 ## Gerekçe
 - **React:** En yaygın frontend çatısı; agent'ların en tutarlı kod ürettiği ekosistem. Mobil için
@@ -84,7 +98,7 @@ Arayüz dili Türkçe. Backend'in hata mesajları (zaten Türkçe) form alanlar�
   atan bir istemci kullanıcıyı kendi kendine dışarı atar.
 
 ## Sonuçlar
-- Repo'ya Node/npm bağımlılığı gelir (Node 20+). `web/node_modules` git'e girmez.
+- Repo.ya Node/npm bağımlılığı gelir (Node 20+). `frontend/node_modules` git'e girmez.
 - Frontend kodu ürün sahibi tarafından okunmayacağı için review agent ve ekran kabulü zorunludur.
 - Takvim aktiviteleri tarih aralığıyla çeker (`From`/`To`); liste uçları en fazla 100 kayıt döndüğü
   için yoğun bir ayda istemci sayfaları sırayla çeker.

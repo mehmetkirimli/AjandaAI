@@ -1,16 +1,19 @@
 # Commands
 
+Tüm komutlar repo kökünden çalıştırılır. .NET solution `backend/`, web istemcisi `frontend/`
+altındadır (ADR 0021). Kökte `.sln` yoktur; build/test için klasör adı verilir: `dotnet build backend`.
+
 ## Build
-dotnet build                          → tüm solution'ı derler
-dotnet build --nologo                 → sade çıktı
-dotnet clean                          → build çıktılarını siler
-dotnet restore                        → paketleri geri yükler
+dotnet build backend                          → tüm solution'ı derler
+dotnet build backend --nologo                 → sade çıktı
+dotnet clean backend                          → build çıktılarını siler
+dotnet restore backend                        → paketleri geri yükler
 
 ## Test
-dotnet test                                    → hepsi (unit + entegrasyon)
-dotnet test tests/AjandaAI.Tests               → sadece unit testler (sahte repository, DB gerekmez)
-dotnet test tests/AjandaAI.IntegrationTests    → sadece entegrasyon testleri (gerçek HTTP + PostgreSQL)
-dotnet test --filter "FullyQualifiedName~Activity"  → sadece Activity testleri
+dotnet test backend                                    → hepsi (unit + entegrasyon)
+dotnet test backend/tests/AjandaAI.Tests               → sadece unit testler (sahte repository, DB gerekmez)
+dotnet test backend/tests/AjandaAI.IntegrationTests    → sadece entegrasyon testleri (gerçek HTTP + PostgreSQL)
+dotnet test backend --filter "FullyQualifiedName~Activity"  → sadece Activity testleri
 
 ### Entegrasyon testleri
 ÖN KOŞUL: Docker ayakta olmalı (docker compose up -d) ve ajandaai_test
@@ -27,7 +30,7 @@ entegrasyon testlerinin hepsi bağlantı hatasıyla kırılır; unit testler etk
   migration'ları baştan uygular ve test sonunda siler.
 
 ## Çalıştırma
-dotnet run --project src/AjandaAI.Api --launch-profile http
+dotnet run --project backend/src/AjandaAI.Api --launch-profile http
 Swagger: http://localhost:5250/swagger
 
 ## Ortam Yönetimi
@@ -60,17 +63,17 @@ Bu makinede DOTNET_ENVIRONMENT=Development kalıcı olarak tanımlıdır;
 bu yüzden argümansız çalıştırma Development'a düşer.
 
 ### Test ortamında çalıştırma
-dotnet run --project src/AjandaAI.Api -- --environment Test
+dotnet run --project backend/src/AjandaAI.Api -- --environment Test
 
 "--" ŞART: SDK 9'da `dotnet run` kendi -e/--environment seçeneğini tanır
 (environment variable atamak için); "--" olmadan argüman uygulamaya ulaşmaz.
 
 Test veritabanına migration:
-  dotnet ef database update --project src/AjandaAI.Infrastructure --startup-project src/AjandaAI.Api -- --environment Test
+  dotnet ef database update --project backend/src/AjandaAI.Infrastructure --startup-project backend/src/AjandaAI.Api -- --environment Test
 
 ### Production
 appsettings.Production.json git'e GİRMEZ (.gitignore). Şablon:
-src/AjandaAI.Api/appsettings.Production.example.json (placeholder değerler).
+backend/src/AjandaAI.Api/appsettings.Production.example.json (placeholder değerler).
 Gerçek değerler dosyaya değil, sunucuda environment variable olarak verilmelidir:
   ConnectionStrings__DefaultConnection="Host=...;Database=...;Username=...;Password=..."
   DOTNET_ENVIRONMENT=Production
@@ -88,9 +91,9 @@ docker compose down -v                → durdurur ve VERİYİ SİLER (dikkat)
 docker compose logs -f postgres       → log takibi
 
 ## Migration — SADECE db-agent
-dotnet ef migrations add {Ad} --project src/AjandaAI.Infrastructure --startup-project src/AjandaAI.Api
-dotnet ef database update --project src/AjandaAI.Infrastructure --startup-project src/AjandaAI.Api
-dotnet ef migrations list --project src/AjandaAI.Infrastructure --startup-project src/AjandaAI.Api
+dotnet ef migrations add {Ad} --project backend/src/AjandaAI.Infrastructure --startup-project backend/src/AjandaAI.Api
+dotnet ef database update --project backend/src/AjandaAI.Infrastructure --startup-project backend/src/AjandaAI.Api
+dotnet ef migrations list --project backend/src/AjandaAI.Infrastructure --startup-project backend/src/AjandaAI.Api
 
 Diğer agent'lar bu komutları ÇALIŞTIRAMAZ. Gerekçe: docs/database.md
 
@@ -103,8 +106,8 @@ dosyaya metin yazan komutlar ve build/test komutları geçmeli.
 
 ## Doğrulama Zinciri
 Her değişiklikten sonra sırasıyla:
-1. dotnet build   → 0 warning / 0 error olmalı
-2. dotnet test    → tüm testler geçmeli
+1. dotnet build backend   → 0 warning / 0 error olmalı
+2. dotnet test backend    → tüm testler geçmeli
 
 Bu zincir kırıksa iş tamamlanmış sayılmaz.
 

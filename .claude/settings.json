@@ -32,7 +32,7 @@
     ],
     "SubagentStop": [
       {
-        "matcher": "^(catalog|activity|reminder|db)-agent$",
+        "matcher": "^(catalog|activity|reminder|db|web)-agent$",
         "hooks": [
           {
             "type": "command",

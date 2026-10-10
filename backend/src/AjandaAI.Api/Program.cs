@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using AjandaAI.Infrastructure;
 using Serilog;
 using Serilog.Events;
@@ -72,6 +73,18 @@ builder.Services.AddAuthorization(options =>
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ICurrentUser, HttpCurrentUser>();
 
+// Web istemcisi (ADR 0021): e-posta linkleri frontend sayfasını gösterir; tarayıcı farklı bir
+// origin'den (Vite: http://localhost:5173) istek attığı için CORS gerekir. İzinli origin'ler
+// config'den okunur; tanımlı değilse hiçbir origin'e izin verilmez. Token body/header ile taşınır,
+// cookie yok (ADR 0018) — bu yüzden AllowCredentials kullanılmaz.
+builder.Services.Configure<FrontendOptions>(builder.Configuration.GetSection(FrontendOptions.SectionName));
+var corsOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? [];
+builder.Services.AddCors(options =>
+    options.AddDefaultPolicy(policy => policy
+        .WithOrigins(corsOrigins)
+        .AllowAnyHeader()
+        .AllowAnyMethod()));
+
 var authRateLimit = builder.Configuration.GetSection("RateLimiting:Auth");
 builder.Services.AddRateLimiter(options =>
 {
@@ -110,7 +123,22 @@ builder.Services.AddControllers(options =>
             return new BadRequestObjectResult(ApiResponse<object>.Fail("Doğrulama hatası.", errors));
         });
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+// Swagger'da "Authorize" butonu: login'den alınan access token yapıştırılıp korumalı uçlar denenir.
+builder.Services.AddSwaggerGen(options =>
+{
+    var bearer = new OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        Type = SecuritySchemeType.Http,
+        Scheme = "bearer",
+        BearerFormat = "JWT",
+        In = ParameterLocation.Header,
+        Description = "POST /api/auth/login yanıtındaki accessToken (başına 'Bearer' yazmadan).",
+        Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "Bearer" }
+    };
+    options.AddSecurityDefinition("Bearer", bearer);
+    options.AddSecurityRequirement(new OpenApiSecurityRequirement { [bearer] = Array.Empty<string>() });
+});
 
 var app = builder.Build();
 
@@ -157,6 +185,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseCors();
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseRateLimiter();

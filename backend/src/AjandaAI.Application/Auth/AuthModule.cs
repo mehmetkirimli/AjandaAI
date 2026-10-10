@@ -14,6 +14,7 @@ public class AuthModule : IModule
     public void Register(IServiceCollection services)
     {
         services.AddScoped<AuthService>();
+        services.AddScoped<MeService>();
         services.AddScoped<IValidator<RegisterDto>, RegisterDtoValidator>();
     }
 }

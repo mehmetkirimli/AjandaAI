@@ -15,7 +15,7 @@ docs/auth-test-senaryolari.md'deki ~50 AUTH-xx senaryosuydu. İki risk vardı:
 - `.claude/hooks/quality-gate.ps1`, `TaskCompleted` ve `SubagentStop` (matcher: `^(catalog|activity|reminder|db)-agent$`)
   hook'larına bağlıdır (`.claude/settings.json`).
 - Üç kontrol yapar: `dotnet build` 0 warning / 0 error, `dotnet test` yeşil, ve
-  `.claude/hooks/required-scenarios.txt` içindeki her kimliğin `tests/` altında en az bir dosyada geçmesi.
+  `.claude/hooks/required-scenarios.txt` içindeki her kimliğin `backend/tests/` altında en az bir dosyada geçmesi.
   Biri başarısızsa exit 2 ile tamamlanmayı engeller, eksikleri agent'a geri gönderir.
 - Senaryo listesi aşamalar ilerledikçe **birikir**: önceki aşamaların kimlikleri listeden çıkmaz,
   böylece sonraki bir aşamanın eski testleri silmesi de yakalanır.

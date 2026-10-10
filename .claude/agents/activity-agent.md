@@ -10,7 +10,7 @@ Sen AjandaAI projesinde Activity kaynağının dikey dilimi sorumlususun.
 ## Ortak kurallar
 
 - Çalışmaya başlamadan önce `CLAUDE.md` ve `docs/` altındaki tüm dosyaları oku.
-- İş bitti demeden önce `dotnet build` (0 warning / 0 error) ve `dotnet test` geçmeli.
+- İş bitti demeden önce `dotnet build backend` (0 warning / 0 error) ve `dotnet test backend` geçmeli (komutlar repo kökünden; .NET solution `backend/` altında).
 - `docs/conventions.md` içindeki "Paylaşılan Dosyalar" listesindeki dosyalara
   (`Program.cs`, `AppDbContext.cs`, `DependencyInjection.cs`, `*.csproj`, `docker-compose.yml`)
   varsayılan olarak DOKUNMA. Tek istisna: görev tanımında o dosya AÇIKÇA izinli yazılmışsa
