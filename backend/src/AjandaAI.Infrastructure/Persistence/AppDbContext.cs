@@ -1,7 +1,7 @@
 // Uygulamanın EF Core veritabanı bağlamıdır.
 // Entity yapılandırmaları buraya YAZILMAZ; her entity kendi
 // IEntityTypeConfiguration dosyasını Configurations/ altında alır.
-// Bu sınıf yalnızca DbSet'leri ve assembly taramasını tanımlar.
+// Bu sınıf yalnızca DbSet'leri, assembly taramasını ve tip konvansiyonlarını (UTC tarih) tanımlar.
 
 using AjandaAI.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
@@ -26,6 +26,12 @@ public class AppDbContext : DbContext
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
 
     public DbSet<EmailVerificationToken> EmailVerificationTokens => Set<EmailVerificationToken>();
+
+    // Tüm DateTimeOffset (ve DateTimeOffset?) alanları UTC olarak yazılır; bkz. UtcDateTimeOffsetConverter.
+    protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
+    {
+        configurationBuilder.Properties<DateTimeOffset>().HaveConversion<UtcDateTimeOffsetConverter>();
+    }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
