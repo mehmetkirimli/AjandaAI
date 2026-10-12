@@ -30,3 +30,5 @@ Kayıt sonrası doğrulama bağlantısı e-posta ile gitmez; backend konsol log'
 ## Ortam
 
 `.env.development` içinde `VITE_API_BASE_URL=http://localhost:5250`.
+
+Aynı ağdaki başka bir bilgisayardan erişim: `npm run dev:lan` (Vite ağa açılır, `/api` istekleri proxy ile `localhost:5250`'e gider). Güvenlik duvarında 5173 portuna izin verilmeli.

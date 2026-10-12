@@ -47,6 +47,50 @@ export interface Category {
   id: number
   name: string
   isActive: boolean
+  sortOrder: number
+}
+
+export interface AdminUser {
+  id: number
+  email: string
+  displayName: string
+  timeZoneId: string
+  role: UserRole
+  isActive: boolean
+  emailConfirmedAt: string | null
+  createdAt: string
+  updatedAt: string
+}
+
+export interface AdminUserCreateRequest {
+  email: string
+  displayName: string
+  timeZoneId: string
+  password: string
+  role: UserRole
+}
+
+export interface AdminUserUpdateRequest {
+  email: string
+  displayName: string
+  timeZoneId: string
+  role: UserRole
+  // true = yeniden aktif et, false = pasife al (DELETE ile aynı); verilmezse değişmez (ADMIN-12).
+  isActive?: boolean
+}
+
+// Veri minimizasyonu (ADR 0018 Karar 6): başlık/açıklama yok, yalnızca üstveri.
+export interface AdminActivity {
+  id: number
+  userId: number
+  categoryId: number
+  status: string
+  priority: Priority
+  start: string
+  end: string
+  isActive: boolean
+  createdAt: string
+  updatedAt: string
 }
 
 export interface ActivityListItem {

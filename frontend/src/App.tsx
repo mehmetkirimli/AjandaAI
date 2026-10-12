@@ -1,8 +1,12 @@
 import { Center, Loader } from '@mantine/core'
 import { lazy, Suspense } from 'react'
-import { Route, Routes } from 'react-router-dom'
+import { Navigate, Route, Routes } from 'react-router-dom'
+import { AdminRoute } from './auth/AdminRoute'
 import { ProtectedRoute, PublicOnlyRoute } from './auth/ProtectedRoute'
 import { AppLayout } from './components/AppLayout'
+import { AdminActivitiesPage } from './pages/admin/AdminActivitiesPage'
+import { AdminCategoriesPage } from './pages/admin/AdminCategoriesPage'
+import { AdminUsersPage } from './pages/admin/AdminUsersPage'
 import { BoardPage } from './pages/BoardPage'
 import { CheckEmailPage } from './pages/CheckEmailPage'
 import { ComingSoonPage } from './pages/ComingSoonPage'
@@ -42,9 +46,12 @@ export default function App() {
             }
           />
           <Route path="/profile" element={<ProfilePage />} />
-          <Route path="/admin" element={<ComingSoonPage title="Admin" />} />
-          <Route path="/admin/users" element={<ComingSoonPage title="Kullanıcılar" />} />
-          <Route path="/admin/categories" element={<ComingSoonPage title="Kategoriler" />} />
+          <Route element={<AdminRoute />}>
+            <Route path="/admin" element={<Navigate to="/admin/users" replace />} />
+            <Route path="/admin/users" element={<AdminUsersPage />} />
+            <Route path="/admin/categories" element={<AdminCategoriesPage />} />
+            <Route path="/admin/activities" element={<AdminActivitiesPage />} />
+          </Route>
           <Route path="*" element={<ComingSoonPage title="Sayfa bulunamadı" />} />
         </Route>
       </Route>

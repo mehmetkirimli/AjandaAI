@@ -9,9 +9,23 @@ import type {
   SeriesCreateRequest,
 } from './types'
 
+// Kategoriler 100'lük sayfalarla gelir; sıralama (ADR 0023) tam liste ister, tüm sayfalar çekilir.
+export async function fetchCategoryPages(query: Record<string, string> = {}): Promise<Category[]> {
+  const all: Category[] = []
+  for (let page = 1; page <= 50; page++) {
+    const result = await request<PagedResult<Category>>('/api/categories', {
+      query: { ...query, pageSize: 100, page },
+    })
+    all.push(...result.items)
+    if (!result.hasNext) break
+  }
+  return all
+}
+
 export async function fetchCategories(): Promise<Category[]> {
-  const page = await request<PagedResult<Category>>('/api/categories', { query: { pageSize: 100 } })
-  return page.items
+  const items = await fetchCategoryPages()
+  // Seçici ve filtreler: yalnızca aktifler, yönetimde belirlenen sırayla (ADR 0023).
+  return items.filter((c) => c.isActive).sort((a, b) => a.sortOrder - b.sortOrder || a.id - b.id)
 }
 
 // Haftalık aralık Start alanına göre filtrelenir; 100'den fazla kayıt varsa sayfalar sırayla çekilir.

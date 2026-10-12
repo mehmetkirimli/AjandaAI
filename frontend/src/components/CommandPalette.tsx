@@ -8,6 +8,8 @@ import {
   IconCalendarMonth,
   IconCalendarWeek,
   IconCalendarDot,
+  IconCategory,
+  IconUsers,
   IconLayoutKanban,
   IconLayoutSidebar,
   IconLogout,
@@ -109,9 +111,6 @@ export function CommandPalette() {
 
     const account: SpotlightActionData[] = [
       { id: 'profile', label: 'Profilim', leftSection: <IconUser size={ICON} />, onClick: () => navigate('/profile') },
-      ...(user?.role === 'Admin'
-        ? [{ id: 'admin', label: 'Admin', leftSection: <IconShieldLock size={ICON} />, onClick: () => navigate('/admin') }]
-        : []),
       {
         id: 'logout',
         label: 'Çıkış yap',
@@ -122,9 +121,19 @@ export function CommandPalette() {
       },
     ]
 
+    const admin: SpotlightActionData[] =
+      user?.role === 'Admin'
+        ? [
+            { id: 'admin-users', label: 'Kullanıcılar', description: 'Yönetim', leftSection: <IconUsers size={ICON} />, onClick: () => navigate('/admin/users') },
+            { id: 'admin-categories', label: 'Kategoriler', description: 'Yönetim', leftSection: <IconCategory size={ICON} />, onClick: () => navigate('/admin/categories') },
+            { id: 'admin-activities', label: 'Tüm aktiviteler', description: 'Yönetim', leftSection: <IconShieldLock size={ICON} />, onClick: () => navigate('/admin/activities') },
+          ]
+        : []
+
     return [
       { group: 'Gezinme', actions: navigation },
       { group: 'Görünüm', actions: view },
+      ...(admin.length > 0 ? [{ group: 'Yönetim', actions: admin }] : []),
       { group: 'Hesap', actions: account },
     ]
   }, [pathname, navigate, scheme, setColorScheme, user?.role, logout, collapsed, toggleSidebar, openActivityForm])

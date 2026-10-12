@@ -5,6 +5,7 @@ import {
   IconCategory,
   IconChevronDown,
   IconLayoutKanban,
+  IconListDetails,
   IconLogout,
   IconMoon,
   IconPencilPlus,
@@ -137,6 +138,9 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
               </NavItem>
               <NavItem to="/admin/categories" icon={<IconCategory size={16} />} onNavigate={onNavigate}>
                 Kategoriler
+              </NavItem>
+              <NavItem to="/admin/activities" icon={<IconListDetails size={16} />} onNavigate={onNavigate}>
+                Aktiviteler
               </NavItem>
             </Stack>
           )}
