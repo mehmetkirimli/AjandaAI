@@ -36,13 +36,24 @@ export function AppLayout() {
       <CommandPalette />
       <Box style={{ display: 'flex', height: '100vh', background: 'var(--app-bg)' }}>
         {showSidebar && (
-          <Box component="nav" aria-label="Ana menü" style={{ width: SIDEBAR_WIDTH, flex: 'none' }}>
+          <Box
+            component="nav"
+            aria-label="Ana menü"
+            style={{
+              width: SIDEBAR_WIDTH,
+              flex: 'none',
+              background: 'var(--app-layer-1)',
+              backdropFilter: 'blur(12px)',
+              WebkitBackdropFilter: 'blur(12px)',
+              borderRight: '1px solid var(--app-line)',
+            }}
+          >
             <Sidebar />
           </Box>
         )}
         <Box
           component="main"
-          style={{ flex: 1, minWidth: 0, padding: showSidebar ? '8px 8px 8px 0' : 8 }}
+          style={{ flex: 1, minWidth: 0 }}
         >
           <Box
             style={{
@@ -51,8 +62,6 @@ export function AppLayout() {
               flexDirection: 'column',
               overflow: 'hidden',
               background: 'var(--mantine-color-body)',
-              border: '1px solid var(--app-line)',
-              borderRadius: 10,
             }}
           >
             <Outlet />
@@ -65,7 +74,7 @@ export function AppLayout() {
           onClose={closeMobile}
           size={260}
           withCloseButton={false}
-          styles={{ content: { background: 'var(--app-bg)' }, body: { padding: 0, height: '100%' } }}
+          styles={{ content: { background: 'var(--app-layer-1)', backdropFilter: 'blur(12px)' }, body: { padding: 0, height: '100%' } }}
         >
           <Sidebar onNavigate={closeMobile} />
         </Drawer>

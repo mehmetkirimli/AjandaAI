@@ -1,26 +1,40 @@
 /* Tasarım token'ları (Linear tarzı: neredeyse tek renk, inset panel). Mantine stillerinden SONRA yüklenir. */
 :root {
-  --app-bg: #f3f3f5; /* uygulama zemini (sidebar arkası) */
-  --app-surface: #f7f7f8; /* kart / sütun */
-  --app-surface-2: #efeff1; /* kart hover */
-  --app-line: rgba(0, 0, 0, 0.08);
-  --app-line-strong: rgba(0, 0, 0, 0.14);
+  --app-bg: #f4f4f5; /* canvas */
+  --app-layer-1: rgba(255, 255, 255, 0.8); /* sidebar + navbar */
+  --app-surface: #fafafa; /* gün kartı / yüzey */
+  --app-surface-2: #f1f1f3; /* hover yüzey */
+  --app-line: rgba(0, 0, 0, 0.07);
+  --app-line-strong: rgba(0, 0, 0, 0.13);
   --app-hover: rgba(0, 0, 0, 0.04);
   --app-active: rgba(0, 0, 0, 0.07);
+  --app-chip: rgba(0, 0, 0, 0.045);
+  --app-text-muted: #71717a; /* saat, ikincil */
+  --app-text-faint: #a1a1aa; /* mikro metin */
+  --app-icon-faint: #a1a1aa;
+  --app-dash: rgba(0, 0, 0, 0.16);
+  --app-dash-hover: rgba(0, 0, 0, 0.3);
   --app-popover-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
   --mantine-color-default-border: var(--app-line);
 }
 
-/* Panel zemini = --mantine-color-body (açık: beyaz, koyu: #101114). */
+/* Cyber-Executive: canvas #090b10, katman-1 zinc-900 %80 + blur, çerçeve %6 beyaz. */
 :root[data-mantine-color-scheme='dark'] {
-  --app-bg: #0b0c0e;
-  --app-surface: #15161a;
-  --app-surface-2: #1b1c21;
-  --app-line: rgba(255, 255, 255, 0.08);
-  --app-line-strong: rgba(255, 255, 255, 0.14);
+  --app-bg: #090b10;
+  --app-layer-1: rgba(24, 24, 27, 0.8);
+  --app-surface: #0e1015;
+  --app-surface-2: #14161d;
+  --app-line: rgba(255, 255, 255, 0.06);
+  --app-line-strong: rgba(255, 255, 255, 0.1);
   --app-hover: rgba(255, 255, 255, 0.05);
   --app-active: rgba(255, 255, 255, 0.07);
-  --app-popover-shadow: 0 16px 48px rgba(0, 0, 0, 0.55);
+  --app-chip: rgba(255, 255, 255, 0.04);
+  --app-text-muted: #a1a1aa; /* zinc-400 */
+  --app-text-faint: #71717a; /* zinc-500 */
+  --app-icon-faint: #52525b; /* zinc-600 */
+  --app-dash: rgba(39, 39, 42, 0.8); /* zinc-800/80 */
+  --app-dash-hover: #3f3f46; /* zinc-700 */
+  --app-popover-shadow: 0 16px 48px rgba(0, 0, 0, 0.6);
   --mantine-color-default-border: var(--app-line);
 }
 

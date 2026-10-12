@@ -11,11 +11,12 @@ import dayGridPlugin from '@fullcalendar/daygrid'
 import interactionPlugin, { type EventResizeDoneArg } from '@fullcalendar/interaction'
 import FullCalendar from '@fullcalendar/react'
 import timeGridPlugin from '@fullcalendar/timegrid'
-import { ActionIcon, Button, Loader, SegmentedControl } from '@mantine/core'
-import { IconChevronLeft, IconChevronRight, IconRepeat } from '@tabler/icons-react'
+import { Loader } from '@mantine/core'
+import { IconRepeat } from '@tabler/icons-react'
 import { useQuery } from '@tanstack/react-query'
 import dayjs from 'dayjs'
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { registerCommandHandler } from '../lib/commands'
 import { fetchActivities, fetchCategories } from '../api/activities'
 import type { ActivityListItem } from '../api/types'
@@ -23,16 +24,12 @@ import { PanelHeader } from '../components/PanelHeader'
 import { useActivityForm } from '../components/activity-form/context'
 import { ActivityDrawer } from '../components/ActivityDrawer'
 import { useReschedule } from '../hooks/useReschedule'
-import { categoryFill } from '../lib/categoryColor'
+import { categoryStrip } from '../lib/categoryColor'
+import { MONO } from '../components/board/ActivityCard'
 import { DAY_NAMES, formatDuration, moveToDay, timeDative } from '../lib/week'
 import './calendar.css'
 
 type ViewType = 'timeGridWeek' | 'dayGridMonth' | 'timeGridDay'
-const VIEWS: { value: ViewType; label: string }[] = [
-  { value: 'timeGridWeek', label: 'Hafta' },
-  { value: 'dayGridMonth', label: 'Ay' },
-  { value: 'timeGridDay', label: 'Gün' },
-]
 
 const TIME_FORMAT = { hour: '2-digit', minute: '2-digit', hour12: false } as const
 
@@ -43,12 +40,13 @@ function dayName(d: dayjs.Dayjs): string {
 function renderEvent(arg: EventContentArg) {
   const isSeries = arg.event.extendedProps.seriesId != null
   const repeatIcon = isSeries ? <IconRepeat size={12} style={{ marginLeft: 4, opacity: 0.6, verticalAlign: 'middle' }} /> : null
+  const mono = { fontFamily: MONO, color: 'var(--app-text-muted)' }
   const month = arg.view.type === 'dayGridMonth'
   const ellipsis = { overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } as const
   if (month || arg.event.allDay) {
     return (
-      <div style={{ ...ellipsis, fontSize: 13, fontWeight: 600 }}>
-        {arg.timeText && <span style={{ marginRight: 4, fontSize: 12, fontWeight: 400, opacity: 0.85 }}>{arg.timeText}</span>}
+      <div style={{ ...ellipsis, fontSize: 13, fontWeight: 500 }}>
+        {arg.timeText && <span style={{ ...mono, marginRight: 6, fontSize: 12, fontWeight: 400 }}>{arg.timeText}</span>}
         {arg.event.title}
         {repeatIcon}
       </div>
@@ -56,8 +54,8 @@ function renderEvent(arg: EventContentArg) {
   }
   return (
     <div style={{ overflow: 'hidden', lineHeight: 1.2 }}>
-      <div style={{ ...ellipsis, fontWeight: 600, fontSize: 13 }}>{arg.event.title}{repeatIcon}</div>
-      <div style={{ ...ellipsis, opacity: 0.85, fontSize: 12, fontWeight: 400 }}>{arg.timeText}</div>
+      <div style={{ ...ellipsis, fontWeight: 500, fontSize: 13 }}>{arg.event.title}{repeatIcon}</div>
+      <div style={{ ...ellipsis, ...mono, fontSize: 12, fontWeight: 400 }}>{arg.timeText}</div>
     </div>
   )
 }
@@ -66,7 +64,16 @@ export default function CalendarPage() {
   const calendarRef = useRef<FullCalendar>(null)
   const [range, setRange] = useState<{ from: string; to: string } | null>(null)
   const [title, setTitle] = useState('')
-  const [viewType, setViewType] = useState<ViewType>('timeGridWeek')
+  // Başka sayfadan gelen görünüm isteği (?view=dayGridMonth) ilk render'da uygulanır.
+  const [searchParams] = useSearchParams()
+  const requestedView = searchParams.get('view')
+  const [initialView] = useState<ViewType>(
+    requestedView === 'dayGridMonth' || requestedView === 'timeGridDay' || requestedView === 'timeGridWeek'
+      ? requestedView
+      : 'timeGridWeek',
+  )
+  const [viewType, setViewType] = useState<ViewType>(initialView)
+  const [showToday, setShowToday] = useState(false)
   const [openId, setOpenId] = useState<number | null>(null)
   const reschedule = useReschedule()
   const { openActivityForm } = useActivityForm()
@@ -90,7 +97,7 @@ export default function CalendarPage() {
         // Pano hapıyla aynı kural: iptal veya kategorisiz gri, aksi halde kategori rengi (shade 7).
         const known = categoriesQuery.data?.some((c) => c.id === a.categoryId) ?? true
         const neutral = a.status === 'Cancelled' || !known
-        const fill = neutral ? 'var(--mantine-color-gray-7)' : categoryFill(a.categoryId)
+        const fill = neutral ? 'var(--mantine-color-gray-6)' : categoryStrip(a.categoryId)
         return {
           id: String(a.id),
           title: a.title,
@@ -98,9 +105,10 @@ export default function CalendarPage() {
           end: a.isAllDay ? undefined : a.end,
           allDay: a.isAllDay,
           extendedProps: { seriesId: a.seriesId ?? null },
-          backgroundColor: fill,
+          // Pano kartıyla aynı dil: kategori renginin ~%12 tonu (opak, zeminle karışık) + 4 px tam renk sol çizgi.
+          backgroundColor: `color-mix(in srgb, ${fill} 12%, var(--mantine-color-body))`,
           borderColor: fill,
-          textColor: '#ffffff',
+          textColor: 'var(--mantine-color-text)',
           // Tüm gün etkinliğinin süresi uzatılmaz (IsAllDay değişimi F3'ün işi).
           durationEditable: !a.isAllDay,
         }
@@ -127,6 +135,9 @@ export default function CalendarPage() {
   const handleDatesSet = (info: DatesSetArg) => {
     setTitle(info.view.title)
     setViewType(info.view.type as ViewType)
+    // Bugünü içeren dönemdeyken "Bugün" butonu gizli (Pano ile aynı davranış).
+    const now = Date.now()
+    setShowToday(!(info.start.getTime() <= now && now < info.end.getTime()))
     const from = info.start.toISOString()
     const to = new Date(info.end.getTime() - 1).toISOString()
     setRange((r) => (r?.from === from && r?.to === to ? r : { from, to }))
@@ -190,25 +201,23 @@ export default function CalendarPage() {
 
   return (
     <>
-      <PanelHeader title="Takvim" meta={title}>
+      <PanelHeader
+        title="Takvim"
+        meta={title}
+        view={viewType}
+        onViewChange={(v) => api()?.changeView(v)}
+        onToday={showToday ? () => api()?.today() : undefined}
+        onPrev={() => api()?.prev()}
+        onNext={() => api()?.next()}
+      >
         {activitiesQuery.isFetching && <Loader size={12} />}
-        <SegmentedControl size="xs" value={viewType} data={VIEWS} onChange={(v) => api()?.changeView(v)} />
-        <ActionIcon size="md" aria-label="Önceki" onClick={() => api()?.prev()}>
-          <IconChevronLeft size={16} />
-        </ActionIcon>
-        <Button size="compact-sm" variant="default" onClick={() => api()?.today()}>
-          Bugün
-        </Button>
-        <ActionIcon size="md" aria-label="Sonraki" onClick={() => api()?.next()}>
-          <IconChevronRight size={16} />
-        </ActionIcon>
       </PanelHeader>
 
       <div style={{ flex: 1, minHeight: 0 }}>
       <FullCalendar
         ref={calendarRef}
         plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
-        initialView="timeGridWeek"
+        initialView={initialView}
         headerToolbar={false}
         locale={trLocale}
         firstDay={1}

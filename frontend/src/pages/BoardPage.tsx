@@ -8,16 +8,15 @@ import {
   type DragEndEvent,
   type DragStartEvent,
 } from '@dnd-kit/core'
-import { ActionIcon, Alert, Box, Button, Group, Text } from '@mantine/core'
+import { Alert, Box, Button, Group, Text } from '@mantine/core'
 import {
   IconAlertCircle,
-  IconChevronLeft,
-  IconChevronRight,
 } from '@tabler/icons-react'
 import { useQuery } from '@tanstack/react-query'
 import dayjs, { type Dayjs } from 'dayjs'
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { registerCommandHandler } from '../lib/commands'
+import { useLocation, useNavigate } from 'react-router-dom'
+import { registerCommandHandler, runPageCommand } from '../lib/commands'
 import { fetchActivities, fetchCategories } from '../api/activities'
 import { ApiError } from '../api/client'
 import type { ActivityListItem } from '../api/types'
@@ -63,6 +62,8 @@ export function BoardPage() {
   }, [activitiesQuery.data])
 
   const moveMutation = useReschedule()
+  const navigate = useNavigate()
+  const { pathname } = useLocation()
 
   // Komut paleti: Bugüne dön / Önceki / Sonraki hafta.
   useEffect(
@@ -112,17 +113,17 @@ export function BoardPage() {
 
   return (
     <>
-      <PanelHeader title="Pano" meta={weekRangeLabel(weekStart)}>
-        <ActionIcon size="md" aria-label="Önceki hafta" onClick={() => setWeekStart((w) => w.subtract(7, 'day'))}>
-          <IconChevronLeft size={16} />
-        </ActionIcon>
-        <Button size="compact-sm" variant="default" disabled={isCurrentWeek} onClick={() => setWeekStart(startOfWeek(dayjs()))}>
-          Bugün
-        </Button>
-        <ActionIcon size="md" aria-label="Sonraki hafta" onClick={() => setWeekStart((w) => w.add(7, 'day'))}>
-          <IconChevronRight size={16} />
-        </ActionIcon>
-      </PanelHeader>
+      <PanelHeader
+        title="Pano"
+        meta={weekRangeLabel(weekStart)}
+        view="timeGridWeek"
+        onViewChange={(v) => {
+          if (v !== 'timeGridWeek') runPageCommand(`view:${v}`, pathname, '/calendar', navigate)
+        }}
+        onToday={isCurrentWeek ? undefined : () => setWeekStart(startOfWeek(dayjs()))}
+        onPrev={() => setWeekStart((w) => w.subtract(7, 'day'))}
+        onNext={() => setWeekStart((w) => w.add(7, 'day'))}
+      />
 
       {activitiesQuery.isError && (
         <Box px="md" pt="sm">

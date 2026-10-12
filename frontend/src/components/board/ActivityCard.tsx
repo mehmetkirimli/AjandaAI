@@ -1,63 +1,73 @@
-import { Group, Text } from '@mantine/core'
+import { Text } from '@mantine/core'
 import { IconGripVertical, IconRepeat } from '@tabler/icons-react'
 import dayjs from 'dayjs'
 import type { CSSProperties } from 'react'
 import type { ActivityListItem } from '../../api/types'
-import { categoryFill, UNCATEGORIZED } from '../../lib/categoryColor'
+import { categoryStrip, UNCATEGORIZED } from '../../lib/categoryColor'
 
 interface Props {
   item: ActivityListItem
   categoryName: string
-  // Sürükleme katmanında (DragOverlay) hap hafif büyür ve gölge alır.
+  // Sürükleme katmanında (DragOverlay) kart hafif büyür ve gölge alır.
   overlay?: boolean
   style?: CSSProperties
 }
 
-// Renkli hap: kategori renginde dolu zemin; iptal edilmiş veya kategorisiz aktivite nötr gri.
-// Metin: "Başlık - 09:30 [Kategori]" (tüm gün: "Tüm gün"), en fazla 2 satır.
+export const MONO = 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace'
+
+// Linear tarzı kart: kategori renginin %10 tonu (hover %14), solda 4 px tam renk çizgi, üstte mikro ışık.
+// Başlık 13/500, saat monospace 12 px; kategori solunda renkli noktalı mini pill.
 export function ActivityCard({ item, categoryName, overlay = false, style }: Props) {
   const neutral = item.status === 'Cancelled' || categoryName === UNCATEGORIZED
-  const background = neutral ? 'var(--mantine-color-gray-7)' : categoryFill(item.categoryId)
-  const color = '#ffffff'
-  const time = item.isAllDay ? 'Tüm gün' : dayjs(item.start).format('HH:mm')
+  const color = neutral ? 'var(--mantine-color-gray-6)' : categoryStrip(item.categoryId)
+  const time = item.isAllDay
+    ? 'Tüm gün'
+    : `${dayjs(item.start).format('HH:mm')} – ${dayjs(item.end).format('HH:mm')}`
 
   return (
-    <Group
+    <div
       className="activity-pill"
-      gap={4}
-      wrap="nowrap"
-      px={6}
-      py={6}
-      mih={38}
-      style={{
-        background,
-        color,
-        borderRadius: 8,
-        boxShadow: overlay ? 'var(--mantine-shadow-xl)' : undefined,
-        transform: overlay ? 'scale(1.04)' : undefined,
-        cursor: overlay ? 'grabbing' : 'grab',
-        ...style,
-      }}
+      style={
+        {
+          '--cat': color,
+          boxShadow: `inset 4px 0 0 0 ${color}, inset 0 1px 0 0 rgba(255,255,255,0.08)${overlay ? ', var(--mantine-shadow-xl)' : ''}`,
+          transform: overlay ? 'scale(1.04)' : undefined,
+          cursor: overlay ? 'grabbing' : 'grab',
+          ...style,
+        } as CSSProperties
+      }
     >
-      <IconGripVertical size={14} style={{ flex: 'none', opacity: 0.6 }} />
-      <Text
-        fz={12.5}
-        fw={500}
-        lh={1.3}
-        lineClamp={2}
-        c="inherit"
-        style={{ flex: 1, minWidth: 0, overflowWrap: 'anywhere' }}
-        title={`${item.title} - ${time} [${categoryName}]`}
-      >
-        {item.title} - {time} [{categoryName}]
-      </Text>
-      {item.seriesId != null && <IconRepeat size={12} aria-label="Seri" style={{ flex: 'none', opacity: 0.6 }} />}
-      {item.priority === 'High' && (
-        <span
-          aria-label="Yüksek öncelik"
-          style={{ width: 6, height: 6, borderRadius: '50%', background: 'currentColor', opacity: 0.85, flex: 'none' }}
-        />
-      )}
-    </Group>
+      <IconGripVertical size={14} style={{ flex: 'none', color: 'var(--app-icon-faint)' }} />
+      <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 3 }}>
+        <Text
+          fz={13}
+          fw={500}
+          lh={1.3}
+          lineClamp={2}
+          style={{ overflowWrap: 'anywhere' }}
+          title={`${item.title} - ${time} [${categoryName}]`}
+        >
+          {item.title}
+        </Text>
+        <Text fz={12} lh={1.2} style={{ fontFamily: MONO, color: 'var(--app-text-muted)' }}>
+          {time}
+        </Text>
+        <span className="cat-pill">
+          <span style={{ width: 6, height: 6, borderRadius: '50%', background: color, flex: 'none' }} />
+          <span className="cat-pill-label">{categoryName}</span>
+        </span>
+      </div>
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, flex: 'none' }}>
+        {item.seriesId != null && (
+          <IconRepeat size={12} aria-label="Seri" style={{ color: 'var(--app-text-faint)' }} />
+        )}
+        {item.priority === 'High' && (
+          <span
+            aria-label="Yüksek öncelik"
+            style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--mantine-color-red-5)' }}
+          />
+        )}
+      </div>
+    </div>
   )
 }

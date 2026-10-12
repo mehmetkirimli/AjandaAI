@@ -133,6 +133,8 @@ export function CommandPalette() {
     <Spotlight
       actions={actions}
       shortcut={['mod + K']}
+      // Odak bir radio/input'ta (örn. navbar segmenti) iken de ⌘K açılsın; varsayılan input'ları yok sayardı.
+      tagsToIgnore={[]}
       nothingFound="Eşleşen komut yok"
       highlightQuery
       limit={20}

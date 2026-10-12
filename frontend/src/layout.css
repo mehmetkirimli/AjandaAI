@@ -103,13 +103,6 @@
   }
 }
 
-.activity-pill {
-  transition: filter 120ms ease, transform 120ms ease;
-}
-
-.activity-pill:hover {
-  filter: brightness(1.1);
-}
 
 /* "Aktivite Ekle": küçük, gri, sessiz; hover'da hafif zemin ve açık metin. */
 .board-add {
@@ -121,4 +114,72 @@
 .board-add:hover {
   background: var(--app-hover);
   color: var(--mantine-color-text);
+}
+
+/* Aktivite kartı: --cat inline gelir (kategori rengi). */
+.activity-pill {
+  display: flex;
+  align-items: flex-start;
+  gap: 4px;
+  padding: 8px 8px 8px 10px;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--cat) 10%, transparent);
+  transition: background 120ms ease, transform 120ms ease;
+}
+
+.activity-pill:hover {
+  background: color-mix(in srgb, var(--cat) 14%, transparent);
+}
+
+.cat-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  align-self: flex-start;
+  max-width: 100%;
+  padding: 1px 7px 1px 6px;
+  border-radius: 999px;
+  background: var(--app-chip);
+  font-size: 11px;
+  color: var(--app-text-muted);
+}
+
+.cat-pill-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Boş gün: sürükle-bırak hedefi hissi veren kesikli alan. */
+.day-dropzone {
+  flex: 1;
+  min-height: 84px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  border: 1px dashed var(--app-dash);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--app-icon-faint);
+  font-family: inherit;
+  cursor: pointer;
+  transition: border-color 120ms ease, background 120ms ease;
+}
+
+.day-dropzone:hover {
+  border-color: var(--app-dash-hover);
+}
+
+.day-dropzone[data-over='true'] {
+  border-color: var(--mantine-color-accent-filled);
+  background: color-mix(in srgb, var(--mantine-color-accent-filled) 6%, transparent);
+  color: var(--mantine-color-accent-filled);
+}
+
+.day-dropzone span {
+  font-size: 11px;
+  color: var(--app-text-faint);
 }

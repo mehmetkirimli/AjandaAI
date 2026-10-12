@@ -1,23 +1,12 @@
 import { useDraggable, useDroppable } from '@dnd-kit/core'
 import { Box, Button, Skeleton, Stack, Text } from '@mantine/core'
-import { IconPlus } from '@tabler/icons-react'
+import { IconCoffee, IconPlus } from '@tabler/icons-react'
 import type { Dayjs } from 'dayjs'
 import type { ActivityListItem } from '../../api/types'
 import { dayKey } from '../../lib/week'
 import { ActivityCard } from './ActivityCard'
 
 const SHORT_DAYS = ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz']
-
-// Boş gün illüstrasyonu (emoji) ve mesajları; gün numarasına göre sabit seçilir (render'da değişmez).
-const EMPTY_WEEKDAY = [
-  { emoji: '☕', text: 'Harika, bugün için planlanan bir şey yok!' },
-  { emoji: '✨', text: 'Boş gün, kahveni al ☕' },
-  { emoji: '🌤️', text: 'Bugün sakin geçiyor.' },
-]
-const EMPTY_WEEKEND = [
-  { emoji: '🌙', text: 'Dinlenme zamanı!' },
-  { emoji: '😴', text: 'Hafta sonu senin' },
-]
 
 interface Props {
   day: Dayjs
@@ -62,8 +51,6 @@ function DraggableCard({
 export function DayColumn({ day, index, items, categoryName, loading, isToday, onOpen, onAddActivity }: Props) {
   const { setNodeRef, isOver } = useDroppable({ id: `day-${dayKey(day)}` })
   const weekend = index >= 5
-  const pool = weekend ? EMPTY_WEEKEND : EMPTY_WEEKDAY
-  const empty = pool[day.date() % pool.length]
 
   return (
     <Box
@@ -73,9 +60,9 @@ export function DayColumn({ day, index, items, categoryName, loading, isToday, o
       style={{
         display: 'flex',
         flexDirection: 'column',
-        minHeight: weekend ? 190 : 260,
+        minHeight: 160,
         background: isOver
-          ? 'color-mix(in srgb, var(--mantine-color-accent-filled) 7%, var(--app-surface))'
+          ? 'color-mix(in srgb, var(--mantine-color-accent-filled) 6%, var(--app-surface))'
           : 'var(--app-surface)',
         border: isOver ? '1px dashed var(--mantine-color-accent-filled)' : '1px solid var(--app-line)',
         borderRadius: 10,
@@ -83,19 +70,20 @@ export function DayColumn({ day, index, items, categoryName, loading, isToday, o
         minWidth: 0,
       }}
     >
-      {/* Gün başlığı: "12 Pzt"; bugün indigo dolu hap. */}
+      {/* Gün başlığı: "12 Pzt"; bugün parlayan accent rozet. */}
       <Box mb={8} px={4}>
         <Text
           span
-          fz={13.5}
+          fz={12.5}
           fw={600}
           style={{
             display: 'inline-block',
-            padding: '2px 10px',
+            padding: '1px 9px',
             marginLeft: -6,
             borderRadius: 999,
             background: isToday ? 'var(--mantine-color-accent-filled)' : 'transparent',
             color: isToday ? '#fff' : undefined,
+            boxShadow: isToday ? '0 0 12px rgba(94, 106, 210, 0.45)' : undefined,
           }}
         >
           {day.format('D')} {SHORT_DAYS[index]}
@@ -109,14 +97,10 @@ export function DayColumn({ day, index, items, categoryName, loading, isToday, o
             {index % 2 === 0 && <Skeleton h={40} radius={8} />}
           </>
         ) : items.length === 0 ? (
-          <Stack align="center" justify="center" gap={4} style={{ flex: 1 }} py="md">
-            <Text lh={1} mb={6} aria-hidden style={{ fontSize: 40 }}>
-              {isOver ? '📥' : empty.emoji}
-            </Text>
-            <Text fz={13} c="dimmed" ta="center" maw={220}>
-              {isOver ? 'Buraya bırak' : empty.text}
-            </Text>
-          </Stack>
+          <button type="button" className="day-dropzone" data-over={isOver} onClick={() => onAddActivity(day)}>
+            <IconCoffee size={18} aria-hidden />
+            <span>{isOver ? 'Buraya bırak' : 'Boş · eklemek için tıkla'}</span>
+          </button>
         ) : (
           items.map((item) => (
             <DraggableCard key={item.id} item={item} categoryName={categoryName(item.categoryId)} onOpen={onOpen} />
@@ -124,6 +108,7 @@ export function DayColumn({ day, index, items, categoryName, loading, isToday, o
         )}
       </Stack>
 
+      {items.length > 0 && (
       <Button
         mt={8}
         size="compact-sm"
@@ -136,6 +121,7 @@ export function DayColumn({ day, index, items, categoryName, loading, isToday, o
       >
         Aktivite Ekle
       </Button>
+      )}
     </Box>
   )
 }

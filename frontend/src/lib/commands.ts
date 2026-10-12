@@ -26,6 +26,11 @@ export function runPageCommand(
   targetPath: string,
   navigate: (to: string) => void,
 ): void {
+  // Görünüm komutları başka sayfadan URL ile taşınır (/calendar?view=...): takvim ilk render'da uygular, bekleyen komut yarışı olmaz.
+  if (command.startsWith('view:') && pathname !== targetPath && targetPath === '/calendar') {
+    navigate(`/calendar?view=${command.slice('view:'.length)}`)
+    return
+  }
   if (pathname === targetPath && handler) {
     handler(command)
     return
