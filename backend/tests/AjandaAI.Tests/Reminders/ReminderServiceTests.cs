@@ -339,7 +339,7 @@ public class ReminderServiceTests
         var result = await _service.CreateAsync(new ReminderCreateDto(10, Now.AddMinutes(-1), null));
 
         Assert.False(result.Success);
-        Assert.Contains("RemindAt geçmiş bir tarih olamaz.", result.Errors);
+        Assert.Contains("Hatırlatma zamanı geçmiş bir tarih olamaz.", result.Errors);
     }
 
     [Fact]
@@ -348,7 +348,7 @@ public class ReminderServiceTests
         var result = await _service.CreateAsync(new ReminderCreateDto(10, Now.AddDays(2), null));
 
         Assert.False(result.Success);
-        Assert.Contains("RemindAt, Activity başlangıç zamanından sonra olamaz.", result.Errors);
+        Assert.Contains("Hatırlatma zamanı, aktivitenin başlangıcından sonra olamaz.", result.Errors);
     }
 
     [Fact]

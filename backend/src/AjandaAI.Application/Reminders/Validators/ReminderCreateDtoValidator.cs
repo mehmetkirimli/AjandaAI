@@ -23,7 +23,7 @@ public class ReminderCreateDtoValidator : AbstractValidator<ReminderCreateDto>
 
         RuleFor(x => x.RemindAt)
             .Must(remindAt => remindAt >= timeProvider.GetUtcNow())
-            .WithMessage("RemindAt geçmiş bir tarih olamaz.");
+            .WithMessage("Hatırlatma zamanı geçmiş bir tarih olamaz.");
 
         RuleFor(x => x)
             .MustAsync(async (dto, ct) =>
@@ -31,7 +31,7 @@ public class ReminderCreateDtoValidator : AbstractValidator<ReminderCreateDto>
                 var activity = await activityRepository.GetByIdForUserAsync(dto.ActivityId, currentUser.UserId, ct);
                 return activity is null || dto.RemindAt <= activity.Start;
             })
-            .WithMessage("RemindAt, Activity başlangıç zamanından sonra olamaz.");
+            .WithMessage("Hatırlatma zamanı, aktivitenin başlangıcından sonra olamaz.");
 
         RuleFor(x => x.Note).MaximumLength(500);
     }
