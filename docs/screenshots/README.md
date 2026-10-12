@@ -14,3 +14,4 @@ gerçek tarayıcıda (Playwright + yerel Chrome) alınan ekran görüntüleri ve
 - [pano-taslak/](pano-taslak/) — ürün sahibinin Pano taslağı: hafta içi/hafta sonu iki sıra, dolu renkli haplar, boş gün mesajları, + Aktivite Ekle; boş güne ve hafta sonuna sürükle-bırak (2026-10-12).
 - [f3/](f3/) — aktivite formu: Pano'dan ekle, C kısayolu + doğrulama, takvimde aralık seçip oluştur, Düzenle, hatırlatma ekle/sil, pasife al (2026-10-12).
 - [f3b/](f3b/) — tekrarlayan seri: krem (her gün, 12 Eki → 12 Nis, 183, 15 dk hatırlatma), her Pazartesi iş (uzun süre uyarısı → Tekrarla), seri ikonu, "Bu ve sonrakileri durdur" (2026-10-12).
+- [cyber/](cyber/) — GEÇERLİ TASARIM: "Cyber-Executive" (48px navbar + command bar, 5+2 sığ grid, yarı saydam kart + sol çizgi + mono saat, kesikli dropzone); pano/takvim sürükle, dropzone→form, navbar Ay, ⌘K tema (2026-10-12).

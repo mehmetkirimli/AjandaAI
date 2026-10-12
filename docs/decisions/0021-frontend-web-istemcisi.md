@@ -92,6 +92,18 @@ Arayüz dili Türkçe. Backend'in hata mesajları (zaten Türkçe) form alanlar�
 - ⌘K komut paleti (`@mantine/spotlight`) korunur; yeni işlevler palete de komut olarak eklenir.
 - Bu dil sonraki ekranların varsayılanıdır.
 
+### 5d. "Cyber-Executive" görsel dili (2026-10-12, ürün sahibinin şartnamesi) — 5c'nin yerine geçer
+- Ürün sahibi Linear/Raycast/Notion Calendar standartlarında ayrıntılı bir şartname verdi. Tailwind + Lucide
+  istenmişti; sorulunca Mantine'de kalmayı seçti (çalışan form/tarih/⌘K/drawer bileşenleri bozulmasın).
+  Görsel kurallar Mantine + CSS ile birebir; ikonlar Tabler (Lucide ile aynı çizgisel stil).
+- Katmanlar: canvas #090b10; sidebar ve üst navbar rgba(24,24,27,.8) + blur(12px); çizgiler rgba(255,255,255,.06).
+- 48px üst navbar: solda "Sayfa / dönem" + mini Bugün (bugünkü dönemde gizli), ortada command bar (Ctrl/⌘ K),
+  sağda Hafta | Ay | Gün + ‹ ›. Pano'dan Ay/Gün takvime `/calendar?view=...` ile gider. Sidebar korunur.
+- Pano 5+2 sığ grid; bugün = parlayan accent rozet.
+- Kart (pano ve takvim): kategori renginin %10 tonu, 4px sol kategori çizgisi, inset üst ışık, monospace saat
+  (zinc-400), "● Kategori" pill, 6 noktalı tutamak. Pano taslağındaki dolu renkli haplar bununla kalktı.
+- Boş gün: kesikli dropzone + silik çizgisel ikon + mikro metin; tıklanınca o günün formu açılır. Emoji yok.
+
 ### 6. Klasör ayrımı: `backend/` + `frontend/` (2026-10-10)
 ```
 backend/     AjandaAI.sln, src/, tests/   (.NET)
