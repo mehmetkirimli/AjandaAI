@@ -36,6 +36,12 @@ public class CategoriesController : ControllerBase
     public Task<ApiResponse<CategoryListDto>> CreateAsync(CategoryCreateDto dto, CancellationToken cancellationToken) =>
         _service.CreateAsync(dto, cancellationToken);
 
+    // ADR 0023 Karar 2: tüm kategorilerin yeni sırası; geçerliyse 204, değilse 400.
+    [Authorize(Roles = nameof(UserRole.Admin))]
+    [HttpPut("order")]
+    public Task<ApiResponse<object>> ReorderAsync(CategoryOrderDto dto, CancellationToken cancellationToken) =>
+        _service.ReorderAsync(dto, cancellationToken);
+
     [Authorize(Roles = nameof(UserRole.Admin))]
     [HttpPut("{id:int}")]
     public Task<ApiResponse<CategoryListDto>> UpdateAsync(int id, CategoryUpdateDto dto, CancellationToken cancellationToken) =>

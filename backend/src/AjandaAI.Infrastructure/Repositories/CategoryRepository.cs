@@ -22,11 +22,14 @@ public class CategoryRepository : ICategoryRepository
 
     public async Task<PagedResult<Category>> GetPagedAsync(CategoryFilterDto filter, CancellationToken cancellationToken = default)
     {
-        var query = _context.Categories.AsNoTracking().Where(c => c.IsActive);
+        var query = _context.Categories.AsNoTracking();
+        if (!filter.IncludeInactive)
+            query = query.Where(c => c.IsActive);
 
         var totalCount = await query.CountAsync(cancellationToken);
         var items = await query
-            .OrderBy(c => c.Id)
+            .OrderBy(c => c.SortOrder)
+            .ThenBy(c => c.Id)
             .Skip(filter.Skip)
             .Take(filter.PageSize)
             .ToListAsync(cancellationToken);
@@ -63,5 +66,25 @@ public class CategoryRepository : ICategoryRepository
     {
         _context.Categories.Update(category);
         await _context.SaveChangesAsync(cancellationToken);
+    }
+
+    public Task<List<int>> GetAllIdsAsync(CancellationToken cancellationToken = default) =>
+        _context.Categories.AsNoTracking().Select(c => c.Id).ToListAsync(cancellationToken);
+
+    public async Task<int> GetMaxSortOrderAsync(CancellationToken cancellationToken = default) =>
+        await _context.Categories.MaxAsync(c => (int?)c.SortOrder, cancellationToken) ?? 0;
+
+    public async Task ReorderAsync(IReadOnlyList<int> orderedIds, CancellationToken cancellationToken = default)
+    {
+        await using var transaction = await _context.Database.BeginTransactionAsync(cancellationToken);
+        for (var i = 0; i < orderedIds.Count; i++)
+        {
+            var id = orderedIds[i];
+            var order = i + 1;
+            await _context.Categories
+                .Where(c => c.Id == id)
+                .ExecuteUpdateAsync(s => s.SetProperty(c => c.SortOrder, order), cancellationToken);
+        }
+        await transaction.CommitAsync(cancellationToken);
     }
 }

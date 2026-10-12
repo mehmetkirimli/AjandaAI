@@ -134,6 +134,16 @@ public class ActivityServiceTests
 
         public Task<bool> NameExistsAsync(string name, int? excludeId = null, CancellationToken cancellationToken = default) =>
             Task.FromResult(false);
+
+        // ICategoryRepository sıralama üyeleri (ADR 0023); Activity testlerinde kullanılmaz.
+        public Task<List<int>> GetAllIdsAsync(CancellationToken cancellationToken = default) =>
+            Task.FromResult(_items.Select(c => c.Id).ToList());
+
+        public Task<int> GetMaxSortOrderAsync(CancellationToken cancellationToken = default) =>
+            Task.FromResult(_items.Max(c => c.SortOrder));
+
+        public Task ReorderAsync(IReadOnlyList<int> orderedIds, CancellationToken cancellationToken = default) =>
+            Task.CompletedTask;
     }
 
     private const int Me = 7;

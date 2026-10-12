@@ -22,7 +22,8 @@ public record AdminUserDto(
 public record AdminUserCreateDto(string Email, string DisplayName, string TimeZoneId, string Password, UserRole? Role);
 
 /// <summary>Role zorunludur: eksik gönderim sessizce User sayılıp admin düşürülmesin.</summary>
-public record AdminUserUpdateDto(string Email, string DisplayName, string TimeZoneId, UserRole? Role);
+/// <summary>IsActive verilmezse durum değişmez; true yeniden aktif eder, false DELETE ile aynı kurallarla pasife alır (ADMIN-12).</summary>
+public record AdminUserUpdateDto(string Email, string DisplayName, string TimeZoneId, UserRole? Role, bool? IsActive = null);
 
 /// <summary>Pasif kullanıcılar da listelenir; IsActive verilirse ona göre süzülür.</summary>
 public class AdminUserFilterDto : PageRequest

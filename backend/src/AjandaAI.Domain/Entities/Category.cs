@@ -9,6 +9,9 @@ public class Category
 
     public string Name { get; set; } = string.Empty;
 
+    // Admin ekranında belirlenen görüntüleme sırası (ADR 0023).
+    public int SortOrder { get; set; }
+
     public bool IsActive { get; set; }
 
     public DateTimeOffset CreatedAt { get; set; }

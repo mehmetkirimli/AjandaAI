@@ -3,4 +3,4 @@
 
 namespace AjandaAI.Application.Categories.Dtos;
 
-public record CategoryListDto(int Id, string Name, bool IsActive);
+public record CategoryListDto(int Id, string Name, bool IsActive, int SortOrder);

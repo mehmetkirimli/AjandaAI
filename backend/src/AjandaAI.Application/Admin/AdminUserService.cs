@@ -1,7 +1,7 @@
 // Admin kullanıcı yönetimi: listeleme, ekleme, güncelleme (rol dahil), pasife alma (ADR 0018 Karar 6, 7).
 // Ekleme kayıttaki doğrulama kurallarını (şifre dahil) RegisterDto validator'ı ile uygular; admin'in
 // oluşturduğu kullanıcı doğrulanmış sayılır. Rol Admin → User düşürülürse ve kullanıcı pasife
-// alınırsa kullanıcının tüm refresh token'ları revoke edilir; access token en geç 15 dakikada düşer.
+// alınırsa (DELETE veya PUT isActive=false) kullanıcının tüm refresh token'ları revoke edilir; access token en geç 15 dakikada düşer.
 
 using AjandaAI.Application.Admin.Dtos;
 using AjandaAI.Application.Auth;
@@ -125,11 +125,16 @@ public class AdminUserService
 
         var newRole = dto.Role!.Value;
         var demoted = user.Role == UserRole.Admin && newRole != UserRole.Admin;
+        // ADMIN-12: false, DELETE ile aynı sonuç (pasif + tüm refresh token'lar revoke); true yeniden aktif eder.
+        var deactivated = dto.IsActive == false && user.IsActive;
+        var reactivated = dto.IsActive == true && !user.IsActive;
         var now = DateTimeOffset.UtcNow;
         user.Email = dto.Email.Trim();
         user.DisplayName = dto.DisplayName.Trim();
         user.TimeZoneId = dto.TimeZoneId.Trim();
         user.Role = newRole;
+        if (dto.IsActive is { } isActive)
+            user.IsActive = isActive;
         user.UpdatedAt = now;
         try
         {
@@ -141,12 +146,14 @@ public class AdminUserService
         }
 
         // AUTH-39: rol düşürmede oturumlar kapanır (ADR 0018 Karar 7).
-        if (demoted)
+        if (demoted || deactivated)
         {
             await _auth.RevokeAllRefreshTokensAsync(id, now, cancellationToken);
-            _logger.LogInformation("Kullanıcının rolü düşürüldü, refresh token'ları revoke edildi {AdminId} {UserId}",
-                _currentUser.UserId, id);
+            _logger.LogInformation("Kullanıcının rolü düşürüldü veya pasife alındı, refresh token'ları revoke edildi {AdminId} {UserId} {Demoted} {Deactivated}",
+                _currentUser.UserId, id, demoted, deactivated);
         }
+        if (reactivated)
+            _logger.LogInformation("Admin kullanıcıyı yeniden aktif etti {AdminId} {UserId}", _currentUser.UserId, id);
         _logger.LogInformation("Admin kullanıcı güncelledi {AdminId} {UserId} {Role}", _currentUser.UserId, id, user.Role);
         return ApiResponse<AdminUserDto>.Ok(ToDto(user), "Kullanıcı güncellendi.");
     }

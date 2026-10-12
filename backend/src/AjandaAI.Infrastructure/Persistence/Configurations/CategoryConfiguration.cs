@@ -31,6 +31,11 @@ public class CategoryConfiguration : IEntityTypeConfiguration<Category>
         builder.Property(c => c.CreatedAt)
             .IsRequired();
 
+        builder.Property(c => c.SortOrder)
+            .IsRequired();
+
+        builder.HasIndex(c => c.SortOrder);
+
         builder.HasIndex(c => c.Name)
             .IsUnique();
 
@@ -51,6 +56,7 @@ public class CategoryConfiguration : IEntityTypeConfiguration<Category>
     {
         Id = id,
         Name = name,
+        SortOrder = id,
         IsActive = true,
         CreatedAt = SeedCreatedAt
     };

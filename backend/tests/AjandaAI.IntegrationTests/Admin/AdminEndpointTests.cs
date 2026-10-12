@@ -263,4 +263,50 @@ public class AdminEndpointTests : AuthTestBase, IClassFixture<AuthApiFactory>
         Assert.Equal(target.Id, item.GetProperty("id").GetInt32());
         Assert.False(item.TryGetProperty("passwordHash", out _));
     }
+
+    // ADMIN-12: PUT isActive=true pasif kullanıcıyı yeniden aktif eder; kullanıcı tekrar giriş yapabilir.
+    [Fact]
+    public async Task ADMIN_12_Admin_ReactivatesUser_ViaPut_UserCanLoginAgain()
+    {
+        var admin = await NewUserAsync(UserRole.Admin);
+        var target = await NewUserAsync();
+        Assert.Equal(HttpStatusCode.OK, (await SendAsync(HttpMethod.Delete, $"/api/admin/users/{target.Id}", admin.AccessToken)).StatusCode);
+        Assert.NotEqual(HttpStatusCode.OK, (await LoginAsync(target.Email)).StatusCode);
+
+        var response = await SendAsync(HttpMethod.Put, $"/api/admin/users/{target.Id}", admin.AccessToken, new
+        {
+            Email = target.Email, DisplayName = DefaultDisplayName, TimeZoneId = "Europe/Istanbul", Role = "User", IsActive = true
+        });
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.True((await ReadDataAsync(response)).GetProperty("isActive").GetBoolean());
+        Assert.True((await GetUserAsync(target.Email)).IsActive);
+        await LoginOkAsync(target.Email);
+    }
+
+    // ADMIN-12: PUT isActive=false DELETE ile aynı kurallar (pasif + tüm oturumlar kapanır); alan yoksa durum değişmez.
+    [Fact]
+    public async Task ADMIN_12_Admin_DeactivatesUser_ViaPut_RevokesTokens_OmittedKeepsState()
+    {
+        var admin = await NewUserAsync(UserRole.Admin);
+        var target = await NewUserAsync();
+
+        var omitted = await SendAsync(HttpMethod.Put, $"/api/admin/users/{target.Id}", admin.AccessToken, new
+        {
+            Email = target.Email, DisplayName = DefaultDisplayName, TimeZoneId = "Europe/Istanbul", Role = "User"
+        });
+        Assert.Equal(HttpStatusCode.OK, omitted.StatusCode);
+        Assert.True((await GetUserAsync(target.Email)).IsActive);
+
+        var response = await SendAsync(HttpMethod.Put, $"/api/admin/users/{target.Id}", admin.AccessToken, new
+        {
+            Email = target.Email, DisplayName = DefaultDisplayName, TimeZoneId = "Europe/Istanbul", Role = "User", IsActive = false
+        });
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.False((await GetUserAsync(target.Email)).IsActive);
+        Assert.All(await GetRefreshTokensAsync(target.Id), t => Assert.NotNull(t.RevokedAt));
+        Assert.Equal(HttpStatusCode.Unauthorized, (await RefreshAsync(target.RefreshToken)).StatusCode);
+        Assert.NotEqual(HttpStatusCode.OK, (await LoginAsync(target.Email)).StatusCode);
+    }
 }

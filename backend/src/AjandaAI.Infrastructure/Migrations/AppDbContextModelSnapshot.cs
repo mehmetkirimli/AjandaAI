@@ -205,12 +205,19 @@ namespace AjandaAI.Infrastructure.Migrations
                         .HasColumnType("character varying(100)")
                         .HasColumnName("name");
 
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("integer")
+                        .HasColumnName("sort_order");
+
                     b.HasKey("Id")
                         .HasName("pk_categories");
 
                     b.HasIndex("Name")
                         .IsUnique()
                         .HasDatabaseName("ix_categories_name");
+
+                    b.HasIndex("SortOrder")
+                        .HasDatabaseName("ix_categories_sort_order");
 
                     b.ToTable("categories", (string)null);
 
@@ -220,70 +227,80 @@ namespace AjandaAI.Infrastructure.Migrations
                             Id = 1,
                             CreatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
                             IsActive = true,
-                            Name = "Yeme & İçme"
+                            Name = "Yeme & İçme",
+                            SortOrder = 1
                         },
                         new
                         {
                             Id = 2,
                             CreatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
                             IsActive = true,
-                            Name = "Seyahat & Gezi"
+                            Name = "Seyahat & Gezi",
+                            SortOrder = 2
                         },
                         new
                         {
                             Id = 3,
                             CreatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
                             IsActive = true,
-                            Name = "Eğlence & Sosyal"
+                            Name = "Eğlence & Sosyal",
+                            SortOrder = 3
                         },
                         new
                         {
                             Id = 4,
                             CreatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
                             IsActive = true,
-                            Name = "Romantizm & İlişki"
+                            Name = "Romantizm & İlişki",
+                            SortOrder = 4
                         },
                         new
                         {
                             Id = 5,
                             CreatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
                             IsActive = true,
-                            Name = "Kültür, Sanat & Gösteri"
+                            Name = "Kültür, Sanat & Gösteri",
+                            SortOrder = 5
                         },
                         new
                         {
                             Id = 6,
                             CreatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
                             IsActive = true,
-                            Name = "Spor, Sağlık & Hareket"
+                            Name = "Spor, Sağlık & Hareket",
+                            SortOrder = 6
                         },
                         new
                         {
                             Id = 7,
                             CreatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
                             IsActive = true,
-                            Name = "Dinlenme & Zihinsel İyileşme"
+                            Name = "Dinlenme & Zihinsel İyileşme",
+                            SortOrder = 7
                         },
                         new
                         {
                             Id = 8,
                             CreatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
                             IsActive = true,
-                            Name = "Kişisel Gelişim & Hobi"
+                            Name = "Kişisel Gelişim & Hobi",
+                            SortOrder = 8
                         },
                         new
                         {
                             Id = 9,
                             CreatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
                             IsActive = true,
-                            Name = "İş, Kariyer & Finans"
+                            Name = "İş, Kariyer & Finans",
+                            SortOrder = 9
                         },
                         new
                         {
                             Id = 10,
                             CreatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
                             IsActive = true,
-                            Name = "Kişisel Bakım & Rutin"
+                            Name = "Kişisel Bakım & Rutin",
+                            SortOrder = 10
                         });
                 });
 
