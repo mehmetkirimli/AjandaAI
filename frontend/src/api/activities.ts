@@ -1,5 +1,13 @@
 import { request } from './client'
-import type { ActivityDetail, ActivityListItem, ActivityUpdateRequest, Category, PagedResult } from './types'
+import type {
+  ActivityDetail,
+  ActivityListItem,
+  ActivityUpdateRequest,
+  Category,
+  PagedResult,
+  SeriesCreated,
+  SeriesCreateRequest,
+} from './types'
 
 export async function fetchCategories(): Promise<Category[]> {
   const page = await request<PagedResult<Category>>('/api/categories', { query: { pageSize: 100 } })
@@ -55,4 +63,16 @@ export function createActivity(body: ActivityUpdateRequest): Promise<ActivityDet
 // DELETE gerçek silme değil, pasife alma.
 export async function deactivateActivity(id: number): Promise<void> {
   await request<boolean>(`/api/activities/${id}`, { method: 'DELETE' })
+}
+
+export function createSeries(body: SeriesCreateRequest): Promise<SeriesCreated> {
+  return request<SeriesCreated>('/api/activities/series', { method: 'POST', body })
+}
+
+// "Bu ve sonrakileri durdur": from (yerel gün, YYYY-MM-DD) dahil sonrası pasife alınır.
+export function deactivateSeries(seriesId: number, from: string): Promise<{ deactivatedCount: number }> {
+  return request<{ deactivatedCount: number }>(`/api/activities/series/${seriesId}/deactivate`, {
+    method: 'POST',
+    query: { from },
+  })
 }

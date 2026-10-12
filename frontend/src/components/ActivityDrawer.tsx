@@ -1,12 +1,13 @@
 import { Alert, Badge, Button, Divider, Drawer, Group, Loader, Modal, Stack, Text, Title } from '@mantine/core'
 import { notifications } from '@mantine/notifications'
-import { IconAlertCircle, IconArchive, IconPencil, IconBolt, IconCalendar, IconCoin, IconFlag, IconInfoCircle, IconMapPin } from '@tabler/icons-react'
+import { IconAlertCircle, IconArchive, IconPencil, IconRepeat, IconBolt, IconCalendar, IconCoin, IconFlag, IconInfoCircle, IconMapPin } from '@tabler/icons-react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import dayjs from 'dayjs'
 import { useState, type ReactNode } from 'react'
-import { deactivateActivity, fetchActivity } from '../api/activities'
+import { deactivateActivity, deactivateSeries, fetchActivity } from '../api/activities'
 import { ApiError } from '../api/client'
 import { categoryColor } from '../lib/categoryColor'
+import { frequencyLabel } from '../lib/recurrence'
 import { useActivityForm } from './activity-form/context'
 import { ReminderSection } from './ReminderSection'
 
@@ -62,6 +63,23 @@ export function ActivityDrawer({ activityId, onClose, categoryName }: Props) {
   const queryClient = useQueryClient()
   const { openActivityForm } = useActivityForm()
   const [confirmOpen, setConfirmOpen] = useState(false)
+  const [seriesConfirmOpen, setSeriesConfirmOpen] = useState(false)
+  const stopSeries = useMutation({
+    mutationFn: () => deactivateSeries(a?.series?.id ?? 0, dayjs(a?.start).format('YYYY-MM-DD')),
+    onSuccess: (result) => {
+      setSeriesConfirmOpen(false)
+      onClose()
+      void queryClient.invalidateQueries({ queryKey: ['activities'] })
+      void queryClient.invalidateQueries({ queryKey: ['activity'] })
+      notifications.show({ message: `${result.deactivatedCount} aktivite durduruldu`, autoClose: 2500 })
+    },
+    onError: (error) =>
+      notifications.show({
+        color: 'red',
+        title: 'Seri durdurulamadı',
+        message: error instanceof ApiError ? error.message : 'Beklenmeyen bir hata oluştu.',
+      }),
+  })
   const deactivate = useMutation({
     mutationFn: () => deactivateActivity(activityId as number),
     onSuccess: () => {
@@ -121,6 +139,23 @@ export function ActivityDrawer({ activityId, onClose, categoryName }: Props) {
           <Row icon={<IconInfoCircle size={16} />} label="Açıklama">
             {a.description ? <span style={{ whiteSpace: 'pre-wrap' }}>{a.description}</span> : 'Açıklama yok'}
           </Row>
+          {a.series && (
+            <>
+              <Row icon={<IconRepeat size={16} />} label="Seri">
+                {frequencyLabel(a.series.frequency, a.series.daysOfWeek, dayjs(a.series.startDate).date())} ·{' '}
+                {dayjs(a.series.startDate).format('D MMM YYYY')} → {dayjs(a.series.endDate).format('D MMM YYYY')}
+              </Row>
+              <Button
+                size="compact-md"
+                variant="subtle"
+                color="red"
+                style={{ alignSelf: 'flex-start' }}
+                onClick={() => setSeriesConfirmOpen(true)}
+              >
+                Bu ve sonrakileri durdur
+              </Button>
+            </>
+          )}
           <Divider />
           <ReminderSection key={a.id} activity={a} />
           <Divider />
@@ -148,6 +183,19 @@ export function ActivityDrawer({ activityId, onClose, categoryName }: Props) {
           </Group>
         </Stack>
       )}
+      <Modal opened={seriesConfirmOpen} onClose={() => setSeriesConfirmOpen(false)} title="Seriyi durdur" size="sm" centered>
+        <Text size="sm" c="dimmed" mb="md">
+          Bu aktivite ({a ? dayjs(a.start).format('D MMM') : ''}) ve serideki sonraki tüm aktiviteler pasife alınacak.
+        </Text>
+        <Group justify="flex-end" gap="xs">
+          <Button variant="default" size="compact-md" onClick={() => setSeriesConfirmOpen(false)}>
+            Vazgeç
+          </Button>
+          <Button color="red" size="compact-md" loading={stopSeries.isPending} onClick={() => stopSeries.mutate()}>
+            Durdur
+          </Button>
+        </Group>
+      </Modal>
       <Modal opened={confirmOpen} onClose={() => setConfirmOpen(false)} title="Pasife al" size="sm" centered>
         <Text size="sm" c="dimmed" mb="md">
           Bu aktivite pasife alınacak ve pano/takvimden kalkacak.

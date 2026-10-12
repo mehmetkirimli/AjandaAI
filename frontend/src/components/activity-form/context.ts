@@ -8,6 +8,8 @@ export type FormRequest =
       start?: string
       end?: string
       isAllDay?: boolean
+      // Toplu aktivite: Tekrarla bölümü açık başlar.
+      repeat?: boolean
     }
   | { mode: 'edit'; activity: ActivityDetail }
 

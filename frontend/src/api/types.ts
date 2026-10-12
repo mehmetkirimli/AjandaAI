@@ -58,6 +58,7 @@ export interface ActivityListItem {
   start: string
   end: string
   isAllDay: boolean
+  seriesId?: number | null
 }
 
 export interface ActivityDetail {
@@ -80,6 +81,7 @@ export interface ActivityDetail {
   isActive: boolean
   createdAt: string
   updatedAt: string
+  series?: SeriesSummary | null
 }
 
 // PUT /api/activities/{id}: kısmi değil, tam gövde ister.
@@ -119,4 +121,36 @@ export interface ReminderListItem {
   activityId: number
   remindAt: string
   isSent: boolean
+}
+
+export interface SeriesSummary {
+  id: number
+  frequency: string
+  daysOfWeek: number[]
+  startDate: string
+  endDate: string
+}
+
+export interface SeriesCreateRequest {
+  categoryId: number
+  title: string
+  description: string
+  status: string
+  priority: Priority
+  energyLevel: string
+  start: string
+  end: string
+  isAllDay: boolean
+  location: string | null
+  isFlexible: boolean
+  estimatedBudget: number
+  recurrence: { frequency: string; daysOfWeek: number[]; until: string }
+  reminderMinutesBefore: number | null
+}
+
+export interface SeriesCreated {
+  seriesId: number
+  createdCount: number
+  firstStart: string
+  lastStart: string
 }

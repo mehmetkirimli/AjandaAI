@@ -12,7 +12,7 @@ import interactionPlugin, { type EventResizeDoneArg } from '@fullcalendar/intera
 import FullCalendar from '@fullcalendar/react'
 import timeGridPlugin from '@fullcalendar/timegrid'
 import { ActionIcon, Button, Loader, SegmentedControl } from '@mantine/core'
-import { IconChevronLeft, IconChevronRight } from '@tabler/icons-react'
+import { IconChevronLeft, IconChevronRight, IconRepeat } from '@tabler/icons-react'
 import { useQuery } from '@tanstack/react-query'
 import dayjs from 'dayjs'
 import { useEffect, useMemo, useRef, useState } from 'react'
@@ -41,6 +41,8 @@ function dayName(d: dayjs.Dayjs): string {
 }
 
 function renderEvent(arg: EventContentArg) {
+  const isSeries = arg.event.extendedProps.seriesId != null
+  const repeatIcon = isSeries ? <IconRepeat size={12} style={{ marginLeft: 4, opacity: 0.6, verticalAlign: 'middle' }} /> : null
   const month = arg.view.type === 'dayGridMonth'
   const ellipsis = { overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } as const
   if (month || arg.event.allDay) {
@@ -48,12 +50,13 @@ function renderEvent(arg: EventContentArg) {
       <div style={{ ...ellipsis, fontSize: 13, fontWeight: 600 }}>
         {arg.timeText && <span style={{ marginRight: 4, fontSize: 12, fontWeight: 400, opacity: 0.85 }}>{arg.timeText}</span>}
         {arg.event.title}
+        {repeatIcon}
       </div>
     )
   }
   return (
     <div style={{ overflow: 'hidden', lineHeight: 1.2 }}>
-      <div style={{ ...ellipsis, fontWeight: 600, fontSize: 13 }}>{arg.event.title}</div>
+      <div style={{ ...ellipsis, fontWeight: 600, fontSize: 13 }}>{arg.event.title}{repeatIcon}</div>
       <div style={{ ...ellipsis, opacity: 0.85, fontSize: 12, fontWeight: 400 }}>{arg.timeText}</div>
     </div>
   )
@@ -94,6 +97,7 @@ export default function CalendarPage() {
           start: a.isAllDay ? dayjs(a.start).format('YYYY-MM-DD') : a.start,
           end: a.isAllDay ? undefined : a.end,
           allDay: a.isAllDay,
+          extendedProps: { seriesId: a.seriesId ?? null },
           backgroundColor: fill,
           borderColor: fill,
           textColor: '#ffffff',

@@ -8,6 +8,7 @@ import {
   IconLogout,
   IconMoon,
   IconPencilPlus,
+  IconRepeat,
   IconSearch,
   IconSun,
   IconUser,
@@ -89,6 +90,11 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
           >
             <ActionIcon size="md" aria-label="Komut paletini aç" onClick={() => spotlight.open()}>
               <IconSearch size={15} />
+            </ActionIcon>
+          </Tooltip>
+          <Tooltip label="Toplu aktivite ekle">
+            <ActionIcon size="md" aria-label="Toplu aktivite ekle" onClick={() => openActivityForm({ mode: 'create', repeat: true })}>
+              <IconRepeat size={15} />
             </ActionIcon>
           </Tooltip>
           <Tooltip label="Yeni aktivite">

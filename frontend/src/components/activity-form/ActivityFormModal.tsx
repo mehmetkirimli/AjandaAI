@@ -7,6 +7,7 @@ import {
   Modal,
   NumberInput,
   Rating,
+  SegmentedControl,
   Stack,
   Switch,
   Text,
@@ -17,15 +18,25 @@ import {
 import { DatePickerInput, TimePicker } from '@mantine/dates'
 import { useForm } from '@mantine/form'
 import { notifications } from '@mantine/notifications'
-import { IconAlertCircle, IconBolt, IconChevronDown, IconCircleDashed, IconTag } from '@tabler/icons-react'
+import { IconAlertCircle, IconBolt, IconChevronDown, IconCircleDashed, IconRepeat, IconTag } from '@tabler/icons-react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import dayjs from 'dayjs'
-import { useMemo, useState } from 'react'
-import { createActivity, fetchCategories, updateActivity } from '../../api/activities'
+import { useMemo, useRef, useState } from 'react'
+import { createActivity, createSeries, fetchCategories, updateActivity } from '../../api/activities'
 import type { ActivityStatus, ActivityUpdateRequest, Level } from '../../api/types'
 import { LEVEL_OPTIONS, STATUS_OPTIONS } from '../../lib/activityOptions'
 import { categoryStrip } from '../../lib/categoryColor'
 import { MOD_KEY } from '../../lib/commands'
+import {
+  countOccurrences,
+  defaultUntil,
+  FREQUENCY_OPTIONS,
+  frequencyLabel,
+  isoDay,
+  MAX_OCCURRENCES,
+  SHORT_DAYS,
+  type Frequency,
+} from '../../lib/recurrence'
 import { splitErrors } from '../../lib/formErrors'
 import { PriorityBars } from '../board/PriorityBars'
 import type { FormRequest } from './context'
@@ -48,6 +59,12 @@ interface Values {
   isFlexible: boolean
   rating: number
   wouldRepeat: boolean
+  // Tekrarla (yalnızca yeni aktivitede)
+  repeat: boolean
+  frequency: Frequency
+  daysOfWeek: number[]
+  until: string
+  reminderMinutes: string
 }
 
 const DATE = 'YYYY-MM-DD'
@@ -72,6 +89,11 @@ function initialValues(request: FormRequest): Values {
     isFlexible: false,
     rating: 5,
     wouldRepeat: false,
+    repeat: false,
+    frequency: 'Daily',
+    daysOfWeek: [],
+    until: '',
+    reminderMinutes: '0',
   }
 
   if (request.mode === 'edit') {
@@ -109,15 +131,20 @@ function initialValues(request: FormRequest): Values {
     startTime: request.isAllDay ? '09:00' : start.format(TIME),
     endDate: end.format(DATE),
     endTime: request.isAllDay ? '10:00' : end.format(TIME),
+    repeat: request.repeat ?? false,
+    daysOfWeek: [isoDay(start)],
+    until: defaultUntil(start, 'Daily'),
   }
 }
 
 const ERROR_PREFIXES = {
   title: ['başlık'],
   categoryId: ['kategori'],
-  end: ['bitiş'],
+  end: ['bitiş zamanı'],
   estimatedBudget: ['tahmini bütçe'],
   rating: ['puan'],
+  recurrence: ['haftalık tekrar', 'bitiş tarihi', 'bir seri', 'bu kuralla', 'gün değerleri'],
+  reminder: ['hatırlatma süresi'],
 }
 
 interface Props {
@@ -154,11 +181,30 @@ export function ActivityFormModal({ request, onClose }: Props) {
   const selectedCategory = categories.find((c) => c.id === categoryId)
 
   const mutation = useMutation({
-    mutationFn: (body: ActivityUpdateRequest) => (editing ? updateActivity(editing.id, body) : createActivity(body)),
-    onSuccess: (saved) => {
+    mutationFn: async (body: ActivityUpdateRequest): Promise<{ message: string; id?: number }> => {
+      if (editing) {
+        const saved = await updateActivity(editing.id, body)
+        return { message: 'Kaydedildi', id: saved.id }
+      }
+      if (form.values.repeat) {
+        const created = await createSeries({
+          ...body,
+          recurrence: {
+            frequency: form.values.frequency,
+            daysOfWeek: form.values.frequency === 'Weekly' ? form.values.daysOfWeek : [],
+            until: form.values.until,
+          },
+          reminderMinutesBefore: Number(form.values.reminderMinutes) || null,
+        })
+        return { message: `${created.createdCount} aktivite oluşturuldu` }
+      }
+      const saved = await createActivity(body)
+      return { message: 'Aktivite oluşturuldu', id: saved.id }
+    },
+    onSuccess: (result) => {
       void queryClient.invalidateQueries({ queryKey: ['activities'] })
-      void queryClient.invalidateQueries({ queryKey: ['activity', saved.id] })
-      notifications.show({ color: 'teal', message: editing ? 'Kaydedildi' : 'Aktivite oluşturuldu', autoClose: 2500 })
+      if (result.id !== undefined) void queryClient.invalidateQueries({ queryKey: ['activity', result.id] })
+      notifications.show({ color: 'teal', message: result.message, autoClose: 2500 })
       onClose()
     },
     onError: (error) => {
@@ -187,8 +233,64 @@ export function ActivityFormModal({ request, onClose }: Props) {
     })
   }
 
+  const untilTouched = useRef(false)
+  const startMoment = parse(v.startDate, v.startTime)
+  const preview = useMemo(
+    () => (v.repeat ? countOccurrences(v.startDate, v.frequency, v.daysOfWeek, v.until) : null),
+    [v.repeat, v.startDate, v.frequency, v.daysOfWeek, v.until],
+  )
+  const previewBlocked = preview !== null && (preview.count === 0 || preview.tooMany || preview.invalidRange)
+
+  // Tekrarla kapalıyken saatli aktivite 24 saati aşıyorsa ipucu (yanlışlıkla çok uzun aktivite).
+  const longMs = !editing && !v.repeat && !v.isAllDay ? parse(v.endDate, v.endTime).diff(startMoment) : 0
+  const longDays = Math.floor(longMs / 86_400_000)
+
+  const humanDuration = longDays >= 7 ? `${Math.floor(longDays / 7)} hafta` : `${longDays} gün`
+
+  const switchToRepeat = () => {
+    // Bitiş tarihi = mevcut bitiş alanındaki tarih; ilk aktivitenin bitişi başlangıç gününe çekilir (saat korunur).
+    const until = v.endDate
+    untilTouched.current = true
+    form.setValues({
+      repeat: true,
+      frequency: 'Weekly',
+      daysOfWeek: [isoDay(startMoment)],
+      until,
+      endDate: v.startDate,
+    })
+  }
+
+  const toggleRepeat = (on: boolean) => {
+    if (!on) {
+      form.setFieldValue('repeat', false)
+      return
+    }
+    // Tekrarla açılınca ilk aktivite aynı gün kalır.
+    const end = parse(v.startDate, v.endTime)
+    form.setValues({
+      repeat: true,
+      endDate: v.startDate,
+      endTime: end.isAfter(startMoment) ? v.endTime : startMoment.add(1, 'hour').format(TIME),
+      daysOfWeek: v.daysOfWeek.length > 0 ? v.daysOfWeek : [isoDay(startMoment)],
+      until: untilTouched.current ? v.until : defaultUntil(startMoment, v.frequency),
+    })
+  }
+
+  const changeFrequency = (frequency: Frequency) => {
+    form.setValues({
+      frequency,
+      until: untilTouched.current ? v.until : defaultUntil(startMoment, frequency),
+    })
+  }
+
+  const toggleDay = (day: number) => {
+    const days = v.daysOfWeek.includes(day) ? v.daysOfWeek.filter((d) => d !== day) : [...v.daysOfWeek, day]
+    form.setFieldValue('daysOfWeek', days)
+  }
+
   const submit = () => {
     setGeneralErrors([])
+    if (previewBlocked) return
     const errors: Partial<Record<keyof Values, string>> = {}
     const title = v.title.trim()
     if (!title) errors.title = 'Başlık zorunludur.'
@@ -249,7 +351,7 @@ export function ActivityFormModal({ request, onClose }: Props) {
         >
           <Stack gap="sm" p="md" pb="sm">
             <Text size="xs" c="dimmed">
-              {editing ? 'Aktiviteyi düzenle' : 'Yeni aktivite'}
+              {editing ? 'Aktiviteyi düzenle' : v.repeat ? 'Toplu aktivite' : 'Yeni aktivite'}
             </Text>
             <TextInput
               variant="unstyled"
@@ -318,8 +420,8 @@ export function ActivityFormModal({ request, onClose }: Props) {
             {/* Zaman satırı */}
             <Stack gap={6} mt={4}>
               <Group gap="xs" wrap="nowrap">
-                <Text size="xs" c="dimmed" w={64}>
-                  Başlangıç
+                <Text size="xs" c="dimmed" w={72}>
+                  {v.repeat ? 'İlk aktivite' : 'Başlangıç'}
                 </Text>
                 <DatePickerInput
                   size="xs"
@@ -347,10 +449,12 @@ export function ActivityFormModal({ request, onClose }: Props) {
                   onChange={(e) => form.setFieldValue('isAllDay', e.currentTarget.checked)}
                 />
               </Group>
+              {!(v.repeat && v.isAllDay) && (
               <Group gap="xs" wrap="nowrap">
-                <Text size="xs" c="dimmed" w={64}>
+                <Text size="xs" c="dimmed" w={72}>
                   Bitiş
                 </Text>
+                {!v.repeat && (
                 <DatePickerInput
                   size="xs"
                   w={150}
@@ -360,6 +464,7 @@ export function ActivityFormModal({ request, onClose }: Props) {
                   minDate={v.startDate || undefined}
                   onChange={(d) => d && form.setFieldValue('endDate', d)}
                 />
+                )}
                 {!v.isAllDay && (
                   <TimePicker
                     size="xs"
@@ -371,10 +476,115 @@ export function ActivityFormModal({ request, onClose }: Props) {
                   />
                 )}
               </Group>
+              )}
               {endError && (
                 <Text size="xs" c="red">
                   {endError}
                 </Text>
+              )}
+
+              {longDays >= 1 && (
+                <Alert color="yellow" py={6} icon={<IconRepeat size={16} />}>
+                  <Group justify="space-between" wrap="nowrap" gap="xs">
+                    <Text size="xs">
+                      Bu aktivite {humanDuration} sürüyor. Her hafta tekrarlamak mı istedin?
+                    </Text>
+                    <Button size="compact-sm" variant="default" onClick={switchToRepeat} style={{ flexShrink: 0 }}>
+                      Tekrarla'ya geç
+                    </Button>
+                  </Group>
+                </Alert>
+              )}
+
+              {!editing && (
+                <Switch
+                  size="xs"
+                  mt={2}
+                  label="Tekrarla"
+                  checked={v.repeat}
+                  onChange={(e) => toggleRepeat(e.currentTarget.checked)}
+                />
+              )}
+
+              {!editing && v.repeat && (
+                <Stack
+                  gap="xs"
+                  p="sm"
+                  style={{ border: '1px solid var(--app-line)', borderRadius: 8, background: 'var(--app-surface-2)' }}
+                >
+                  <SegmentedControl
+                    size="xs"
+                    fullWidth
+                    value={v.frequency}
+                    data={FREQUENCY_OPTIONS}
+                    onChange={(f) => changeFrequency(f as Frequency)}
+                  />
+                  {v.frequency === 'Weekly' && (
+                    <Group gap={4}>
+                      {SHORT_DAYS.map((name, i) => (
+                        <Button
+                          key={name}
+                          size="compact-sm"
+                          radius="xl"
+                          variant={v.daysOfWeek.includes(i + 1) ? 'filled' : 'default'}
+                          onClick={() => toggleDay(i + 1)}
+                        >
+                          {name}
+                        </Button>
+                      ))}
+                    </Group>
+                  )}
+                  <Group gap="xs" wrap="nowrap" align="center">
+                    <Text size="xs" c="dimmed" w={72}>
+                      Bitiş tarihi
+                    </Text>
+                    <DatePickerInput
+                      size="xs"
+                      w={150}
+                      valueFormat="D MMM YYYY"
+                      aria-label="Tekrar bitiş tarihi"
+                      value={v.until || null}
+                      minDate={v.startDate || undefined}
+                      onChange={(d) => {
+                        if (!d) return
+                        untilTouched.current = true
+                        form.setFieldValue('until', d)
+                      }}
+                    />
+                  </Group>
+                  <Group gap="xs" wrap="nowrap" align="center">
+                    <Text size="xs" c="dimmed" w={72}>
+                      Hatırlatma
+                    </Text>
+                    <SegmentedControl
+                      size="xs"
+                      value={v.reminderMinutes}
+                      data={[
+                        { value: '0', label: 'Yok' },
+                        { value: '15', label: '15 dk önce' },
+                        { value: '60', label: '1 saat önce' },
+                        { value: '1440', label: '1 gün önce' },
+                      ]}
+                      onChange={(m) => form.setFieldValue('reminderMinutes', m)}
+                    />
+                  </Group>
+                  {preview && (
+                    <Text size="xs" c={previewBlocked ? 'red' : 'dimmed'}>
+                      {preview.invalidRange
+                        ? 'Bitiş tarihi başlangıç gününden önce olamaz.'
+                        : preview.tooMany
+                          ? `Bir seri en fazla ${MAX_OCCURRENCES} aktivite içerebilir; bitiş tarihini yaklaştırın.`
+                          : preview.count === 0
+                            ? 'Bu kuralla hiç aktivite oluşmuyor.'
+                            : `${frequencyLabel(v.frequency, v.daysOfWeek, startMoment.date())} · ${startMoment.format('D MMM')} → ${dayjs(v.until).format('D MMM')} · ${preview.count} aktivite`}
+                    </Text>
+                  )}
+                  {(form.errors.recurrence || form.errors.reminder) && (
+                    <Text size="xs" c="red">
+                      {form.errors.recurrence} {form.errors.reminder}
+                    </Text>
+                  )}
+                </Stack>
               )}
             </Stack>
 
@@ -450,8 +660,8 @@ export function ActivityFormModal({ request, onClose }: Props) {
             style={{ borderTop: '1px solid var(--app-line)' }}
           >
             <Group gap="xs">
-              <Button size="compact-md" loading={mutation.isPending} onClick={submit}>
-                {editing ? 'Kaydet' : 'Oluştur'}
+              <Button size="compact-md" loading={mutation.isPending} disabled={previewBlocked} onClick={submit}>
+                {editing ? 'Kaydet' : preview && !previewBlocked ? `${preview.count} aktivite oluştur` : 'Oluştur'}
               </Button>
               <Group gap={3}>
                 <Kbd size="xs">{MOD_KEY}</Kbd>

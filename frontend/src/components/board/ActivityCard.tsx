@@ -1,5 +1,5 @@
 import { Group, Text } from '@mantine/core'
-import { IconGripVertical } from '@tabler/icons-react'
+import { IconGripVertical, IconRepeat } from '@tabler/icons-react'
 import dayjs from 'dayjs'
 import type { CSSProperties } from 'react'
 import type { ActivityListItem } from '../../api/types'
@@ -51,6 +51,7 @@ export function ActivityCard({ item, categoryName, overlay = false, style }: Pro
       >
         {item.title} - {time} [{categoryName}]
       </Text>
+      {item.seriesId != null && <IconRepeat size={12} aria-label="Seri" style={{ flex: 'none', opacity: 0.6 }} />}
       {item.priority === 'High' && (
         <span
           aria-label="Yüksek öncelik"

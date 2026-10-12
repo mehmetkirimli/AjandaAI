@@ -13,6 +13,7 @@ import {
   IconLogout,
   IconMoon,
   IconPlus,
+  IconRepeat,
   IconSearch,
   IconShieldLock,
   IconSun,
@@ -48,6 +49,13 @@ export function CommandPalette() {
         leftSection: <IconPlus size={ICON} />,
         rightSection: <Kbd size="xs">C</Kbd>,
         onClick: () => openActivityForm({ mode: 'create' }),
+      },
+      {
+        id: 'bulk-activity',
+        label: 'Toplu aktivite ekle',
+        description: 'Tekrarlayan aktivite serisi',
+        leftSection: <IconRepeat size={ICON} />,
+        onClick: () => openActivityForm({ mode: 'create', repeat: true }),
       },
       { id: 'go-board', label: "Pano'ya git", leftSection: <IconLayoutKanban size={ICON} />, onClick: () => navigate('/') },
       {
