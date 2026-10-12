@@ -1,7 +1,21 @@
 # quality-gate.ps1 için aktif aşamanın zorunlu senaryoları (bkz. docs/auth-test-senaryolari.md).
 # Takım lideri her aşamada günceller. Satır başına bir kimlik; # sonrası yorumdur.
 # Liste aşamalar ilerledikçe BİRİKİR: önceki aşamaların kimlikleri kalır (testleri silinmesin).
-# Aktif aşama: F3b seri (ADR 0022). Tamamlananlar: P2 (+ AUTH-49, P3), P4, P5, P6, P7
+# Aktif aşama: F4 admin (ADR 0023). Tamamlananlar: F3b, P2 (+ AUTH-49, P3), P4, P5, P6, P7
+
+# F4 - Kategori sırası (docs/admin-test-senaryolari.md)
+ADMIN-01
+ADMIN-02
+ADMIN-03
+ADMIN-04
+ADMIN-05
+ADMIN-06
+ADMIN-07
+ADMIN-08
+ADMIN-09
+ADMIN-10
+ADMIN-11
+ADMIN-12
 
 # F3b - Tekrarlayan aktivite serisi (docs/seri-test-senaryolari.md)
 SERIES-01

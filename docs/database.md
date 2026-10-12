@@ -81,3 +81,13 @@ verisine erişim).
 
 ## DateOnly İstisnası
 `ActivitySeries.StartDate/EndDate` saat dilimi taşımayan takvim günleridir; `DateOnly` (PostgreSQL `date`) kullanılır. ADR 0004'ün DateTimeOffset kuralının bilinçli istisnasıdır (ADR 0022).
+
+## Şema Notları
+### categories
+| Kolon | Tip | Not |
+|---|---|---|
+| id | integer | PK; seed Id'leri sabit (1..10) |
+| name | varchar(100) | zorunlu, unique (`ix_categories_name`) |
+| sort_order | integer | zorunlu, index'li (`ix_categories_sort_order`); görüntüleme sırası (ADR 0023 Karar 1). Seed'de `SortOrder = Id`; `AddCategorySortOrder` migration'ı mevcut kayıtları `ROW_NUMBER() OVER (ORDER BY id)` ile 1..N doldurur |
+| is_active | boolean | zorunlu, default true |
+| created_at | timestamptz | zorunlu |

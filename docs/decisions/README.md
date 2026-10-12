@@ -52,3 +52,4 @@ cevap burada olmalıdır. Bir kuralı değiştirmeden önce ilgili ADR okunur.
 - [0020 - Agent işlerinde kalite kapısı, review agent ve sıralı çalışma](0020-kalite-kapisi-ve-review-agent.md)
 - [0021 - Frontend (web istemcisi)](0021-frontend-web-istemcisi.md)
 - [0022 - Tekrarlayan aktiviteler: seri olarak toplu oluşturma](0022-tekrarlayan-aktivite-serisi.md)
+- [0023 - Admin ekranları ve kategori sıralaması](0023-admin-ekranlari-ve-kategori-sirasi.md)
