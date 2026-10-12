@@ -11,3 +11,6 @@ gerçek tarayıcıda (Playwright + yerel Chrome) alınan ekran görüntüleri ve
 - [f2/](f2/) — takvim: hafta, sürükle (Çar 08:00 → Per 10:00), süre uzat, detay paneli, ay, koyu tema, Pano senkronu (2026-10-10). Senaryo: `f2/kabul-senaryosu.mjs`.
 - [tasarim/](tasarim/) — (REDDEDİLDİ, yerine linear/) Raycast ilhamlı tasarım dili (koyu öncelikli) ve Ctrl+K komut paleti; tüm ekranlar, açık tema, davranış regresyon kontrolü (2026-10-10).
 - [linear/](linear/) — Linear tarzı yerleşim (geçerli tasarım): sol sidebar, inset panel, giriş, pano ve takvim sürükle-bırak, çalışma alanı menüsü, ⌘K, sidebar daraltma, profil, açık tema, dar ekran (2026-10-10).
+- [pano-taslak/](pano-taslak/) — ürün sahibinin Pano taslağı: hafta içi/hafta sonu iki sıra, dolu renkli haplar, boş gün mesajları, + Aktivite Ekle; boş güne ve hafta sonuna sürükle-bırak (2026-10-12).
+- [f3/](f3/) — aktivite formu: Pano'dan ekle, C kısayolu + doğrulama, takvimde aralık seçip oluştur, Düzenle, hatırlatma ekle/sil, pasife al (2026-10-12).
+- [f3b/](f3b/) — tekrarlayan seri: krem (her gün, 12 Eki → 12 Nis, 183, 15 dk hatırlatma), her Pazartesi iş (uzun süre uyarısı → Tekrarla), seri ikonu, "Bu ve sonrakileri durdur" (2026-10-12).

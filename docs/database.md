@@ -78,3 +78,6 @@ v1'de authentication yok. v2'de auth eklendiğinde, kullanıcıya ait
 kayıtları dönen HER sorguda UserId kontrolü zorunludur.
 Aksi halde IDOR açığı oluşur (/api/activities/6 ile başkasının
 verisine erişim).
+
+## DateOnly İstisnası
+`ActivitySeries.StartDate/EndDate` saat dilimi taşımayan takvim günleridir; `DateOnly` (PostgreSQL `date`) kullanılır. ADR 0004'ün DateTimeOffset kuralının bilinçli istisnasıdır (ADR 0022).
