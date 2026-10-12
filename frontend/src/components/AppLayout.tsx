@@ -3,6 +3,7 @@ import { useHotkeys, useLocalStorage, useMediaQuery, useDisclosure } from '@mant
 import { useMemo } from 'react'
 import { Outlet } from 'react-router-dom'
 import { LayoutContext, type LayoutState } from '../layout/context'
+import { ActivityFormProvider } from './activity-form/ActivityFormProvider'
 import { CommandPalette } from './CommandPalette'
 import { Sidebar } from './Sidebar'
 
@@ -31,6 +32,7 @@ export function AppLayout() {
 
   return (
     <LayoutContext.Provider value={layout}>
+      <ActivityFormProvider>
       <CommandPalette />
       <Box style={{ display: 'flex', height: '100vh', background: 'var(--app-bg)' }}>
         {showSidebar && (
@@ -68,6 +70,7 @@ export function AppLayout() {
           <Sidebar onNavigate={closeMobile} />
         </Drawer>
       )}
+      </ActivityFormProvider>
     </LayoutContext.Provider>
   )
 }

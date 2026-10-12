@@ -12,7 +12,6 @@ import interactionPlugin, { type EventResizeDoneArg } from '@fullcalendar/intera
 import FullCalendar from '@fullcalendar/react'
 import timeGridPlugin from '@fullcalendar/timegrid'
 import { ActionIcon, Button, Loader, SegmentedControl } from '@mantine/core'
-import { notifications } from '@mantine/notifications'
 import { IconChevronLeft, IconChevronRight } from '@tabler/icons-react'
 import { useQuery } from '@tanstack/react-query'
 import dayjs from 'dayjs'
@@ -21,9 +20,10 @@ import { registerCommandHandler } from '../lib/commands'
 import { fetchActivities, fetchCategories } from '../api/activities'
 import type { ActivityListItem } from '../api/types'
 import { PanelHeader } from '../components/PanelHeader'
+import { useActivityForm } from '../components/activity-form/context'
 import { ActivityDrawer } from '../components/ActivityDrawer'
 import { useReschedule } from '../hooks/useReschedule'
-import { categoryStrip, categoryTint } from '../lib/categoryColor'
+import { categoryFill } from '../lib/categoryColor'
 import { DAY_NAMES, formatDuration, moveToDay, timeDative } from '../lib/week'
 import './calendar.css'
 
@@ -45,16 +45,16 @@ function renderEvent(arg: EventContentArg) {
   const ellipsis = { overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } as const
   if (month || arg.event.allDay) {
     return (
-      <div style={{ ...ellipsis, fontSize: 13 }}>
-        {arg.timeText && <b style={{ marginRight: 4 }}>{arg.timeText}</b>}
+      <div style={{ ...ellipsis, fontSize: 13, fontWeight: 600 }}>
+        {arg.timeText && <span style={{ marginRight: 4, fontSize: 12, fontWeight: 400, opacity: 0.85 }}>{arg.timeText}</span>}
         {arg.event.title}
       </div>
     )
   }
   return (
     <div style={{ overflow: 'hidden', lineHeight: 1.2 }}>
-      <div style={{ ...ellipsis, fontWeight: 700, fontSize: 13 }}>{arg.event.title}</div>
-      <div style={{ ...ellipsis, opacity: 0.9, fontSize: 12, fontWeight: 500 }}>{arg.timeText}</div>
+      <div style={{ ...ellipsis, fontWeight: 600, fontSize: 13 }}>{arg.event.title}</div>
+      <div style={{ ...ellipsis, opacity: 0.85, fontSize: 12, fontWeight: 400 }}>{arg.timeText}</div>
     </div>
   )
 }
@@ -66,6 +66,7 @@ export default function CalendarPage() {
   const [viewType, setViewType] = useState<ViewType>('timeGridWeek')
   const [openId, setOpenId] = useState<number | null>(null)
   const reschedule = useReschedule()
+  const { openActivityForm } = useActivityForm()
 
   // Anahtar ['activities', ...] öneki altında: Pano ile aynı önek, mutasyonlar ikisini de günceller.
   const activitiesQuery = useQuery({
@@ -83,21 +84,24 @@ export default function CalendarPage() {
   const events = useMemo<EventInput[]>(
     () =>
       (items ?? []).map((a) => {
-        const strip = categoryStrip(a.categoryId)
+        // Pano hapıyla aynı kural: iptal veya kategorisiz gri, aksi halde kategori rengi (shade 7).
+        const known = categoriesQuery.data?.some((c) => c.id === a.categoryId) ?? true
+        const neutral = a.status === 'Cancelled' || !known
+        const fill = neutral ? 'var(--mantine-color-gray-7)' : categoryFill(a.categoryId)
         return {
           id: String(a.id),
           title: a.title,
           start: a.isAllDay ? dayjs(a.start).format('YYYY-MM-DD') : a.start,
           end: a.isAllDay ? undefined : a.end,
           allDay: a.isAllDay,
-          backgroundColor: categoryTint(a.categoryId, 14),
-          borderColor: strip,
-          textColor: 'var(--mantine-color-text)',
+          backgroundColor: fill,
+          borderColor: fill,
+          textColor: '#ffffff',
           // Tüm gün etkinliğinin süresi uzatılmaz (IsAllDay değişimi F3'ün işi).
           durationEditable: !a.isAllDay,
         }
       }),
-    [items],
+    [items, categoriesQuery.data],
   )
 
   const api = () => calendarRef.current?.getApi()
@@ -161,8 +165,20 @@ export default function CalendarPage() {
     )
   }
 
+  // Boş alan seçimi: seçilen aralık önceden dolu form açar. Tüm gün seçiminde bitiş (dışlayıcı) bir gün geri alınır.
   const handleSelect = (info: DateSelectArg) => {
-    notifications.show({ color: 'accent', message: "Aktivite ekleme formu F3'te geliyor", autoClose: 2500 })
+    if (info.allDay) {
+      const lastDay = dayjs(info.end).subtract(1, 'day')
+      const start = dayjs(info.start)
+      openActivityForm({
+        mode: 'create',
+        isAllDay: true,
+        start: start.toISOString(),
+        end: (lastDay.isBefore(start) ? start : lastDay).toISOString(),
+      })
+    } else {
+      openActivityForm({ mode: 'create', start: info.start.toISOString(), end: info.end.toISOString() })
+    }
     info.view.calendar.unselect()
   }
 

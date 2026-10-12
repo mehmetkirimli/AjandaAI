@@ -1,11 +1,14 @@
-import { Alert, Badge, Divider, Drawer, Group, Loader, Stack, Text, Title } from '@mantine/core'
-import { IconAlertCircle, IconBolt, IconCalendar, IconCoin, IconFlag, IconInfoCircle, IconMapPin } from '@tabler/icons-react'
-import { useQuery } from '@tanstack/react-query'
+import { Alert, Badge, Button, Divider, Drawer, Group, Loader, Modal, Stack, Text, Title } from '@mantine/core'
+import { notifications } from '@mantine/notifications'
+import { IconAlertCircle, IconArchive, IconPencil, IconBolt, IconCalendar, IconCoin, IconFlag, IconInfoCircle, IconMapPin } from '@tabler/icons-react'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import dayjs from 'dayjs'
-import type { ReactNode } from 'react'
-import { fetchActivity } from '../api/activities'
+import { useState, type ReactNode } from 'react'
+import { deactivateActivity, fetchActivity } from '../api/activities'
 import { ApiError } from '../api/client'
 import { categoryColor } from '../lib/categoryColor'
+import { useActivityForm } from './activity-form/context'
+import { ReminderSection } from './ReminderSection'
 
 const STATUS: Record<string, string> = {
   Planned: 'Planlandı',
@@ -56,6 +59,25 @@ export function ActivityDrawer({ activityId, onClose, categoryName }: Props) {
     enabled: activityId !== null,
   })
   const a = query.data
+  const queryClient = useQueryClient()
+  const { openActivityForm } = useActivityForm()
+  const [confirmOpen, setConfirmOpen] = useState(false)
+  const deactivate = useMutation({
+    mutationFn: () => deactivateActivity(activityId as number),
+    onSuccess: () => {
+      setConfirmOpen(false)
+      onClose()
+      void queryClient.invalidateQueries({ queryKey: ['activities'] })
+      void queryClient.invalidateQueries({ queryKey: ['activity'] })
+      notifications.show({ message: 'Aktivite pasife alındı', autoClose: 2500 })
+    },
+    onError: (error) =>
+      notifications.show({
+        color: 'red',
+        title: 'Pasife alınamadı',
+        message: error instanceof ApiError ? error.message : 'Beklenmeyen bir hata oluştu.',
+      }),
+  })
 
   return (
     <Drawer opened={activityId !== null} onClose={onClose} position="right" size="md" title="Aktivite detayı">
@@ -100,11 +122,45 @@ export function ActivityDrawer({ activityId, onClose, categoryName }: Props) {
             {a.description ? <span style={{ whiteSpace: 'pre-wrap' }}>{a.description}</span> : 'Açıklama yok'}
           </Row>
           <Divider />
-          <Text size="xs" c="dimmed">
-            Düzenleme yakında (F3)
-          </Text>
+          <ReminderSection key={a.id} activity={a} />
+          <Divider />
+          <Group justify="space-between">
+            <Button
+              size="compact-md"
+              variant="default"
+              leftSection={<IconPencil size={14} />}
+              onClick={() => {
+                openActivityForm({ mode: 'edit', activity: a })
+                onClose()
+              }}
+            >
+              Düzenle
+            </Button>
+            <Button
+              size="compact-md"
+              variant="subtle"
+              color="red"
+              leftSection={<IconArchive size={14} />}
+              onClick={() => setConfirmOpen(true)}
+            >
+              Pasife al
+            </Button>
+          </Group>
         </Stack>
       )}
+      <Modal opened={confirmOpen} onClose={() => setConfirmOpen(false)} title="Pasife al" size="sm" centered>
+        <Text size="sm" c="dimmed" mb="md">
+          Bu aktivite pasife alınacak ve pano/takvimden kalkacak.
+        </Text>
+        <Group justify="flex-end" gap="xs">
+          <Button variant="default" size="compact-md" onClick={() => setConfirmOpen(false)}>
+            Vazgeç
+          </Button>
+          <Button color="red" size="compact-md" loading={deactivate.isPending} onClick={() => deactivate.mutate()}>
+            Pasife al
+          </Button>
+        </Group>
+      </Modal>
     </Drawer>
   )
 }

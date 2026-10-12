@@ -47,3 +47,12 @@ export async function rescheduleActivity(id: number, start: string, end: string)
     wouldRepeat: d.wouldRepeat,
   })
 }
+
+export function createActivity(body: ActivityUpdateRequest): Promise<ActivityDetail> {
+  return request<ActivityDetail>('/api/activities', { method: 'POST', body })
+}
+
+// DELETE gerçek silme değil, pasife alma.
+export async function deactivateActivity(id: number): Promise<void> {
+  await request<boolean>(`/api/activities/${id}`, { method: 'DELETE' })
+}

@@ -99,3 +99,24 @@ export interface ActivityUpdateRequest {
   rating: number | null
   wouldRepeat: boolean | null
 }
+
+export type ActivityStatus = 'Planned' | 'InProgress' | 'Completed' | 'Cancelled'
+export type Level = 'Low' | 'Medium' | 'High'
+
+export interface Reminder {
+  id: number
+  activityId: number
+  activityTitle: string
+  remindAt: string
+  isSent: boolean
+  sentAt: string | null
+  note: string | null
+  createdAt: string
+}
+
+export interface ReminderListItem {
+  id: number
+  activityId: number
+  remindAt: string
+  isSent: boolean
+}

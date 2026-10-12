@@ -12,6 +12,7 @@ import {
   IconLayoutSidebar,
   IconLogout,
   IconMoon,
+  IconPlus,
   IconSearch,
   IconShieldLock,
   IconSun,
@@ -20,6 +21,7 @@ import {
 import { useMemo } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../auth/context'
+import { useActivityForm } from './activity-form/context'
 import { useLayout } from '../layout/context'
 import { runPageCommand, type PageCommand } from '../lib/commands'
 
@@ -32,6 +34,7 @@ export function CommandPalette() {
   const { setColorScheme } = useMantineColorScheme()
   const scheme = useComputedColorScheme('dark')
   const { collapsed, toggleSidebar } = useLayout()
+  const { openActivityForm } = useActivityForm()
 
   const actions = useMemo<SpotlightActionGroupData[]>(() => {
     const pageTarget = pathname === '/calendar' ? '/calendar' : '/'
@@ -39,6 +42,13 @@ export function CommandPalette() {
     const calendar = (command: PageCommand) => () => runPageCommand(command, pathname, '/calendar', navigate)
 
     const navigation: SpotlightActionData[] = [
+      {
+        id: 'new-activity',
+        label: 'Yeni aktivite',
+        leftSection: <IconPlus size={ICON} />,
+        rightSection: <Kbd size="xs">C</Kbd>,
+        onClick: () => openActivityForm({ mode: 'create' }),
+      },
       { id: 'go-board', label: "Pano'ya git", leftSection: <IconLayoutKanban size={ICON} />, onClick: () => navigate('/') },
       {
         id: 'go-calendar',
@@ -109,7 +119,7 @@ export function CommandPalette() {
       { group: 'Görünüm', actions: view },
       { group: 'Hesap', actions: account },
     ]
-  }, [pathname, navigate, scheme, setColorScheme, user?.role, logout, collapsed, toggleSidebar])
+  }, [pathname, navigate, scheme, setColorScheme, user?.role, logout, collapsed, toggleSidebar, openActivityForm])
 
   return (
     <Spotlight

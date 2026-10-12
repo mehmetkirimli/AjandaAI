@@ -21,12 +21,14 @@ import { registerCommandHandler } from '../lib/commands'
 import { fetchActivities, fetchCategories } from '../api/activities'
 import { ApiError } from '../api/client'
 import type { ActivityListItem } from '../api/types'
+import { useActivityForm } from '../components/activity-form/context'
 import { PanelHeader } from '../components/PanelHeader'
 import { ActivityDrawer } from '../components/ActivityDrawer'
 import { useReschedule } from '../hooks/useReschedule'
 import { ActivityCard } from '../components/board/ActivityCard'
 import { DayColumn } from '../components/board/DayColumn'
 import { columnCollision, columnKeyboardCoordinates } from '../components/board/keyboard'
+import { UNCATEGORIZED } from '../lib/categoryColor'
 import { dayKey, dayNameDative, moveToDay, sortActivities, startOfWeek, weekRangeLabel } from '../lib/week'
 
 export function BoardPage() {
@@ -46,7 +48,7 @@ export function BoardPage() {
   const categoriesQuery = useQuery({ queryKey: ['categories'], queryFn: fetchCategories, staleTime: 5 * 60_000 })
 
   const categoryName = useCallback(
-    (id: number) => categoriesQuery.data?.find((c) => c.id === id)?.name ?? 'Kategorisiz',
+    (id: number) => categoriesQuery.data?.find((c) => c.id === id)?.name ?? UNCATEGORIZED,
     [categoriesQuery.data],
   )
 
@@ -97,7 +99,15 @@ export function BoardPage() {
   }
 
   const loading = activitiesQuery.isPending
-  const isEmpty = !loading && !activitiesQuery.isError && (activitiesQuery.data?.length ?? 0) === 0
+  // Gün kartındaki "Aktivite Ekle": o gün 09:00–10:00 önceden seçili.
+  const { openActivityForm } = useActivityForm()
+  const handleAddActivity = (day: Dayjs) => {
+    openActivityForm({
+      mode: 'create',
+      start: day.hour(9).minute(0).second(0).millisecond(0).toISOString(),
+      end: day.hour(10).minute(0).second(0).millisecond(0).toISOString(),
+    })
+  }
   const isCurrentWeek = weekKey === dayKey(startOfWeek(dayjs()))
 
   return (
@@ -129,12 +139,6 @@ export function BoardPage() {
         </Box>
       )}
 
-      {isEmpty && (
-        <Text size="xs" c="dimmed" px="md" py={8}>
-          Bu hafta boş. Aktivite ekleme formu yakında, şimdilik Swagger'dan ekleyebilirsin.
-        </Text>
-      )}
-
       <DndContext
         sensors={sensors}
         collisionDetection={columnCollision}
@@ -148,15 +152,8 @@ export function BoardPage() {
           },
         }}
       >
-        <Box style={{ flex: 1, minHeight: 0, overflowX: 'auto' }}>
-          <Box
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(7, minmax(0, 1fr))',
-              minWidth: 980,
-              height: '100%',
-            }}
-          >
+        <Box style={{ flex: 1, minHeight: 0, overflowY: 'auto', padding: 'var(--mantine-spacing-md)' }}>
+          <Box className="board-grid">
             {days.map((day, i) => (
               <DayColumn
                 key={dayKey(day)}
@@ -167,6 +164,7 @@ export function BoardPage() {
                 loading={loading}
                 onOpen={setOpenId}
                 isToday={dayKey(day) === todayKey}
+                onAddActivity={handleAddActivity}
               />
             ))}
           </Box>

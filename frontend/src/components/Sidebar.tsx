@@ -1,5 +1,4 @@
 import { ActionIcon, Avatar, Box, Group, Kbd, Menu, Stack, Text, Tooltip, UnstyledButton, useComputedColorScheme, useMantineColorScheme } from '@mantine/core'
-import { notifications } from '@mantine/notifications'
 import { spotlight } from '@mantine/spotlight'
 import {
   IconCalendarEvent,
@@ -17,6 +16,7 @@ import {
 import { useState, type ReactNode } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../auth/context'
+import { useActivityForm } from './activity-form/context'
 import { MOD_KEY } from '../lib/commands'
 import '../layout.css'
 import { Logo } from './Logo'
@@ -33,6 +33,7 @@ function NavItem({ to, icon, children, onNavigate }: { to: string; icon: ReactNo
 
 export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
   const { user, logout } = useAuth()
+  const { openActivityForm } = useActivityForm()
   const navigate = useNavigate()
   const { pathname } = useLocation()
   const { setColorScheme } = useMantineColorScheme()
@@ -94,7 +95,7 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
             <ActionIcon
               size="md"
               aria-label="Yeni"
-              onClick={() => notifications.show({ message: "Aktivite ekleme formu F3'te geliyor", autoClose: 2500 })}
+              onClick={() => openActivityForm({ mode: 'create' })}
             >
               <IconPencilPlus size={15} />
             </ActionIcon>

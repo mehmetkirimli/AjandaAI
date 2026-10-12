@@ -53,10 +53,9 @@
   border-top-style: none;
 }
 
-/* Olay: yumuşak ton + solda ince şerit (renkler CalendarPage'den inline gelir). */
+/* Olay: Pano hapıyla aynı dil; kategori rengi dolu zemin (shade 7) ve beyaz metin (renkler CalendarPage'den inline gelir). */
 .fc .fc-event {
-  border-style: solid;
-  border-width: 0 0 0 3px;
+  border-width: 0;
   border-radius: var(--mantine-radius-sm);
   cursor: grab;
   font-size: 13px;
@@ -71,7 +70,7 @@
 .fc .fc-event-main {
   padding: 1px 4px;
   overflow: hidden;
-  color: var(--mantine-color-text);
+  color: #fff;
 }
 
 .fc .fc-timegrid-event .fc-event-main {
@@ -119,4 +118,16 @@
   border-radius: 999px;
   padding: 1px 7px;
   margin: 3px;
+}
+
+/* Sürükleme ve yeniden boyutlandırma ghost'u dolu kalır, hafif gölge alır. */
+.fc .fc-event-mirror,
+.fc .fc-event.fc-event-dragging,
+.fc .fc-event.fc-event-resizing {
+  opacity: 0.95;
+  filter: brightness(1.08);
+}
+
+.fc .fc-event:hover {
+  filter: brightness(1.1);
 }

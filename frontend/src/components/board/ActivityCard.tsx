@@ -1,65 +1,62 @@
-import { Group, Paper, Stack, Text } from '@mantine/core'
-import { IconClock, IconSun } from '@tabler/icons-react'
+import { Group, Text } from '@mantine/core'
+import { IconGripVertical } from '@tabler/icons-react'
 import dayjs from 'dayjs'
 import type { CSSProperties } from 'react'
 import type { ActivityListItem } from '../../api/types'
-import { categoryStrip } from '../../lib/categoryColor'
-import { PriorityBars } from './PriorityBars'
+import { categoryFill, UNCATEGORIZED } from '../../lib/categoryColor'
 
 interface Props {
   item: ActivityListItem
   categoryName: string
-  // Sürükleme katmanında (DragOverlay) kart hafif büyür ve geniş, yumuşak gölge alır.
+  // Sürükleme katmanında (DragOverlay) hap hafif büyür ve gölge alır.
   overlay?: boolean
   style?: CSSProperties
 }
 
-// Sakin, Linear liste satırı gibi: nötr yüzey, hover'da aydınlanma; kategori = renkli nokta + gri etiket.
+// Renkli hap: kategori renginde dolu zemin; iptal edilmiş veya kategorisiz aktivite nötr gri.
+// Metin: "Başlık - 09:30 [Kategori]" (tüm gün: "Tüm gün"), en fazla 2 satır.
 export function ActivityCard({ item, categoryName, overlay = false, style }: Props) {
-  const start = dayjs(item.start)
-  const end = dayjs(item.end)
+  const neutral = item.status === 'Cancelled' || categoryName === UNCATEGORIZED
+  const background = neutral ? 'var(--mantine-color-gray-7)' : categoryFill(item.categoryId)
+  const color = '#ffffff'
+  const time = item.isAllDay ? 'Tüm gün' : dayjs(item.start).format('HH:mm')
 
   return (
-    <Paper
-      className="activity-card"
-      px={10}
-      py={8}
-      radius="md"
-      withBorder
-      shadow={overlay ? 'xl' : undefined}
+    <Group
+      className="activity-pill"
+      gap={4}
+      wrap="nowrap"
+      px={6}
+      py={6}
+      mih={38}
       style={{
-        background: overlay ? 'var(--app-surface-2)' : undefined,
-        borderColor: overlay ? 'var(--app-line-strong)' : undefined,
-        borderStyle: item.isAllDay ? 'dashed' : 'solid',
-        transform: overlay ? 'scale(1.03)' : undefined,
+        background,
+        color,
+        borderRadius: 8,
+        boxShadow: overlay ? 'var(--mantine-shadow-xl)' : undefined,
+        transform: overlay ? 'scale(1.04)' : undefined,
         cursor: overlay ? 'grabbing' : 'grab',
         ...style,
       }}
     >
-      <Stack gap={4}>
-        <Text fw={500} size="sm" lh={1.3} lineClamp={2} style={{ overflowWrap: 'anywhere' }}>
-          {item.title}
-        </Text>
-        <Group gap={4} wrap="nowrap" c="dimmed">
-          {item.isAllDay ? <IconSun size={12} /> : <IconClock size={12} />}
-          <Text size="xs" c="dimmed">
-            {item.isAllDay ? 'Tüm gün' : `${start.format('HH:mm')} – ${end.format('HH:mm')}`}
-          </Text>
-        </Group>
-        <Group gap={6} wrap="nowrap" justify="space-between">
-          <Group gap={6} wrap="nowrap" style={{ minWidth: 0 }}>
-            <span
-              style={{ width: 7, height: 7, borderRadius: '50%', background: categoryStrip(item.categoryId), flex: 'none' }}
-            />
-            <Text size="xs" c="dimmed" truncate>
-              {categoryName}
-            </Text>
-          </Group>
-          <Text c="dimmed" lh={0} style={{ flex: 'none' }}>
-            <PriorityBars priority={item.priority} />
-          </Text>
-        </Group>
-      </Stack>
-    </Paper>
+      <IconGripVertical size={14} style={{ flex: 'none', opacity: 0.6 }} />
+      <Text
+        fz={12.5}
+        fw={500}
+        lh={1.3}
+        lineClamp={2}
+        c="inherit"
+        style={{ flex: 1, minWidth: 0, overflowWrap: 'anywhere' }}
+        title={`${item.title} - ${time} [${categoryName}]`}
+      >
+        {item.title} - {time} [{categoryName}]
+      </Text>
+      {item.priority === 'High' && (
+        <span
+          aria-label="Yüksek öncelik"
+          style={{ width: 6, height: 6, borderRadius: '50%', background: 'currentColor', opacity: 0.85, flex: 'none' }}
+        />
+      )}
+    </Group>
   )
 }
