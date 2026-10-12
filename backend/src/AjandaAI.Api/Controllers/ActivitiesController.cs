@@ -32,6 +32,14 @@ public class ActivitiesController : ControllerBase
     public Task<ApiResponse<ActivityDetailDto>> CreateAsync(ActivityCreateDto dto, CancellationToken cancellationToken) =>
         _service.CreateAsync(dto, cancellationToken);
 
+    [HttpPost("series")]
+    public Task<ApiResponse<ActivitySeriesCreatedDto>> CreateSeriesAsync(ActivitySeriesCreateDto dto, CancellationToken cancellationToken) =>
+        _service.CreateSeriesAsync(dto, cancellationToken);
+
+    [HttpPost("series/{seriesId:int}/deactivate")]
+    public Task<ApiResponse<SeriesDeactivatedDto>> DeactivateSeriesAsync(int seriesId, [FromQuery] DateOnly? from, CancellationToken cancellationToken) =>
+        _service.DeactivateSeriesFromAsync(seriesId, from, cancellationToken);
+
     [HttpPut("{id:int}")]
     public Task<ApiResponse<ActivityDetailDto>> UpdateAsync(int id, ActivityUpdateDto dto, CancellationToken cancellationToken) =>
         _service.UpdateAsync(id, dto, cancellationToken);

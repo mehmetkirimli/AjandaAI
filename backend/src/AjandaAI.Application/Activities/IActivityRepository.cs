@@ -23,4 +23,16 @@ public interface IActivityRepository
     Task AddAsync(Activity activity, CancellationToken cancellationToken = default);
 
     Task UpdateAsync(Activity activity, CancellationToken cancellationToken = default);
+
+    /// <summary>Seriyi ve oluşumlarını (varsa hatırlatmalarıyla) tek SaveChanges / tek transaction ile kaydeder (ADR 0022).</summary>
+    Task AddSeriesAsync(ActivitySeries series, IReadOnlyList<Activity> activities, CancellationToken cancellationToken = default);
+
+    /// <summary>Sahiplik sorgunun içindedir: WHERE id = @id AND user_id = @userId.</summary>
+    Task<ActivitySeries?> GetSeriesForUserAsync(int seriesId, int userId, CancellationToken cancellationToken = default);
+
+    /// <summary>Seri var mı (sahibi önemsiz). Yalnızca yetkisiz erişim logu için.</summary>
+    Task<bool> SeriesExistsAsync(int seriesId, CancellationToken cancellationToken = default);
+
+    /// <summary>Serinin Start >= fromUtc olan aktif oluşumlarını pasife alır; etkilenen sayıyı döner.</summary>
+    Task<int> DeactivateSeriesFromAsync(int seriesId, int userId, DateTimeOffset fromUtc, DateTimeOffset now, CancellationToken cancellationToken = default);
 }

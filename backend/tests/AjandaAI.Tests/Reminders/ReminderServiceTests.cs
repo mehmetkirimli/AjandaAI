@@ -116,6 +116,14 @@ public class ReminderServiceTests
         public Task AddAsync(Activity activity, CancellationToken cancellationToken = default) => Task.CompletedTask;
 
         public Task UpdateAsync(Activity activity, CancellationToken cancellationToken = default) => Task.CompletedTask;
+
+        public Task AddSeriesAsync(ActivitySeries series, IReadOnlyList<Activity> activities, CancellationToken cancellationToken = default) => Task.CompletedTask;
+
+        public Task<ActivitySeries?> GetSeriesForUserAsync(int seriesId, int userId, CancellationToken cancellationToken = default) => Task.FromResult<ActivitySeries?>(null);
+
+        public Task<bool> SeriesExistsAsync(int seriesId, CancellationToken cancellationToken = default) => Task.FromResult(false);
+
+        public Task<int> DeactivateSeriesFromAsync(int seriesId, int userId, DateTimeOffset fromUtc, DateTimeOffset now, CancellationToken cancellationToken = default) => Task.FromResult(0);
     }
 
     private sealed class FixedTimeProvider : TimeProvider

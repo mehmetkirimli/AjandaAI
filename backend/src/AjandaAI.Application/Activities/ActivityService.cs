@@ -7,6 +7,7 @@
 
 using AjandaAI.Application.Activities.Dtos;
 using AjandaAI.Application.Common;
+using AjandaAI.Application.Users;
 using AjandaAI.Domain.Entities;
 using FluentValidation;
 using Microsoft.Extensions.Logging;
@@ -19,6 +20,8 @@ public class ActivityService
     private readonly IValidator<ActivityCreateDto> _createValidator;
     private readonly IValidator<ActivityUpdateDto> _updateValidator;
     private readonly IValidator<ActivityFilterDto> _filterValidator;
+    private readonly IValidator<ActivitySeriesCreateDto> _seriesValidator;
+    private readonly IUserRepository _users;
     private readonly ICurrentUser _currentUser;
     private readonly ILogger<ActivityService> _logger;
 
@@ -27,6 +30,8 @@ public class ActivityService
         IValidator<ActivityCreateDto> createValidator,
         IValidator<ActivityUpdateDto> updateValidator,
         IValidator<ActivityFilterDto> filterValidator,
+        IValidator<ActivitySeriesCreateDto> seriesValidator,
+        IUserRepository users,
         ICurrentUser currentUser,
         ILogger<ActivityService> logger)
     {
@@ -35,6 +40,8 @@ public class ActivityService
         _createValidator = createValidator;
         _updateValidator = updateValidator;
         _filterValidator = filterValidator;
+        _seriesValidator = seriesValidator;
+        _users = users;
         _logger = logger;
     }
 
@@ -83,6 +90,115 @@ public class ActivityService
         await _repository.AddAsync(activity, cancellationToken);
         _logger.LogInformation("Aktivite oluşturuldu {ActivityId} {UserId} {Title}", activity.Id, userId, activity.Title);
         return ApiResponse<ActivityDetailDto>.Created(ToDetailDto(activity), "Aktivite oluşturuldu.");
+    }
+
+    public async Task<ApiResponse<ActivitySeriesCreatedDto>> CreateSeriesAsync(ActivitySeriesCreateDto dto, CancellationToken cancellationToken = default)
+    {
+        var userId = _currentUser.UserId;
+        var result = await _seriesValidator.ValidateAsync(dto, cancellationToken);
+        if (!result.IsValid)
+        {
+            return SeriesFail(userId, result.Errors.Select(e => e.ErrorMessage).ToList());
+        }
+
+        var zone = await GetUserZoneAsync(userId, cancellationToken);
+        var recurrence = dto.Recurrence!;
+        var mask = recurrence.Frequency == Domain.Enums.RecurrenceFrequency.Weekly
+            ? RecurrenceExpander.ToMask(recurrence.DaysOfWeek!)
+            : 0;
+
+        var firstDate = RecurrenceExpander.LocalDateOf(dto.Start, zone);
+        if (recurrence.Until < firstDate)
+        {
+            return SeriesFail(userId, new List<string> { "Bitiş tarihi başlangıç gününden önce olamaz." });
+        }
+
+        var expansion = RecurrenceExpander.Expand(dto.Start, dto.End, dto.IsAllDay, zone, recurrence.Frequency, mask, recurrence.Until);
+        if (expansion.TooMany)
+        {
+            return SeriesFail(userId, new List<string> { "Bir seri en fazla 366 aktivite içerebilir." });
+        }
+        if (expansion.Occurrences.Count == 0)
+        {
+            return SeriesFail(userId, new List<string> { "Bu kuralla hiç aktivite oluşmuyor." });
+        }
+
+        var now = DateTimeOffset.UtcNow;
+        var occurrences = expansion.Occurrences;
+        var series = new ActivitySeries
+        {
+            UserId = userId,
+            Frequency = recurrence.Frequency,
+            DaysOfWeek = mask,
+            StartDate = RecurrenceExpander.LocalDateOf(occurrences[0].Start, zone),
+            EndDate = RecurrenceExpander.LocalDateOf(occurrences[^1].Start, zone),
+            CreatedAt = now
+        };
+
+        var activities = new List<Activity>(occurrences.Count);
+        foreach (var occurrence in occurrences)
+        {
+            var activity = new Activity { UserId = userId, CreatedAt = now, UpdatedAt = now };
+            Apply(activity, dto.CategoryId, dto.Title, dto.Description, dto.Status, dto.Priority, dto.EnergyLevel,
+                occurrence.Start, occurrence.End, dto.IsAllDay, dto.Location, dto.IsFlexible, dto.EstimatedBudget, null, null);
+
+            if (dto.ReminderMinutesBefore is { } minutes)
+            {
+                var remindAt = occurrence.Start.AddMinutes(-minutes);
+                if (remindAt > now)
+                {
+                    activity.Reminders.Add(new Reminder { RemindAt = remindAt, CreatedAt = now });
+                }
+            }
+            activities.Add(activity);
+        }
+
+        await _repository.AddSeriesAsync(series, activities, cancellationToken);
+        _logger.LogInformation("Aktivite serisi oluşturuldu {SeriesId} {UserId} {Count}", series.Id, userId, activities.Count);
+        return ApiResponse<ActivitySeriesCreatedDto>.Created(
+            new ActivitySeriesCreatedDto(series.Id, activities.Count, occurrences[0].Start, occurrences[^1].Start),
+            "Aktivite serisi oluşturuldu.");
+    }
+
+    public async Task<ApiResponse<SeriesDeactivatedDto>> DeactivateSeriesFromAsync(int seriesId, DateOnly? from, CancellationToken cancellationToken = default)
+    {
+        var userId = _currentUser.UserId;
+        if (from is null)
+        {
+            return ApiResponse<SeriesDeactivatedDto>.Fail("Doğrulama hatası.", new List<string> { "from tarihi zorunludur." });
+        }
+
+        var series = await _repository.GetSeriesForUserAsync(seriesId, userId, cancellationToken);
+        if (series is null)
+        {
+            if (await _repository.SeriesExistsAsync(seriesId, cancellationToken))
+            {
+                _logger.LogWarning("Yetkisiz seri erişim denemesi {UserId} {SeriesId}", userId, seriesId);
+            }
+            return ApiResponse<SeriesDeactivatedDto>.NotFound($"Seri {seriesId} bulunamadı.");
+        }
+
+        // from: kullanıcının yerel gününün başlangıcı, UTC'ye çevrilmiş.
+        var zone = await GetUserZoneAsync(userId, cancellationToken);
+        var fromUtc = RecurrenceExpander.StartOfLocalDayUtc(from.Value, zone);
+
+        var count = await _repository.DeactivateSeriesFromAsync(seriesId, userId, fromUtc, DateTimeOffset.UtcNow, cancellationToken);
+        _logger.LogInformation("Seri pasife alındı {SeriesId} {UserId} {Count}", seriesId, userId, count);
+        return ApiResponse<SeriesDeactivatedDto>.Ok(new SeriesDeactivatedDto(count), "Seri durduruldu.");
+    }
+
+    private ApiResponse<ActivitySeriesCreatedDto> SeriesFail(int userId, List<string> errors)
+    {
+        _logger.LogWarning("Aktivite serisi oluşturma doğrulama hatası {UserId} {@Errors}", userId, errors);
+        return ApiResponse<ActivitySeriesCreatedDto>.Fail("Doğrulama hatası.", errors);
+    }
+
+    private async Task<TimeZoneInfo> GetUserZoneAsync(int userId, CancellationToken cancellationToken)
+    {
+        var user = await _users.GetByIdAsync(userId, cancellationToken);
+        return user is not null && TimeZoneInfo.TryFindSystemTimeZoneById(user.TimeZoneId, out var zone)
+            ? zone
+            : TimeZoneInfo.Utc;
     }
 
     public async Task<ApiResponse<ActivityDetailDto>> UpdateAsync(int id, ActivityUpdateDto dto, CancellationToken cancellationToken = default)
@@ -167,11 +283,15 @@ public class ActivityService
 
     private static ActivityListDto ToListDto(Activity a) => new(
         a.Id, a.CategoryId, a.Title, a.Status.ToString(), a.Priority.ToString(),
-        a.Start, a.End, a.IsAllDay);
+        a.Start, a.End, a.IsAllDay, a.SeriesId);
 
     private static ActivityDetailDto ToDetailDto(Activity a) => new(
         a.Id, a.UserId, a.CategoryId, a.Title, a.Description,
         a.Status.ToString(), a.Priority.ToString(), a.EnergyLevel.ToString(),
         a.Start, a.End, a.IsAllDay, a.Location, a.IsFlexible, a.EstimatedBudget,
-        a.Rating, a.WouldRepeat, a.IsActive, a.CreatedAt, a.UpdatedAt);
+        a.Rating, a.WouldRepeat, a.IsActive, a.CreatedAt, a.UpdatedAt,
+        a.Series is null
+            ? null
+            : new SeriesSummaryDto(a.Series.Id, a.Series.Frequency.ToString(),
+                RecurrenceExpander.FromMask(a.Series.DaysOfWeek), a.Series.StartDate, a.Series.EndDate));
 }

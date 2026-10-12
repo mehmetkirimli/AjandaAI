@@ -42,6 +42,7 @@ public class ActivityRepository : IActivityRepository
     {
         return _context.Activities
             .AsNoTracking()
+            .Include(a => a.Series)
             .FirstOrDefaultAsync(a => a.Id == id && a.UserId == userId, cancellationToken);
     }
 
@@ -59,6 +60,43 @@ public class ActivityRepository : IActivityRepository
     public async Task UpdateAsync(Activity activity, CancellationToken cancellationToken = default)
     {
         _context.Activities.Update(activity);
+        // Detay için Include edilen seri güncellenmez; Update grafiği onu Modified işaretlemesin.
+        if (activity.Series is not null)
+        {
+            _context.Entry(activity.Series).State = EntityState.Unchanged;
+        }
         await _context.SaveChangesAsync(cancellationToken);
+    }
+
+    public async Task AddSeriesAsync(ActivitySeries series, IReadOnlyList<Activity> activities, CancellationToken cancellationToken = default)
+    {
+        _context.ActivitySeries.Add(series);
+        foreach (var activity in activities)
+        {
+            activity.Series = series;
+        }
+        _context.Activities.AddRange(activities);
+        await _context.SaveChangesAsync(cancellationToken);
+    }
+
+    public Task<ActivitySeries?> GetSeriesForUserAsync(int seriesId, int userId, CancellationToken cancellationToken = default)
+    {
+        return _context.ActivitySeries
+            .AsNoTracking()
+            .FirstOrDefaultAsync(s => s.Id == seriesId && s.UserId == userId, cancellationToken);
+    }
+
+    public Task<bool> SeriesExistsAsync(int seriesId, CancellationToken cancellationToken = default)
+    {
+        return _context.ActivitySeries.AnyAsync(s => s.Id == seriesId, cancellationToken);
+    }
+
+    public Task<int> DeactivateSeriesFromAsync(int seriesId, int userId, DateTimeOffset fromUtc, DateTimeOffset now, CancellationToken cancellationToken = default)
+    {
+        return _context.Activities
+            .Where(a => a.SeriesId == seriesId && a.UserId == userId && a.IsActive && a.Start >= fromUtc)
+            .ExecuteUpdateAsync(set => set
+                .SetProperty(a => a.IsActive, false)
+                .SetProperty(a => a.UpdatedAt, now), cancellationToken);
     }
 }

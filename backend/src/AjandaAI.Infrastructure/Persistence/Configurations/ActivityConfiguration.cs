@@ -79,6 +79,13 @@ public class ActivityConfiguration : IEntityTypeConfiguration<Activity>
             .HasForeignKey(a => a.CategoryId)
             .OnDelete(DeleteBehavior.Restrict);
 
+        builder.HasOne(a => a.Series)
+            .WithMany()
+            .HasForeignKey(a => a.SeriesId)
+            .OnDelete(DeleteBehavior.Restrict);
+
         builder.HasIndex(a => new { a.UserId, a.Start });
+
+        builder.HasIndex(a => a.SeriesId);
     }
 }

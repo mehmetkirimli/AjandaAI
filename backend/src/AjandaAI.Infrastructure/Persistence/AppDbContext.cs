@@ -23,6 +23,8 @@ public class AppDbContext : DbContext
 
     public DbSet<Reminder> Reminders => Set<Reminder>();
 
+    public DbSet<ActivitySeries> ActivitySeries => Set<ActivitySeries>();
+
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
 
     public DbSet<EmailVerificationToken> EmailVerificationTokens => Set<EmailVerificationToken>();

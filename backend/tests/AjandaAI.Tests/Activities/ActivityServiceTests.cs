@@ -8,6 +8,7 @@ using AjandaAI.Application.Activities.Dtos;
 using AjandaAI.Application.Activities.Validators;
 using AjandaAI.Application.Categories;
 using AjandaAI.Application.Categories.Dtos;
+using AjandaAI.Application.Users;
 using AjandaAI.Domain.Entities;
 using AjandaAI.Domain.Enums;
 using Microsoft.Extensions.Logging;
@@ -80,7 +81,30 @@ public class ActivityServiceTests
             return Task.CompletedTask;
         }
 
+        public Task AddSeriesAsync(ActivitySeries series, IReadOnlyList<Activity> activities, CancellationToken cancellationToken = default) =>
+            Task.CompletedTask;
+
+        public Task<ActivitySeries?> GetSeriesForUserAsync(int seriesId, int userId, CancellationToken cancellationToken = default) =>
+            Task.FromResult<ActivitySeries?>(null);
+
+        public Task<bool> SeriesExistsAsync(int seriesId, CancellationToken cancellationToken = default) => Task.FromResult(false);
+
+        public Task<int> DeactivateSeriesFromAsync(int seriesId, int userId, DateTimeOffset fromUtc, DateTimeOffset now, CancellationToken cancellationToken = default) =>
+            Task.FromResult(0);
+
         public Activity Single(int id) => _items.Single(a => a.Id == id);
+    }
+
+    private sealed class FakeUserRepository : IUserRepository
+    {
+        public Task<User?> GetByIdAsync(int id, CancellationToken cancellationToken = default) =>
+            Task.FromResult<User?>(new User { Id = id, TimeZoneId = "Europe/Istanbul" });
+
+        public Task<bool> EmailExistsAsync(string email, int? excludeId = null, CancellationToken cancellationToken = default) => Task.FromResult(false);
+
+        public Task AddAsync(User user, CancellationToken cancellationToken = default) => Task.CompletedTask;
+
+        public Task UpdateAsync(User user, CancellationToken cancellationToken = default) => Task.CompletedTask;
     }
 
     private sealed class FakeCategoryRepository : ICategoryRepository
@@ -126,6 +150,8 @@ public class ActivityServiceTests
             new ActivityCreateDtoValidator(categories),
             new ActivityUpdateDtoValidator(categories),
             new ActivityFilterDtoValidator(),
+            new ActivitySeriesCreateDtoValidator(new ActivityCreateDtoValidator(categories)),
+            new FakeUserRepository(),
             new FakeCurrentUser(currentUserId),
             logger ?? NullLogger<ActivityService>.Instance);
     }

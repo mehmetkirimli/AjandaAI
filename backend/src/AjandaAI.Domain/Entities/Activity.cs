@@ -52,5 +52,10 @@ public class Activity
 
     public Category Category { get; set; } = null!;
 
+    /// <summary>Tekrarlayan serinin parçasıysa seri kimliği; aksi halde null (ADR 0022).</summary>
+    public int? SeriesId { get; set; }
+
+    public ActivitySeries? Series { get; set; }
+
     public ICollection<Reminder> Reminders { get; set; } = new List<Reminder>();
 }

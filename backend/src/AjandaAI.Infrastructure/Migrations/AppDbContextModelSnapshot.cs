@@ -89,6 +89,10 @@ namespace AjandaAI.Infrastructure.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("rating");
 
+                    b.Property<int?>("SeriesId")
+                        .HasColumnType("integer")
+                        .HasColumnName("series_id");
+
                     b.Property<DateTimeOffset>("Start")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("start");
@@ -123,10 +127,57 @@ namespace AjandaAI.Infrastructure.Migrations
                     b.HasIndex("CategoryId")
                         .HasDatabaseName("ix_activities_category_id");
 
+                    b.HasIndex("SeriesId")
+                        .HasDatabaseName("ix_activities_series_id");
+
                     b.HasIndex("UserId", "Start")
                         .HasDatabaseName("ix_activities_user_id_start");
 
                     b.ToTable("activities", (string)null);
+                });
+
+            modelBuilder.Entity("AjandaAI.Domain.Entities.ActivitySeries", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<int>("DaysOfWeek")
+                        .HasColumnType("integer")
+                        .HasColumnName("days_of_week");
+
+                    b.Property<DateOnly>("EndDate")
+                        .HasColumnType("date")
+                        .HasColumnName("end_date");
+
+                    b.Property<string>("Frequency")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("frequency");
+
+                    b.Property<DateOnly>("StartDate")
+                        .HasColumnType("date")
+                        .HasColumnName("start_date");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("integer")
+                        .HasColumnName("user_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_activity_series");
+
+                    b.HasIndex("UserId")
+                        .HasDatabaseName("ix_activity_series_user_id");
+
+                    b.ToTable("activity_series", (string)null);
                 });
 
             modelBuilder.Entity("AjandaAI.Domain.Entities.Category", b =>
@@ -444,6 +495,12 @@ namespace AjandaAI.Infrastructure.Migrations
                         .IsRequired()
                         .HasConstraintName("fk_activities_categories_category_id");
 
+                    b.HasOne("AjandaAI.Domain.Entities.ActivitySeries", "Series")
+                        .WithMany()
+                        .HasForeignKey("SeriesId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_activities_activity_series_series_id");
+
                     b.HasOne("AjandaAI.Domain.Entities.User", "User")
                         .WithMany("Activities")
                         .HasForeignKey("UserId")
@@ -452,6 +509,20 @@ namespace AjandaAI.Infrastructure.Migrations
                         .HasConstraintName("fk_activities_users_user_id");
 
                     b.Navigation("Category");
+
+                    b.Navigation("Series");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("AjandaAI.Domain.Entities.ActivitySeries", b =>
+                {
+                    b.HasOne("AjandaAI.Domain.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_activity_series_users_user_id");
 
                     b.Navigation("User");
                 });

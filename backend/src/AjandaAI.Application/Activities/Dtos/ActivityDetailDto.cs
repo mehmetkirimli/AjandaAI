@@ -23,4 +23,5 @@ public record ActivityDetailDto(
     bool? WouldRepeat,
     bool IsActive,
     DateTimeOffset CreatedAt,
-    DateTimeOffset UpdatedAt);
+    DateTimeOffset UpdatedAt,
+    SeriesSummaryDto? Series);

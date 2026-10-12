@@ -12,4 +12,5 @@ public record ActivityListDto(
     string Priority,
     DateTimeOffset Start,
     DateTimeOffset End,
-    bool IsAllDay);
+    bool IsAllDay,
+    int? SeriesId);
