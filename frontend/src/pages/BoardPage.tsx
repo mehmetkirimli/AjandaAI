@@ -8,37 +8,31 @@ import {
   type DragEndEvent,
   type DragStartEvent,
 } from '@dnd-kit/core'
-import { Alert, Box, Button, Center, Group, Paper, Stack, Text, ThemeIcon, Title } from '@mantine/core'
-import { notifications } from '@mantine/notifications'
+import { ActionIcon, Alert, Box, Button, Group, Text } from '@mantine/core'
 import {
   IconAlertCircle,
-  IconCalendarOff,
-  IconCalendarWeek,
   IconChevronLeft,
   IconChevronRight,
 } from '@tabler/icons-react'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
 import dayjs, { type Dayjs } from 'dayjs'
-import { useCallback, useMemo, useState } from 'react'
-import { fetchActivities, fetchCategories, rescheduleActivity } from '../api/activities'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import { registerCommandHandler } from '../lib/commands'
+import { fetchActivities, fetchCategories } from '../api/activities'
 import { ApiError } from '../api/client'
 import type { ActivityListItem } from '../api/types'
+import { PanelHeader } from '../components/PanelHeader'
+import { ActivityDrawer } from '../components/ActivityDrawer'
+import { useReschedule } from '../hooks/useReschedule'
 import { ActivityCard } from '../components/board/ActivityCard'
 import { DayColumn } from '../components/board/DayColumn'
 import { columnCollision, columnKeyboardCoordinates } from '../components/board/keyboard'
 import { dayKey, dayNameDative, moveToDay, sortActivities, startOfWeek, weekRangeLabel } from '../lib/week'
 
-interface MoveVars {
-  item: ActivityListItem
-  dayIndex: number
-  start: string
-  end: string
-}
-
 export function BoardPage() {
-  const queryClient = useQueryClient()
   const [weekStart, setWeekStart] = useState<Dayjs>(() => startOfWeek(dayjs()))
   const [activeId, setActiveId] = useState<number | null>(null)
+  const [openId, setOpenId] = useState<number | null>(null)
 
   const [todayKey] = useState(() => dayKey(dayjs()))
   const weekKey = dayKey(weekStart)
@@ -66,35 +60,18 @@ export function BoardPage() {
     return map
   }, [activitiesQuery.data])
 
-  const moveMutation = useMutation({
-    mutationFn: (vars: MoveVars) => rescheduleActivity(vars.item.id, vars.start, vars.end),
-    // İyimser güncelleme: kart hemen yeni yerde görünür.
-    onMutate: async (vars) => {
-      await queryClient.cancelQueries({ queryKey: activitiesKey })
-      const previous = queryClient.getQueryData<ActivityListItem[]>(activitiesKey)
-      queryClient.setQueryData<ActivityListItem[]>(activitiesKey, (old) =>
-        old?.map((a) => (a.id === vars.item.id ? { ...a, start: vars.start, end: vars.end } : a)),
-      )
-      return { previous }
-    },
-    onError: (error, _vars, context) => {
-      if (context?.previous) queryClient.setQueryData(activitiesKey, context.previous)
-      notifications.show({
-        color: 'red',
-        title: 'Aktivite taşınamadı',
-        message: error instanceof ApiError ? error.errors[0] ?? error.message : 'Beklenmeyen bir hata oluştu.',
-      })
-    },
-    onSuccess: (_data, vars) => {
-      notifications.show({
-        color: 'teal',
-        title: 'Taşındı',
-        message: `Aktivite ${dayNameDative(vars.dayIndex)} taşındı`,
-        autoClose: 2500,
-      })
-    },
-    onSettled: () => queryClient.invalidateQueries({ queryKey: activitiesKey }),
-  })
+  const moveMutation = useReschedule()
+
+  // Komut paleti: Bugüne dön / Önceki / Sonraki hafta.
+  useEffect(
+    () =>
+      registerCommandHandler((command) => {
+        if (command === 'today') setWeekStart(startOfWeek(dayjs()))
+        else if (command === 'prev') setWeekStart((w) => w.subtract(7, 'day'))
+        else if (command === 'next') setWeekStart((w) => w.add(7, 'day'))
+      }),
+    [],
+  )
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
@@ -112,7 +89,11 @@ export function BoardPage() {
     if (!item || typeof overId !== 'string') return
     const dayIndex = days.findIndex((d) => `day-${dayKey(d)}` === overId)
     if (dayIndex < 0 || dayKey(days[dayIndex]) === dayKey(dayjs(item.start))) return
-    moveMutation.mutate({ item, dayIndex, ...moveToDay(item, days[dayIndex]) })
+    moveMutation.mutate({
+      item,
+      ...moveToDay(item, days[dayIndex]),
+      successMessage: `Aktivite ${dayNameDative(dayIndex)} taşındı`,
+    })
   }
 
   const loading = activitiesQuery.isPending
@@ -120,66 +101,38 @@ export function BoardPage() {
   const isCurrentWeek = weekKey === dayKey(startOfWeek(dayjs()))
 
   return (
-    <Stack gap="lg">
-      <Group justify="space-between" wrap="wrap">
-        <Stack gap={0}>
-          <Title order={2}>Haftalık Pano</Title>
-          <Text c="dimmed" fw={500}>
-            {weekRangeLabel(weekStart)}
-          </Text>
-        </Stack>
-        <Group gap="xs">
-          <Button
-            variant="default"
-            leftSection={<IconChevronLeft size={16} />}
-            onClick={() => setWeekStart((w) => w.subtract(7, 'day'))}
-          >
-            Önceki
-          </Button>
-          <Button
-            variant={isCurrentWeek ? 'light' : 'filled'}
-            leftSection={<IconCalendarWeek size={16} />}
-            onClick={() => setWeekStart(startOfWeek(dayjs()))}
-          >
-            Bugün
-          </Button>
-          <Button
-            variant="default"
-            rightSection={<IconChevronRight size={16} />}
-            onClick={() => setWeekStart((w) => w.add(7, 'day'))}
-          >
-            Sonraki
-          </Button>
-        </Group>
-      </Group>
+    <>
+      <PanelHeader title="Pano" meta={weekRangeLabel(weekStart)}>
+        <ActionIcon size="md" aria-label="Önceki hafta" onClick={() => setWeekStart((w) => w.subtract(7, 'day'))}>
+          <IconChevronLeft size={16} />
+        </ActionIcon>
+        <Button size="compact-sm" variant="default" disabled={isCurrentWeek} onClick={() => setWeekStart(startOfWeek(dayjs()))}>
+          Bugün
+        </Button>
+        <ActionIcon size="md" aria-label="Sonraki hafta" onClick={() => setWeekStart((w) => w.add(7, 'day'))}>
+          <IconChevronRight size={16} />
+        </ActionIcon>
+      </PanelHeader>
 
       {activitiesQuery.isError && (
-        <Alert color="red" variant="light" icon={<IconAlertCircle size={18} />} title="Aktiviteler yüklenemedi">
-          <Group justify="space-between">
-            <Text size="sm">
-              {activitiesQuery.error instanceof ApiError ? activitiesQuery.error.message : 'Beklenmeyen bir hata oluştu.'}
-            </Text>
-            <Button size="xs" variant="white" onClick={() => activitiesQuery.refetch()}>
-              Tekrar dene
-            </Button>
-          </Group>
-        </Alert>
+        <Box px="md" pt="sm">
+          <Alert color="red" icon={<IconAlertCircle size={16} />} title="Aktiviteler yüklenemedi">
+            <Group justify="space-between">
+              <Text size="sm">
+                {activitiesQuery.error instanceof ApiError ? activitiesQuery.error.message : 'Beklenmeyen bir hata oluştu.'}
+              </Text>
+              <Button size="compact-sm" variant="default" onClick={() => activitiesQuery.refetch()}>
+                Tekrar dene
+              </Button>
+            </Group>
+          </Alert>
+        </Box>
       )}
 
       {isEmpty && (
-        <Paper withBorder radius="lg" p="xl" bg="var(--mantine-color-indigo-light)">
-          <Center>
-            <Stack align="center" gap="xs">
-              <ThemeIcon size={64} radius="xl" variant="white" color="indigo">
-                <IconCalendarOff size={34} />
-              </ThemeIcon>
-              <Title order={4}>Bu hafta boş</Title>
-              <Text c="dimmed" ta="center" maw={420}>
-                Aktivite ekleme formu yakında, şimdilik Swagger'dan ekleyebilirsin.
-              </Text>
-            </Stack>
-          </Center>
-        </Paper>
+        <Text size="xs" c="dimmed" px="md" py={8}>
+          Bu hafta boş. Aktivite ekleme formu yakında, şimdilik Swagger'dan ekleyebilirsin.
+        </Text>
       )}
 
       <DndContext
@@ -195,13 +148,13 @@ export function BoardPage() {
           },
         }}
       >
-        <Box style={{ overflowX: 'auto', paddingBottom: 8 }}>
+        <Box style={{ flex: 1, minHeight: 0, overflowX: 'auto' }}>
           <Box
             style={{
               display: 'grid',
               gridTemplateColumns: 'repeat(7, minmax(0, 1fr))',
-              minWidth: 1100,
-              gap: 'var(--mantine-spacing-sm)',
+              minWidth: 980,
+              height: '100%',
             }}
           >
             {days.map((day, i) => (
@@ -212,6 +165,7 @@ export function BoardPage() {
                 items={byDay.get(dayKey(day)) ?? []}
                 categoryName={categoryName}
                 loading={loading}
+                onOpen={setOpenId}
                 isToday={dayKey(day) === todayKey}
               />
             ))}
@@ -221,6 +175,7 @@ export function BoardPage() {
           {activeItem ? <ActivityCard item={activeItem} categoryName={categoryName(activeItem.categoryId)} overlay /> : null}
         </DragOverlay>
       </DndContext>
-    </Stack>
+      <ActivityDrawer activityId={openId} onClose={() => setOpenId(null)} categoryName={categoryName} />
+    </>
   )
 }

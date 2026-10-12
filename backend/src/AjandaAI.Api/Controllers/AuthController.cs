@@ -1,5 +1,5 @@
-// Kimlik doğrulama uç noktaları: register, verify-email, login, refresh, logout (ADR 0018) ve me (ADR 0021).
-// me dışındakiler herkese açıktır. [AllowAnonymous] action seviyesindedir: sınıf seviyesinde olsaydı
+// Kimlik doğrulama uç noktaları: register, verify-email, login, refresh, logout (ADR 0018) ve profil: me, change-password (ADR 0021).
+// me ve change-password dışındakiler herkese açıktır. [AllowAnonymous] action seviyesindedir: sınıf seviyesinde olsaydı
 // me'ye yazılan koruma etkisiz kalırdı (AllowAnonymous her Authorize'ı ezer). me FallbackPolicy ile korunur.
 // Register ve login IP bazlı rate limit alır. Yanıtlar ApiResponse<T>; status kodunu ApiResponseFilter belirler.
 
@@ -18,12 +18,12 @@ namespace AjandaAI.Api.Controllers;
 public class AuthController : ControllerBase
 {
     private readonly AuthService _service;
-    private readonly MeService _me;
+    private readonly ProfileService _profile;
 
-    public AuthController(AuthService service, MeService me)
+    public AuthController(AuthService service, ProfileService profile)
     {
         _service = service;
-        _me = me;
+        _profile = profile;
     }
 
     [AllowAnonymous]
@@ -55,5 +55,15 @@ public class AuthController : ControllerBase
 
     [HttpGet("me")]
     public Task<ApiResponse<MeDto>> MeAsync(CancellationToken cancellationToken) =>
-        _me.GetAsync(cancellationToken);
+        _profile.GetAsync(cancellationToken);
+
+    [HttpPut("me")]
+    public Task<ApiResponse<MeDto>> UpdateMeAsync(ProfileUpdateDto dto, CancellationToken cancellationToken) =>
+        _profile.UpdateAsync(dto, cancellationToken);
+
+    // Mevcut şifre tahminine karşı login ile aynı IP sınırı.
+    [HttpPost("change-password")]
+    [EnableRateLimiting(AuthRateLimit.PolicyName)]
+    public Task<ApiResponse<bool>> ChangePasswordAsync(ChangePasswordDto dto, CancellationToken cancellationToken) =>
+        _profile.ChangePasswordAsync(dto, cancellationToken);
 }

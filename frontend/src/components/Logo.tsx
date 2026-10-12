@@ -1,14 +1,20 @@
 import { Group, Text, ThemeIcon } from '@mantine/core'
 import { IconCalendarEvent } from '@tabler/icons-react'
 
-export function Logo({ light = false }: { light?: boolean }) {
+// compact: sidebar üst satırı (küçük ikon + 13 px ad). Varsayılan: auth sayfaları.
+export function Logo({ compact = false }: { compact?: boolean }) {
   return (
-    <Group gap="xs" wrap="nowrap">
-      <ThemeIcon size={36} radius="md" variant="gradient" gradient={{ from: 'indigo', to: 'grape', deg: 135 }}>
-        <IconCalendarEvent size={22} />
+    <Group gap={compact ? 8 : 10} wrap="nowrap">
+      <ThemeIcon
+        size={compact ? 20 : 32}
+        radius={compact ? 'sm' : 'md'}
+        variant="gradient"
+        gradient={{ from: 'accent.5', to: 'accent.7', deg: 135 }}
+      >
+        <IconCalendarEvent size={compact ? 13 : 18} />
       </ThemeIcon>
-      <Text fw={800} fz={22} c={light ? 'white' : undefined} style={{ letterSpacing: '-0.5px' }}>
-        Ajanda<Text span inherit c={light ? 'indigo.1' : 'indigo'}>AI</Text>
+      <Text fw={600} fz={compact ? 13 : 17} style={{ letterSpacing: '-0.01em' }}>
+        AjandaAI
       </Text>
     </Group>
   )

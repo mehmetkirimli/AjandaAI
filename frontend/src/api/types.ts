@@ -31,6 +31,7 @@ export interface Me {
   displayName: string
   timeZoneId: string
   role: UserRole
+  createdAt: string
 }
 
 export interface RegisterRequest {

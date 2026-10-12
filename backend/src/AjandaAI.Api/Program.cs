@@ -183,7 +183,13 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+// Development'ta https'e yönlendirme YAPILMAZ: web istemcisi (http://localhost:5173) API'yi http'den çağırır;
+// tarayıcı CORS preflight'ında yönlendirmeyi (307) reddeder ve istek "CORS error" ile düşer.
+// Bu, backend https profiliyle (Visual Studio / F5) başlatıldığında da geçerlidir (ADR 0021).
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
 
 app.UseCors();
 app.UseAuthentication();

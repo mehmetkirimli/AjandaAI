@@ -1,6 +1,6 @@
 import { Alert, Anchor, Button, PasswordInput, Stack, Text, TextInput } from '@mantine/core'
 import { useForm } from '@mantine/form'
-import { IconAlertCircle, IconAt, IconLock } from '@tabler/icons-react'
+import { IconAlertCircle, IconAt, IconCircleCheck, IconLock } from '@tabler/icons-react'
 import { useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { AuthLayout } from '../components/AuthLayout'
@@ -8,10 +8,12 @@ import { useAuth } from '../auth/context'
 import { splitErrors } from '../lib/formErrors'
 
 export function LoginPage() {
-  const { login } = useAuth()
+  const { login, notice } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
-  const from = (location.state as { from?: string } | null)?.from ?? '/'
+  const navState = location.state as { from?: string; info?: string } | null
+  const from = navState?.from ?? '/'
+  const info = navState?.info ?? notice
   const [submitting, setSubmitting] = useState(false)
   const [errors, setErrors] = useState<string[]>([])
 
@@ -39,11 +41,16 @@ export function LoginPage() {
   })
 
   return (
-    <AuthLayout title="Tekrar hoş geldin" subtitle="Ajandana ulaşmak için giriş yap.">
+    <AuthLayout title="AjandaAI'ye giriş yap">
       <form onSubmit={submit} noValidate>
         <Stack>
+          {info && (
+            <Alert color="teal" icon={<IconCircleCheck size={18} />}>
+              {info}
+            </Alert>
+          )}
           {errors.length > 0 && (
-            <Alert color="red" icon={<IconAlertCircle size={18} />} variant="light">
+            <Alert color="red" icon={<IconAlertCircle size={18} />}>
               {errors.map((m) => (
                 <div key={m}>{m}</div>
               ))}

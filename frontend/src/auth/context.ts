@@ -6,6 +6,12 @@ export interface AuthState {
   loading: boolean
   login: (email: string, password: string) => Promise<void>
   logout: () => Promise<void>
+  // Profil güncellenince üst menüdeki bilgiyi tazelemek için.
+  updateUser: (me: Me) => void
+  // Sunucu oturumları zaten kapattıysa (şifre değişimi): yalnızca yerel oturumu temizler.
+  endLocalSession: (notice?: string) => void
+  // Giriş sayfasında gösterilecek bilgi mesajı (örn. şifre değişti).
+  notice: string | null
 }
 
 export const AuthContext = createContext<AuthState | null>(null)

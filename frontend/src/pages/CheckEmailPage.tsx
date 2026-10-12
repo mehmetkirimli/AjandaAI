@@ -11,7 +11,7 @@ export function CheckEmailPage() {
     <AuthLayout title="E-postanı kontrol et">
       <Stack align="center" gap="md">
         <Center>
-          <ThemeIcon size={72} radius="xl" variant="light" color="indigo">
+          <ThemeIcon size={72} radius="xl" variant="light" color="gray">
             <IconMailCheck size={40} />
           </ThemeIcon>
         </Center>
@@ -25,7 +25,7 @@ export function CheckEmailPage() {
           )}{' '}
           Bağlantıya tıkladıktan sonra giriş yapabilirsin.
         </Text>
-        <Alert variant="light" color="yellow" icon={<IconInfoCircle size={18} />} w="100%" title="Geliştirme notu">
+        <Alert color="gray" icon={<IconInfoCircle size={18} />} w="100%" title="Geliştirme notu">
           Geliştirme ortamında e-posta gönderilmez: doğrulama bağlantısı backend konsol çıktısında (log) yazılır.
         </Alert>
         <Button component={Link} to="/login" variant="light" fullWidth>

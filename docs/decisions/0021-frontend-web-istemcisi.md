@@ -66,6 +66,32 @@ Arayüz dili Türkçe. Backend'in hata mesajları (zaten Türkçe) form alanlar�
   tarayıcıda yürütür ve ekran görüntüleriyle ürün sahibine sunar. Ürün sahibi akış ve görünüm
   üzerinden onay verir; kod kalitesine review agent bakar.
 
+### 5b. Profil (2026-10-10, ürün sahibi geri bildirimi)
+- Her kullanıcının bir profil sayfası vardır: bilgileri görür, görünen adı ve saat dilimini düzenler
+  (`PUT /api/auth/me`), şifresini değiştirir (`POST /api/auth/change-password`).
+- Şifre değişince **bu cihaz dahil** tüm oturumlar kapanır, kullanıcı yeni şifreyle tekrar giriş yapar.
+  "Bu cihaz açık kalsın" denendi ve test onu çürüttü: diğer cihazlar revoke edilmiş token'larıyla
+  otomatik refresh denediğinde yeniden kullanım tespiti (ADR 0018) yeni oturumu da kapatıyordu.
+  Logout kararıyla tutarlı olarak "her yerden çıkış" seçildi.
+- Yanlış mevcut şifre 400 döner, 401 değil: istemci 401'de oturumu kapatır.
+- E-posta değiştirme yok: yeni adresin doğrulanması gerekir, bildirim aşamasına kaldı.
+
+### 5c. Tasarım dili: Linear tarzı yerleşim (2026-10-10, ürün sahibi geri bildirimi)
+- Önce Raycast ilhamlı bir dil denendi (koyu, ince çerçeve, mercan vurgu, üst header). Ürün sahibi
+  beğenmedi: üstteki Pano/Takvim menüsü ve renkli vurgu kutuları istenmedi. Referans linear.app oldu.
+- **Yerleşim:** üst header yok. Solda 232px sidebar: çalışma alanı satırı (AjandaAI ⌄ menüsü: profil,
+  tema, çıkış; arama/⌘K ve "Yeni" ikonları), ana menü (Pano, Takvim), Admin'e özel "Yönetim" bölümü,
+  altta kullanıcı satırı. İçerik 8px boşluklu, 1px çerçeveli, 10px köşeli **inset panel** içinde; panelin
+  kendi 44px üst barı var (sayfa adı + gri meta, sağda nötr kontroller). `[` sidebar'ı daraltır; <900px
+  sidebar drawer olur.
+- **Renk:** neredeyse tek renk. Aktif menü öğesi renkle değil zemin tonuyla belli olur. Tek vurgu Linear
+  indigo #5E6AD2 (birincil buton, odak, "bugün" rozeti, şimdi çizgisi). Renkli uyarı/bilgi kutuları yok.
+  Kategori renkleri yalnızca küçük nokta (pano) ve hafif ton + sol şerit (takvim) olarak.
+- **Tipografi:** Inter, taban yaklaşık 13px; büyük sayfa başlıkları yok.
+- **Giriş ekranları:** tek sütun, ortada, pazarlama paneli yok.
+- ⌘K komut paleti (`@mantine/spotlight`) korunur; yeni işlevler palete de komut olarak eklenir.
+- Bu dil sonraki ekranların varsayılanıdır.
+
 ### 6. Klasör ayrımı: `backend/` + `frontend/` (2026-10-10)
 ```
 backend/     AjandaAI.sln, src/, tests/   (.NET)

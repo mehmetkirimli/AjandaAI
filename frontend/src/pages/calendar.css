@@ -1,0 +1,122 @@
+/* FullCalendar'ı tasarım token'larına bağlar (koyu öncelikli, açık temada da aynı sadelik). */
+.fc {
+  --fc-border-color: var(--app-line);
+  --fc-page-bg-color: transparent;
+  --fc-neutral-bg-color: transparent;
+  --fc-neutral-text-color: var(--mantine-color-dimmed);
+  --fc-today-bg-color: transparent;
+  --fc-now-indicator-color: var(--mantine-color-accent-filled);
+  --fc-highlight-color: color-mix(in srgb, var(--mantine-color-accent-filled) 12%, transparent);
+  --fc-event-border-color: transparent;
+  --fc-small-font-size: 0.8em;
+  font-family: var(--mantine-font-family);
+  font-size: calc(0.9rem * var(--mantine-scale));
+  color: var(--mantine-color-text);
+}
+
+.fc a {
+  color: inherit;
+}
+
+.fc .fc-scrollgrid {
+  border-radius: var(--mantine-radius-lg);
+  border-color: var(--app-line);
+  overflow: hidden;
+}
+
+.fc .fc-col-header-cell {
+  background: transparent;
+}
+
+.fc .fc-col-header-cell-cushion,
+.fc .fc-daygrid-day-number {
+  color: var(--mantine-color-dimmed);
+  font-size: 12px;
+  font-weight: 500;
+  text-decoration: none;
+  padding: 6px 8px;
+}
+
+.fc .fc-day-today .fc-col-header-cell-cushion,
+.fc .fc-day-today .fc-daygrid-day-number {
+  color: var(--mantine-color-accent-filled);
+  font-weight: 600;
+}
+
+.fc .fc-timegrid-slot-label-cushion,
+.fc .fc-timegrid-axis-cushion {
+  color: var(--mantine-color-dimmed);
+  font-size: 11px;
+}
+
+.fc .fc-timegrid-slot-minor {
+  border-top-style: none;
+}
+
+/* Olay: yumuşak ton + solda ince şerit (renkler CalendarPage'den inline gelir). */
+.fc .fc-event {
+  border-style: solid;
+  border-width: 0 0 0 3px;
+  border-radius: var(--mantine-radius-sm);
+  cursor: grab;
+  font-size: 13px;
+  box-shadow: none;
+}
+
+.fc .fc-event.fc-event-dragging,
+.fc .fc-event.fc-event-resizing {
+  box-shadow: var(--mantine-shadow-lg);
+}
+
+.fc .fc-event-main {
+  padding: 1px 4px;
+  overflow: hidden;
+  color: var(--mantine-color-text);
+}
+
+.fc .fc-timegrid-event .fc-event-main {
+  padding: 2px 6px;
+}
+
+.fc .fc-timegrid-now-indicator-arrow {
+  border-top-color: var(--mantine-color-accent-filled);
+  border-bottom-color: var(--mantine-color-accent-filled);
+}
+
+.fc .fc-popover {
+  background: var(--app-surface);
+  border-color: var(--app-line-strong);
+  box-shadow: var(--app-popover-shadow);
+  border-radius: var(--mantine-radius-md);
+}
+
+.fc .fc-popover-header {
+  background: var(--app-surface-2);
+}
+
+.fc .fc-more-link {
+  color: var(--mantine-color-dimmed);
+  font-size: 11px;
+}
+
+/* Panelin içinde: dış çerçeve yok (panel zaten çerçeveli). */
+.fc .fc-scrollgrid,
+.fc .fc-scrollgrid td:last-of-type,
+.fc .fc-scrollgrid th:last-of-type {
+  border-right-width: 0;
+}
+
+.fc .fc-scrollgrid {
+  border-width: 0;
+  border-radius: 0;
+}
+
+/* "Bugün": yalnızca gün rozeti indigo. */
+.fc .fc-day-today .fc-col-header-cell-cushion,
+.fc .fc-day-today .fc-daygrid-day-number {
+  background: var(--mantine-color-accent-filled);
+  color: #fff;
+  border-radius: 999px;
+  padding: 1px 7px;
+  margin: 3px;
+}

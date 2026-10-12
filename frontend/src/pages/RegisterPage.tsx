@@ -6,26 +6,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { register } from '../api/auth'
 import { AuthLayout } from '../components/AuthLayout'
 import { splitErrors } from '../lib/formErrors'
-
-function browserTimeZone(): string {
-  try {
-    return Intl.DateTimeFormat().resolvedOptions().timeZone || 'Europe/Istanbul'
-  } catch {
-    return 'Europe/Istanbul'
-  }
-}
-
-function timeZoneOptions(current: string): string[] {
-  let zones: string[] = []
-  try {
-    zones = Intl.supportedValuesOf('timeZone')
-  } catch {
-    zones = []
-  }
-  const set = new Set<string>(['Europe/Istanbul', ...zones])
-  set.add(current)
-  return [...set].sort()
-}
+import { browserTimeZone, timeZoneOptions } from '../lib/timeZones'
 
 export function RegisterPage() {
   const navigate = useNavigate()
@@ -64,11 +45,11 @@ export function RegisterPage() {
   })
 
   return (
-    <AuthLayout title="Hesap oluştur" subtitle="Birkaç saniyede başla; e-postana bir doğrulama bağlantısı göndereceğiz.">
+    <AuthLayout title="Hesap oluştur" subtitle="E-postana bir doğrulama bağlantısı göndereceğiz.">
       <form onSubmit={submit} noValidate>
         <Stack>
           {errors.length > 0 && (
-            <Alert color="red" icon={<IconAlertCircle size={18} />} variant="light">
+            <Alert color="red" icon={<IconAlertCircle size={18} />}>
               {errors.map((m) => (
                 <div key={m}>{m}</div>
               ))}

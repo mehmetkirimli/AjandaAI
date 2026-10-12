@@ -1,0 +1,79 @@
+/* Tasarım token'ları (Linear tarzı: neredeyse tek renk, inset panel). Mantine stillerinden SONRA yüklenir. */
+:root {
+  --app-bg: #f3f3f5; /* uygulama zemini (sidebar arkası) */
+  --app-surface: #f7f7f8; /* kart / sütun */
+  --app-surface-2: #efeff1; /* kart hover */
+  --app-line: rgba(0, 0, 0, 0.08);
+  --app-line-strong: rgba(0, 0, 0, 0.14);
+  --app-hover: rgba(0, 0, 0, 0.04);
+  --app-active: rgba(0, 0, 0, 0.07);
+  --app-popover-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
+  --mantine-color-default-border: var(--app-line);
+}
+
+/* Panel zemini = --mantine-color-body (açık: beyaz, koyu: #101114). */
+:root[data-mantine-color-scheme='dark'] {
+  --app-bg: #0b0c0e;
+  --app-surface: #15161a;
+  --app-surface-2: #1b1c21;
+  --app-line: rgba(255, 255, 255, 0.08);
+  --app-line-strong: rgba(255, 255, 255, 0.14);
+  --app-hover: rgba(255, 255, 255, 0.05);
+  --app-active: rgba(255, 255, 255, 0.07);
+  --app-popover-shadow: 0 16px 48px rgba(0, 0, 0, 0.55);
+  --mantine-color-default-border: var(--app-line);
+}
+
+html,
+body {
+  background: var(--app-bg);
+}
+
+body {
+  -webkit-font-smoothing: antialiased;
+  letter-spacing: -0.003em;
+}
+
+::selection {
+  background: color-mix(in srgb, var(--mantine-color-accent-filled) 35%, transparent);
+}
+
+/* Odak halkası yalnızca gerçek klavye odağında. */
+a:focus:not(:focus-visible),
+button:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* Komut paleti: koyu, ortada, ince çerçeve, geniş yumuşak gölge. */
+.mantine-Spotlight-content {
+  background: var(--app-surface);
+  border: 1px solid var(--app-line-strong);
+  box-shadow: var(--app-popover-shadow);
+  border-radius: 12px;
+}
+
+.mantine-Spotlight-search {
+  background: transparent;
+  border-bottom: 1px solid var(--app-line);
+}
+
+.mantine-Spotlight-actionsGroup {
+  color: var(--mantine-color-dimmed);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.mantine-Spotlight-action[data-selected],
+.mantine-Spotlight-action:hover {
+  background: var(--app-active);
+}
+
+/* Eşleşen metin: hafif ton + kalın (sarı yok). */
+.mantine-Spotlight-action mark {
+  background: color-mix(in srgb, var(--mantine-color-accent-filled) 22%, transparent);
+  color: inherit;
+  font-weight: 600;
+  border-radius: 3px;
+}

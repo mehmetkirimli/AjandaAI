@@ -49,3 +49,16 @@ export function sortActivities(items: ActivityListItem[]): ActivityListItem[] {
     return dayjs(a.start).valueOf() - dayjs(b.start).valueOf()
   })
 }
+
+// Türkçe yönelme eki için sayının okunuşundaki son ünlüye bakılır (saat:dakika sonu: dakika).
+const DIGIT_SUFFIX = ['a', 'e', 'ye', 'e', 'e', 'e', 'ya', 'ye', 'e', 'a']
+const TENS_SUFFIX: Record<number, string> = { 0: 'a', 10: 'a', 20: 'ye', 30: 'a', 40: 'a', 50: 'ye' }
+export function timeDative(minute: number): string {
+  return minute % 10 === 0 ? TENS_SUFFIX[minute] : DIGIT_SUFFIX[minute % 10]
+}
+
+export function formatDuration(minutes: number): string {
+  const h = Math.floor(minutes / 60)
+  const m = minutes % 60
+  return [h > 0 ? `${h} sa` : '', m > 0 ? `${m} dk` : ''].filter(Boolean).join(' ') || '0 dk'
+}

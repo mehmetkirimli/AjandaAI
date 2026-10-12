@@ -39,3 +39,12 @@ export async function logout(): Promise<void> {
     clearSession()
   }
 }
+
+export function updateProfile(displayName: string, timeZoneId: string): Promise<Me> {
+  return request<Me>('/api/auth/me', { method: 'PUT', body: { displayName, timeZoneId } })
+}
+
+// Başarıda backend tüm oturumları kapatır; çağıran yerel oturumu temizlemelidir.
+export async function changePassword(currentPassword: string, newPassword: string): Promise<void> {
+  await request<boolean>('/api/auth/change-password', { method: 'POST', body: { currentPassword, newPassword } })
+}

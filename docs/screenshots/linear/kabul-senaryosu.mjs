@@ -1,0 +1,108 @@
+// Linear tarzı yerleşim kabulü: giriş, sidebar (admin bölümü dahil), pano + sürükle-bırak, takvim + sürükle,
+// ⌘K, sidebar daraltma, profil, açık tema, dar ekran (drawer).
+import { chromium } from 'playwright'
+import fs from 'node:fs'
+import { execSync } from 'node:child_process'
+
+const API = process.env.API, WEB = process.env.WEB, LOG = process.env.API_LOG, OUT = process.env.OUT
+const email = `demo${Date.now()}@ajanda.dev`, password = 'mavi-kayik-sahilde-77'
+const shot = (p, n) => p.screenshot({ path: `${OUT}/${n}.png` })
+const api = async (path, opts = {}) => {
+  const r = await fetch(API + path, { ...opts, headers: { 'Content-Type': 'application/json', ...(opts.headers ?? {}) } })
+  return { status: r.status, body: await r.json().catch(() => null) }
+}
+const browser = await chromium.launch({ channel: 'chrome' })
+const page = await browser.newPage({ viewport: { width: 1536, height: 864 }, locale: 'tr-TR', timezoneId: 'Europe/Istanbul' })
+const errors = []
+page.on('console', m => m.type() === 'error' && errors.push(m.text()))
+
+await page.goto(WEB + '/login'); await page.waitForLoadState('networkidle'); await page.waitForTimeout(400); await shot(page, '01-giris')
+
+// Hesap (admin) + örnek veri
+await api('/api/auth/register', { method: 'POST', body: JSON.stringify({ email, displayName: 'Mehmet Hilmi', timeZoneId: 'Europe/Istanbul', password }) })
+let token
+for (let i = 0; i < 20 && !token; i++) {
+  await new Promise(r => setTimeout(r, 400))
+  token = [...fs.readFileSync(LOG, 'utf8').matchAll(/verify-email\?token=([\w%-]+)/g)].pop()?.[1]
+}
+await api('/api/auth/verify-email', { method: 'POST', body: JSON.stringify({ token: decodeURIComponent(token) }) })
+execSync(`docker exec ajandaai-postgres psql -U ajandaai -d ajandaai -c "UPDATE users SET role='Admin' WHERE email='${email}';"`)
+const login = await api('/api/auth/login', { method: 'POST', body: JSON.stringify({ email, password }) })
+const auth = { Authorization: `Bearer ${login.body.data.accessToken}` }
+const cats = (await api('/api/categories?pageSize=100', { headers: auth })).body.data.items
+const monday = new Date('2026-10-05T00:00:00+03:00')
+const at = (d, h) => new Date(monday.getTime() + (d * 24 + h) * 3600000)
+const plan = [[0, 9, 1, 'Sabah koşusu', 'High'], [0, 14, 2, 'Proje toplantısı', 'Medium'], [1, 19, 2, 'Kitap kulübü', 'Low'],
+  [2, 8, 1, 'Diş hekimi', 'High'], [3, 18, 2, 'Akşam yemeği - Ayşe', 'Medium'], [4, 10, 1, 'Haftalık planlama', 'Low'],
+  [5, 11, 2, 'Kahvaltı hazırlığı', 'Medium'], [5, 16, 3, 'Sinema', 'Low'], [6, 12, 1.5, 'Pazar yürüyüşü', 'Medium']]
+for (const [d, h, dur, title, priority] of plan) {
+  await api('/api/activities', { method: 'POST', headers: auth, body: JSON.stringify({
+    categoryId: cats[(d * 3 + h) % cats.length].id, title, description: '', status: 'Planned', priority, energyLevel: 'Medium',
+    start: at(d, h).toISOString(), end: at(d, h + dur).toISOString(), isAllDay: false, location: null, isFlexible: false, estimatedBudget: 0 }) })
+}
+
+await page.goto(WEB + '/login')
+await page.getByLabel('E-posta').fill(email)
+await page.getByLabel('Şifre').fill(password)
+await page.getByRole('button', { name: /giriş/i }).click()
+await page.waitForURL(WEB + '/')
+await page.getByText('Sabah koşusu').waitFor()
+await page.waitForTimeout(700)
+await shot(page, '02-pano')
+
+// Pano sürükle-bırak: Diş hekimi (Çar) → Cuma
+const card = page.getByText('Diş hekimi', { exact: true })
+const from = await card.boundingBox()
+const friday = await page.getByText('Cuma', { exact: true }).boundingBox()
+await page.mouse.move(from.x + 20, from.y + 8); await page.mouse.down()
+await page.mouse.move(from.x + 40, from.y + 30, { steps: 5 })
+await page.mouse.move(friday.x + 30, friday.y + 120, { steps: 20 })
+await page.waitForTimeout(300); await shot(page, '03-pano-surukleniyor')
+await page.mouse.up(); await page.waitForTimeout(1500)
+const movedBoard = (await api('/api/activities?pageSize=100', { headers: auth })).body.data.items.find(a => a.title === 'Diş hekimi')
+
+// Sidebar üst menüsü
+await page.getByText('AjandaAI', { exact: true }).first().click(); await page.waitForTimeout(400); await shot(page, '04-calisma-alani-menusu')
+await page.keyboard.press('Escape'); await page.waitForTimeout(200)
+
+// Takvim + sürükle
+await page.getByRole('link', { name: 'Takvim' }).first().click()
+await page.waitForURL('**/calendar')
+await page.locator('.fc-event', { hasText: 'Sabah koşusu' }).waitFor()
+await page.waitForTimeout(700)
+const calHeight = (await page.locator('.fc').first().boundingBox())?.height
+await shot(page, '05-takvim')
+const ev = page.locator('.fc-timegrid-event', { hasText: 'Haftalık planlama' }).first()
+const eb = await ev.boundingBox()
+const col = await page.locator('.fc-timegrid-col[data-date="2026-10-08"]').boundingBox()
+const slot = await page.locator('.fc-timegrid-slot-lane[data-time="15:00:00"]').first().boundingBox()
+await page.mouse.move(eb.x + eb.width / 2, eb.y + 6); await page.mouse.down()
+await page.mouse.move(eb.x + eb.width / 2 + 10, eb.y + 20, { steps: 4 })
+await page.mouse.move(col.x + col.width / 2, slot.y + 6, { steps: 20 })
+await page.mouse.up(); await page.waitForTimeout(1500)
+const movedCal = (await api('/api/activities?pageSize=100', { headers: auth })).body.data.items.find(a => a.title === 'Haftalık planlama')
+
+// ⌘K
+await page.keyboard.press('Control+K'); await page.waitForTimeout(500); await shot(page, '06-komut-paleti')
+await page.keyboard.press('Escape'); await page.waitForTimeout(200)
+
+// Sidebar daralt
+await page.locator('body').click({ position: { x: 900, y: 20 } }).catch(() => {})
+await page.keyboard.press('['); await page.waitForTimeout(500); await shot(page, '07-sidebar-dar')
+await page.keyboard.press('['); await page.waitForTimeout(400)
+
+// Profil + açık tema
+await page.goto(WEB + '/profile'); await page.waitForTimeout(800); await shot(page, '08-profil')
+await page.keyboard.press('Control+K'); await page.waitForTimeout(300)
+await page.keyboard.type('tema'); await page.waitForTimeout(300); await page.keyboard.press('Enter'); await page.waitForTimeout(500)
+await page.goto(WEB + '/'); await page.getByText('Sabah koşusu').waitFor(); await page.waitForTimeout(600); await shot(page, '09-pano-acik')
+await page.goto(WEB + '/calendar'); await page.locator('.fc-event').first().waitFor(); await page.waitForTimeout(700); await shot(page, '10-takvim-acik')
+await page.keyboard.press('Control+K'); await page.waitForTimeout(300)
+await page.keyboard.type('tema'); await page.waitForTimeout(300); await page.keyboard.press('Enter'); await page.waitForTimeout(300)
+
+// Dar ekran
+await page.setViewportSize({ width: 820, height: 800 }); await page.goto(WEB + '/'); await page.getByText('Sabah koşusu').waitFor()
+await page.waitForTimeout(600); await shot(page, '11-dar-ekran')
+
+console.log(JSON.stringify({ movedBoard: movedBoard?.start, movedCal: movedCal?.start, calHeight, consoleErrors: errors }, null, 2))
+await browser.close()
