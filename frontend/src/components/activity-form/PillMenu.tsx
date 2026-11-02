@@ -1,4 +1,4 @@
-import { Button, Menu } from '@mantine/core'
+import { Button, Menu, Text } from '@mantine/core'
 import { IconCheck } from '@tabler/icons-react'
 import type { ReactNode } from 'react'
 
@@ -18,31 +18,41 @@ interface Props<T> {
 }
 
 // Küçük nötr hap: tıklayınca seçenek menüsü açar (Linear'ın özellik hapları gibi).
+// Uzun etiketler kısaltılır (title ile tamamı görünür); uzun listeler menü içinde kayar.
 export function PillMenu<T extends string | number>({ ariaLabel, value, options, placeholder, icon, onChange }: Props<T>) {
   const selected = options.find((o) => o.value === value)
+  const label = selected?.label ?? placeholder
   return (
-    <Menu position="bottom-start" width={190} withinPortal>
+    <Menu position="bottom-start" width={220} withinPortal>
       <Menu.Target>
         <Button
           variant="default"
           size="compact-sm"
           radius="xl"
           aria-label={ariaLabel}
+          title={label}
+          maw={200}
           leftSection={selected?.icon ?? icon}
-          styles={{ root: { fontWeight: 500 } }}
+          styles={{ root: { fontWeight: 500 }, inner: { minWidth: 0 }, label: { minWidth: 0 } }}
         >
-          {selected?.label ?? placeholder}
+          <Text span inherit truncate>
+            {label}
+          </Text>
         </Button>
       </Menu.Target>
-      <Menu.Dropdown>
+      <Menu.Dropdown mah={280} style={{ overflowY: 'auto' }}>
         {options.map((o) => (
           <Menu.Item
             key={o.value}
+            title={o.label}
             leftSection={o.icon}
             rightSection={o.value === value ? <IconCheck size={14} /> : undefined}
             onClick={() => onChange(o.value)}
+            styles={{ itemLabel: { minWidth: 0 } }}
           >
-            {o.label}
+            <Text span inherit truncate display="block">
+              {o.label}
+            </Text>
           </Menu.Item>
         ))}
       </Menu.Dropdown>

@@ -1,4 +1,4 @@
-import { Badge, Button, Group, Pagination, Select, Stack, Table, Text } from '@mantine/core'
+import { Alert, Badge, Button, Group, Pagination, Select, Stack, Table, Text } from '@mantine/core'
 import { notifications } from '@mantine/notifications'
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import dayjs from 'dayjs'
@@ -78,8 +78,9 @@ export function AdminActivitiesPage() {
           <Group gap="xs">
             <Select
               size="xs"
-              w={240}
-              placeholder="Tüm kullanıcılar"
+              w={{ base: '100%', xs: 240 }}
+              placeholder={usersQuery.isPending ? 'Kullanıcılar yükleniyor…' : 'Tüm kullanıcılar'}
+              disabled={usersQuery.isError}
               data={userOptions}
               value={userId}
               onChange={setFilter(setUserId)}
@@ -88,7 +89,7 @@ export function AdminActivitiesPage() {
             />
             <Select
               size="xs"
-              w={150}
+              w={{ base: '48%', xs: 150 }}
               placeholder="Tüm durumlar"
               data={STATUS_OPTIONS}
               value={status}
@@ -97,7 +98,7 @@ export function AdminActivitiesPage() {
             />
             <Select
               size="xs"
-              w={120}
+              w={{ base: '48%', xs: 120 }}
               placeholder="Aktif + pasif"
               data={ACTIVE_OPTIONS}
               value={isActive}
@@ -105,6 +106,25 @@ export function AdminActivitiesPage() {
               clearable
             />
           </Group>
+          {(usersQuery.isError || categoriesQuery.isError) && (
+            <Alert color="yellow" variant="light" p="xs">
+              <Group justify="space-between" gap="xs">
+                <Text size="xs">
+                  {usersQuery.isError ? 'Kullanıcı listesi' : 'Kategori listesi'} yüklenemedi; adlar yerine numaralar gösteriliyor.
+                </Text>
+                <Button
+                  size="compact-xs"
+                  variant="default"
+                  onClick={() => {
+                    if (usersQuery.isError) void usersQuery.refetch()
+                    if (categoriesQuery.isError) void categoriesQuery.refetch()
+                  }}
+                >
+                  Tekrar dene
+                </Button>
+              </Group>
+            </Alert>
+          )}
           <AdminState
             loading={query.isPending}
             error={query.error}

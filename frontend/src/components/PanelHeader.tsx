@@ -40,8 +40,8 @@ export function PanelHeader({ title, meta, onToday, onPrev, onNext, view, onView
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
-        gap: 12,
-        padding: '0 16px',
+        gap: isMobile ? 6 : 12,
+        padding: isMobile ? '0 8px' : '0 16px',
         background: 'var(--app-layer-1)',
         backdropFilter: 'blur(12px)',
         WebkitBackdropFilter: 'blur(12px)',
@@ -60,10 +60,18 @@ export function PanelHeader({ title, meta, onToday, onPrev, onNext, view, onView
             </ActionIcon>
           )
         )}
-        <Text fz={13} fw={500} truncate>
-          {title}
-        </Text>
-        {meta && (
+        {/* Mobilde yer dar: dönem bilgisi (meta) varsa başlığın yerini alır. */}
+        {!(isMobile && meta) && (
+          <Text fz={13} fw={500} truncate>
+            {title}
+          </Text>
+        )}
+        {meta && isMobile && (
+          <Text fz={13} fw={500} truncate style={{ textTransform: 'capitalize' }}>
+            {meta}
+          </Text>
+        )}
+        {meta && !isMobile && (
           <>
             <Text fz={13} style={{ color: 'var(--app-text-faint)', opacity: 0.6 }} aria-hidden>
               /
@@ -118,8 +126,8 @@ export function PanelHeader({ title, meta, onToday, onPrev, onNext, view, onView
             size="xs"
             value={view}
             data={VIEWS}
+            aria-label="Görünüm"
             onChange={(v) => onViewChange(v as ViewType)}
-            visibleFrom="sm"
           />
         )}
         {onPrev && (

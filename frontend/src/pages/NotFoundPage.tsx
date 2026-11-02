@@ -1,24 +1,24 @@
 import { Button, Center, Stack, Text } from '@mantine/core'
-import { IconTools } from '@tabler/icons-react'
+import { IconMapOff } from '@tabler/icons-react'
 import { Link } from 'react-router-dom'
 import { PageBody, PanelHeader } from '../components/PanelHeader'
 
-export function ComingSoonPage({ title }: { title: string }) {
+export function NotFoundPage() {
   return (
     <>
-      <PanelHeader title={title} />
+      <PanelHeader title="Sayfa bulunamadı" />
       <PageBody>
         <Center mih="50vh">
           <Stack align="center" gap="xs">
             <Text c="dimmed">
-              <IconTools size={28} />
+              <IconMapOff size={28} />
             </Text>
-            <Text fw={500}>Yakında</Text>
+            <Text fw={500}>404 · Sayfa bulunamadı</Text>
             <Text c="dimmed" size="sm" ta="center" maw={340}>
-              Bu sayfa üzerinde çalışıyoruz.
+              Aradığınız sayfa taşınmış ya da hiç var olmamış olabilir.
             </Text>
             <Button component={Link} to="/" variant="default" size="xs" mt="xs">
-              Panoya dön
+              Ana sayfaya dön
             </Button>
           </Stack>
         </Center>

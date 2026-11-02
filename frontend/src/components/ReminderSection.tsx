@@ -1,4 +1,4 @@
-import { ActionIcon, Badge, Button, Group, Stack, Text, TextInput } from '@mantine/core'
+import { ActionIcon, Badge, Button, Group, Loader, Stack, Text, TextInput } from '@mantine/core'
 import { DateTimePicker } from '@mantine/dates'
 import { IconBell, IconTrash } from '@tabler/icons-react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
@@ -96,6 +96,24 @@ export function ReminderSection({ activity }: { activity: ActivityDetail }) {
         </Text>
       </Group>
 
+      {remindersQuery.isPending && (
+        <Group gap={6}>
+          <Loader size={10} />
+          <Text size="xs" c="dimmed">
+            Hatırlatmalar yükleniyor…
+          </Text>
+        </Group>
+      )}
+      {remindersQuery.isError && (
+        <Group gap={6}>
+          <Text size="xs" c="red">
+            {remindersQuery.error instanceof ApiError ? remindersQuery.error.message : 'Hatırlatmalar yüklenemedi.'}
+          </Text>
+          <Button size="compact-xs" variant="default" onClick={() => void remindersQuery.refetch()}>
+            Tekrar dene
+          </Button>
+        </Group>
+      )}
       {remindersQuery.data?.length === 0 && (
         <Text size="xs" c="dimmed">
           Henüz hatırlatma yok.

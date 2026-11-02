@@ -34,7 +34,7 @@ export function AppLayout() {
     <LayoutContext.Provider value={layout}>
       <ActivityFormProvider>
       <CommandPalette />
-      <Box style={{ display: 'flex', height: '100vh', background: 'var(--app-bg)' }}>
+      <Box style={{ display: 'flex', height: '100dvh', background: 'var(--app-bg)' }}>
         {showSidebar && (
           <Box
             component="nav"

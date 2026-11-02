@@ -37,7 +37,7 @@ function DraggableCard({
       {...attributes}
       onClick={() => onOpen(item.id)}
       aria-label={`${item.title}. Taşımak için boşluk tuşuna basın, sağ ve sol ok tuşlarıyla gün değiştirin.`}
-      style={{ touchAction: 'manipulation', outlineOffset: 2, borderRadius: 8 }}
+      style={{ touchAction: 'manipulation', WebkitTouchCallout: 'none', userSelect: 'none', outlineOffset: 2, borderRadius: 8 }}
     >
       <ActivityCard
         item={item}

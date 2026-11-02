@@ -144,3 +144,14 @@ docs/, .claude/                           (kökte)
   ADR'nin kapsamı dışındadır; canlıya çıkış adımında karar verilir.
 - Kabul akışlarının otomatik E2E testi (Playwright) MVP'de yok; ekran kabulü elle yapılır.
   Akışlar oturdukça eklenebilir.
+
+## Bilinen kısıtlar (F5 final review, 2026-10-19 — bilinçli kabul)
+
+- **Sekmeler arası refresh yarışı:** İki sekme aynı anda refresh yaparsa reuse tespiti tüm
+  oturumları kapatır. Kabul: güvenlik tarafında kalmak tercih edildi.
+- **Ağ hatasında oturum kapanır:** Refresh sırasında ağ koparsa kullanıcı giriş ekranına düşer.
+  Kabul: bağlantı yokken uygulama zaten kullanılamaz.
+- **Pasif kategori "Kategorisiz" görünür:** Kategori pasife alınırsa aktiviteleri renksiz görünür.
+  Kabul: kategoriler nadiren pasife alınır.
+- **Sürükle-bırak GET+PUT:** Arada yapılan başka bir düzenleme ezilebilir. Çözüm (PATCH
+  `/reschedule` veya ETag) ileride.

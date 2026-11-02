@@ -16,7 +16,3 @@ export const LEVEL_OPTIONS: { value: Level; label: string }[] = [
 export function statusLabel(value: string): string {
   return STATUS_OPTIONS.find((o) => o.value === value)?.label ?? value
 }
-
-export function levelLabel(value: string): string {
-  return LEVEL_OPTIONS.find((o) => o.value === value)?.label ?? value
-}

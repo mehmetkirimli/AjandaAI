@@ -1,15 +1,34 @@
-import { Alert, Badge, Button, Divider, Drawer, Group, Loader, Modal, Stack, Text, Title } from '@mantine/core'
+import { Alert, Badge, Button, Divider, Drawer, Group, Modal, Skeleton, Stack, Text, Title } from '@mantine/core'
+import { useMediaQuery } from '@mantine/hooks'
 import { notifications } from '@mantine/notifications'
 import { IconAlertCircle, IconArchive, IconPencil, IconRepeat, IconBolt, IconCalendar, IconCoin, IconFlag, IconInfoCircle, IconMapPin } from '@tabler/icons-react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import dayjs from 'dayjs'
+import timezone from 'dayjs/plugin/timezone'
+import utc from 'dayjs/plugin/utc'
 import { useState, type ReactNode } from 'react'
 import { deactivateActivity, deactivateSeries, fetchActivity } from '../api/activities'
 import { ApiError } from '../api/client'
+import { useAuth } from '../auth/context'
 import { categoryColor } from '../lib/categoryColor'
 import { frequencyLabel } from '../lib/recurrence'
 import { useActivityForm } from './activity-form/context'
 import { ReminderSection } from './ReminderSection'
+
+dayjs.extend(utc)
+dayjs.extend(timezone)
+
+// Seri durdurma tarihi kullanıcının profil saat dilimindeki gündür (tarayıcı TZ'si farklı olabilir).
+function dateInZone(iso: string, timeZoneId: string | undefined): string {
+  if (timeZoneId) {
+    try {
+      return dayjs(iso).tz(timeZoneId).format('YYYY-MM-DD')
+    } catch {
+      // Geçersiz IANA adı: tarayıcı saat dilimine düşülür.
+    }
+  }
+  return dayjs(iso).format('YYYY-MM-DD')
+}
 
 const STATUS: Record<string, string> = {
   Planned: 'Planlandı',
@@ -60,12 +79,14 @@ export function ActivityDrawer({ activityId, onClose, categoryName }: Props) {
     enabled: activityId !== null,
   })
   const a = query.data
+  const { user } = useAuth()
+  const isMobile = useMediaQuery('(max-width: 768px)') ?? false
   const queryClient = useQueryClient()
   const { openActivityForm } = useActivityForm()
   const [confirmOpen, setConfirmOpen] = useState(false)
   const [seriesConfirmOpen, setSeriesConfirmOpen] = useState(false)
   const stopSeries = useMutation({
-    mutationFn: () => deactivateSeries(a?.series?.id ?? 0, dayjs(a?.start).format('YYYY-MM-DD')),
+    mutationFn: () => deactivateSeries(a?.series?.id ?? 0, dateInZone(a?.start ?? '', user?.timeZoneId)),
     onSuccess: (result) => {
       setSeriesConfirmOpen(false)
       onClose()
@@ -98,8 +119,19 @@ export function ActivityDrawer({ activityId, onClose, categoryName }: Props) {
   })
 
   return (
-    <Drawer opened={activityId !== null} onClose={onClose} position="right" size="md" title="Aktivite detayı">
-      {query.isPending && <Loader size="sm" />}
+    <Drawer opened={activityId !== null} onClose={onClose} position="right" size={isMobile ? '100%' : 'md'} title="Aktivite detayı">
+      {query.isPending && (
+        <Stack gap="md" aria-busy="true" aria-label="Yükleniyor">
+          <Skeleton h={24} w="70%" />
+          <Group gap="xs">
+            <Skeleton h={18} w={80} radius="xl" />
+            <Skeleton h={18} w={70} radius="xl" />
+          </Group>
+          {Array.from({ length: 5 }, (_, i) => (
+            <Skeleton key={i} h={34} />
+          ))}
+        </Stack>
+      )}
       {query.isError && (
         <Alert color="red" variant="light" icon={<IconAlertCircle size={16} />}>
           {query.error instanceof ApiError ? query.error.message : 'Aktivite yüklenemedi.'}

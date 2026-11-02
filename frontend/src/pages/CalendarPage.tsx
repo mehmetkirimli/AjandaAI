@@ -11,14 +11,15 @@ import dayGridPlugin from '@fullcalendar/daygrid'
 import interactionPlugin, { type EventResizeDoneArg } from '@fullcalendar/interaction'
 import FullCalendar from '@fullcalendar/react'
 import timeGridPlugin from '@fullcalendar/timegrid'
-import { Loader } from '@mantine/core'
-import { IconRepeat } from '@tabler/icons-react'
+import { Alert, Box, Button, Group, Loader, Text } from '@mantine/core'
+import { IconAlertCircle, IconRepeat } from '@tabler/icons-react'
 import { useQuery } from '@tanstack/react-query'
 import dayjs from 'dayjs'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { registerCommandHandler } from '../lib/commands'
 import { fetchActivities, fetchCategories } from '../api/activities'
+import { ApiError } from '../api/client'
 import type { ActivityListItem } from '../api/types'
 import { PanelHeader } from '../components/PanelHeader'
 import { useActivityForm } from '../components/activity-form/context'
@@ -60,6 +61,11 @@ function renderEvent(arg: EventContentArg) {
   )
 }
 
+// Mobilde (≤768 px) varsayılan görünüm tek gündür; hafta sütunları dar ekrana sığmaz.
+function isMobileViewport(): boolean {
+  return typeof window !== 'undefined' && window.matchMedia('(max-width: 768px)').matches
+}
+
 export default function CalendarPage() {
   const calendarRef = useRef<FullCalendar>(null)
   const [range, setRange] = useState<{ from: string; to: string } | null>(null)
@@ -70,7 +76,9 @@ export default function CalendarPage() {
   const [initialView] = useState<ViewType>(
     requestedView === 'dayGridMonth' || requestedView === 'timeGridDay' || requestedView === 'timeGridWeek'
       ? requestedView
-      : 'timeGridWeek',
+      : isMobileViewport()
+        ? 'timeGridDay'
+        : 'timeGridWeek',
   )
   const [viewType, setViewType] = useState<ViewType>(initialView)
   const [showToday, setShowToday] = useState(false)
@@ -210,8 +218,23 @@ export default function CalendarPage() {
         onPrev={() => api()?.prev()}
         onNext={() => api()?.next()}
       >
-        {activitiesQuery.isFetching && <Loader size={12} />}
+        {activitiesQuery.isFetching && <Loader size={12} aria-label="Yükleniyor" />}
       </PanelHeader>
+
+      {activitiesQuery.isError && (
+        <Box px="md" pt="sm">
+          <Alert color="red" icon={<IconAlertCircle size={16} />} title="Aktiviteler yüklenemedi">
+            <Group justify="space-between">
+              <Text size="sm">
+                {activitiesQuery.error instanceof ApiError ? activitiesQuery.error.message : 'Beklenmeyen bir hata oluştu.'}
+              </Text>
+              <Button size="compact-sm" variant="default" onClick={() => void activitiesQuery.refetch()}>
+                Tekrar dene
+              </Button>
+            </Group>
+          </Alert>
+        </Box>
+      )}
 
       <div style={{ flex: 1, minHeight: 0 }}>
       <FullCalendar
@@ -223,6 +246,7 @@ export default function CalendarPage() {
         firstDay={1}
         height="100%"
         nowIndicator
+        longPressDelay={300}
         slotMinTime="06:00:00"
         slotMaxTime="24:00:00"
         scrollTime="08:00:00"

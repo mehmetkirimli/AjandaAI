@@ -4,6 +4,7 @@ import {
   Collapse,
   Group,
   Kbd,
+  Loader,
   Modal,
   NumberInput,
   Rating,
@@ -17,6 +18,7 @@ import {
 } from '@mantine/core'
 import { DatePickerInput, TimePicker } from '@mantine/dates'
 import { useForm } from '@mantine/form'
+import { useMediaQuery } from '@mantine/hooks'
 import { notifications } from '@mantine/notifications'
 import { IconAlertCircle, IconBolt, IconChevronDown, IconCircleDashed, IconRepeat, IconTag } from '@tabler/icons-react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
@@ -165,6 +167,7 @@ export function ActivityFormModal({ request, onClose }: Props) {
 
   const categoriesQuery = useQuery({ queryKey: ['categories'], queryFn: fetchCategories, staleTime: 5 * 60_000 })
   const categories = (categoriesQuery.data ?? []).filter((c) => c.isActive)
+  const isMobile = useMediaQuery('(max-width: 768px)') ?? false
   const v = form.values
 
   // Kategori seçilmediyse ilk aktif kategori; düzenlemede mevcut kategori pasif olsa bile listede kalır.
@@ -334,9 +337,10 @@ export function ActivityFormModal({ request, onClose }: Props) {
         opened
         onClose={requestClose}
         size={600}
+        fullScreen={isMobile}
         withCloseButton={false}
         padding={0}
-        radius="lg"
+        radius={isMobile ? 0 : 'lg'}
         overlayProps={{ backgroundOpacity: 0.55, blur: 2 }}
         styles={{ content: { background: 'var(--app-surface)', border: '1px solid var(--app-line-strong)' } }}
         trapFocus
@@ -406,6 +410,24 @@ export function ActivityFormModal({ request, onClose }: Props) {
                 onChange={(s) => form.setFieldValue('status', s)}
               />
             </Group>
+            {categoriesQuery.isPending && (
+              <Group gap={6}>
+                <Loader size={10} />
+                <Text size="xs" c="dimmed">
+                  Kategoriler yükleniyor…
+                </Text>
+              </Group>
+            )}
+            {categoriesQuery.isError && (
+              <Group gap={6}>
+                <Text size="xs" c="red">
+                  Kategoriler yüklenemedi.
+                </Text>
+                <Button size="compact-xs" variant="default" onClick={() => void categoriesQuery.refetch()}>
+                  Tekrar dene
+                </Button>
+              </Group>
+            )}
             {form.errors.categoryId && (
               <Text size="xs" c="red">
                 {form.errors.categoryId}

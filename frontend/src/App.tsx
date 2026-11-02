@@ -9,7 +9,7 @@ import { AdminCategoriesPage } from './pages/admin/AdminCategoriesPage'
 import { AdminUsersPage } from './pages/admin/AdminUsersPage'
 import { BoardPage } from './pages/BoardPage'
 import { CheckEmailPage } from './pages/CheckEmailPage'
-import { ComingSoonPage } from './pages/ComingSoonPage'
+import { NotFoundPage } from './pages/NotFoundPage'
 import { LoginPage } from './pages/LoginPage'
 import { ProfilePage } from './pages/ProfilePage'
 import { RegisterPage } from './pages/RegisterPage'
@@ -52,7 +52,7 @@ export default function App() {
             <Route path="/admin/categories" element={<AdminCategoriesPage />} />
             <Route path="/admin/activities" element={<AdminActivitiesPage />} />
           </Route>
-          <Route path="*" element={<ComingSoonPage title="Sayfa bulunamadı" />} />
+          <Route path="*" element={<NotFoundPage />} />
         </Route>
       </Route>
     </Routes>

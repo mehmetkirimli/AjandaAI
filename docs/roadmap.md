@@ -3,7 +3,7 @@
 Ürünün nerede olduğu ve sıradaki işler. Kararların NEDEN'i ilgili ADR'dedir; bu dosya yalnızca
 sırayı ve durumu tutar. Her aşama bitince güncellenir.
 
-Son güncelleme: 2026-10-10
+Son güncelleme: 2026-10-21
 
 ## Genel durum
 
@@ -33,7 +33,7 @@ Kritik yol: F0 → F1 → F2 → F3 → F4 → F5. Sıralı çalışılır (ADR 
 | **F3** Aktivite + hatırlatma ✅ (2026-10-12, [ekranlar](screenshots/f3/)) | web-agent | Ekle/düzenle/pasife al formu, alan bazında hata mesajları, detayda hatırlatma listesi / ekle / sil | Takvimde boş bir saate tıkla → form → kaydet → takvimde belirir; hatalı girişte alanın altında Türkçe mesaj |
 | **F3b** Tekrarlayan aktivite serisi (ADR 0022) ✅ (2026-10-12, [ekranlar](screenshots/f3b/)) | db-agent → activity-agent → web-agent | `activity_series` + `SeriesId`; `POST /api/activities/series`, seri durdurma; formda "Tekrarla", sidebar/⌘K "Toplu aktivite ekle", detayda seri bilgisi | 12 Eki–12 Nis her akşam 21:00 "Krem sür" tek formla → 183 aktivite panoda/takvimde; "bu ve sonrakileri durdur" |
 | **F4** Admin (ADR 0023) ✅ (2026-10-12, [ekranlar](screenshots/f4/)) | db-agent → catalog-agent → web-agent | Yalnızca Admin'de görünen menü: kullanıcılar (liste, ekle, rol, pasife al), kategoriler, aktivite üstverisi + moderasyon | User rolünde admin menüsü yok; Admin rolünde kullanıcıyı pasife alınca listede pasif görünür |
-| **F5** Cila + review + demo | web-agent + review agent | Uzun kategori adı açılır listede taşıyor (F4 notu); boş durumlar, yükleniyor/hata ekranları, küçük ekran uyumu; final review; demo turu | Ekran görüntüleriyle uçtan uca demo |
+| **F5** Cila + review + demo — cila ✅ (2026-10-21, [ekranlar](screenshots/f5/)), demo bekliyor | web-agent + review agent | Uzun kategori adı açılır listede taşıyor (F4 notu); boş durumlar, yükleniyor/hata ekranları, küçük ekran uyumu; final review; demo turu | Ekran görüntüleriyle uçtan uca demo |
 
 ## v2.3 MCP — taslak (ADR yazılacak)
 

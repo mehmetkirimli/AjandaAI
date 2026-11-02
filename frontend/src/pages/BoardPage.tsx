@@ -2,7 +2,8 @@ import {
   DndContext,
   DragOverlay,
   KeyboardSensor,
-  PointerSensor,
+  MouseSensor,
+  TouchSensor,
   useSensor,
   useSensors,
   type DragEndEvent,
@@ -30,12 +31,38 @@ import { columnCollision, columnKeyboardCoordinates } from '../components/board/
 import { UNCATEGORIZED } from '../lib/categoryColor'
 import { dayKey, dayNameDative, moveToDay, sortActivities, startOfWeek, weekRangeLabel } from '../lib/week'
 
+// Gece yarısı ve sekme yeniden görünür olduğunda "bugün" vurgusu güncellenir.
+function useTodayKey(): string {
+  const [key, setKey] = useState(() => dayKey(dayjs()))
+  useEffect(() => {
+    const refresh = () => setKey(dayKey(dayjs()))
+    let timer: ReturnType<typeof setTimeout>
+    const schedule = () => {
+      const now = dayjs()
+      timer = setTimeout(() => {
+        refresh()
+        schedule()
+      }, now.add(1, 'day').startOf('day').diff(now) + 1000)
+    }
+    schedule()
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') refresh()
+    }
+    document.addEventListener('visibilitychange', onVisible)
+    return () => {
+      clearTimeout(timer)
+      document.removeEventListener('visibilitychange', onVisible)
+    }
+  }, [])
+  return key
+}
+
 export function BoardPage() {
   const [weekStart, setWeekStart] = useState<Dayjs>(() => startOfWeek(dayjs()))
   const [activeId, setActiveId] = useState<number | null>(null)
   const [openId, setOpenId] = useState<number | null>(null)
 
-  const [todayKey] = useState(() => dayKey(dayjs()))
+  const todayKey = useTodayKey()
   const weekKey = dayKey(weekStart)
   const activitiesKey = useMemo(() => ['activities', weekKey] as const, [weekKey])
   const days = useMemo(() => Array.from({ length: 7 }, (_, i) => weekStart.add(i, 'day')), [weekStart])
@@ -77,7 +104,9 @@ export function BoardPage() {
   )
 
   const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
+    useSensor(MouseSensor, { activationConstraint: { distance: 6 } }),
+    // Dokunmatik: kısa basılı tutunca sürükleme başlar, böylece dikey kaydırma engellenmez.
+    useSensor(TouchSensor, { activationConstraint: { delay: 250, tolerance: 8 } }),
     useSensor(KeyboardSensor, { coordinateGetter: columnKeyboardCoordinates }),
   )
 

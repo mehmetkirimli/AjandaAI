@@ -41,6 +41,8 @@
 html,
 body {
   background: var(--app-bg);
+  /* Mobilde yatay sayfa kaydırması olmasın; tablolar kendi kapsayıcılarında kayar. */
+  overflow-x: hidden;
 }
 
 body {

@@ -41,7 +41,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = useCallback(async (email: string, password: string) => {
     await authApi.login(email, password)
     setNotice(null)
-    setUser(await authApi.fetchMe())
+    try {
+      setUser(await authApi.fetchMe())
+    } catch (error) {
+      // Profil alınamazsa yarım oturum (token var, kullanıcı yok) bırakılmaz.
+      clearSession()
+      throw error
+    }
   }, [])
 
   const logout = useCallback(async () => {
