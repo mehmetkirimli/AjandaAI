@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<title>AjandaAI Takvim</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;700;800&amp;family=Caveat:wght@600&amp;family=JetBrains+Mono:wght@500&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#5EEAD4}a:hover{color:#ffffff}
+</style>
+</helmet>
+<div style="width: 1280px; height: 800px; box-sizing: border-box; display: flex; background: radial-gradient(circle at 90% 0%, #3b1d6e 0%, transparent 40%), radial-gradient(circle at 30% 100%, #0f4c5c 0%, transparent 40%), #120d22; color: #ffffff; font-family: 'Bricolage Grotesque', system-ui, sans-serif; overflow: hidden">
+
+  <nav aria-label="Ana menü" style="width: 232px; flex-shrink: 0; box-sizing: border-box; padding: 24px 16px; display: flex; flex-direction: column; gap: 6px; background: rgba(0,0,0,0.25); border-right: 1px solid rgba(255,255,255,0.08)">
+    <div style="display: flex; align-items: center; gap: 10px; padding: 0 8px 20px">
+      <div style="width: 38px; height: 38px; border-radius: 11px; background: linear-gradient(135deg, #15803D, #0F766E 40%, #7C3AED 75%, #C2410C); display: flex; align-items: center; justify-content: center">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="3" width="15" height="18" rx="2"></rect><path d="M3 7h3M3 12h3M3 17h3"></path><path d="M10 12l2 2l4 -4"></path></svg>
+      </div>
+      <span style="font-size: 20px; font-weight: 800; letter-spacing: -0.02em">AjandaAI</span>
+    </div>
+    <button type="button" style="height: 44px; border: 0; border-radius: 12px; background: linear-gradient(90deg, #15803D, #0F766E 35%, #7C3AED 70%, #C2410C); color: #ffffff; font-family: inherit; font-size: 15px; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 14px; cursor: pointer"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>Yeni aktivite</button>
+    <a href="#" style="height: 44px; border-radius: 12px; display: flex; align-items: center; gap: 12px; padding: 0 12px; color: #ffffff; text-decoration: none; font-size: 15px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#5EEAD4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="9" rx="1.5"></rect><rect x="14" y="3" width="7" height="5" rx="1.5"></rect><rect x="14" y="12" width="7" height="9" rx="1.5"></rect><rect x="3" y="16" width="7" height="5" rx="1.5"></rect></svg>Pano</a>
+    <a href="#" style="height: 44px; border-radius: 12px; display: flex; align-items: center; gap: 12px; padding: 0 12px; color: #ffffff; text-decoration: none; font-size: 15px; font-weight: 600; background: rgba(124,58,237,0.22); border: 1px solid rgba(167,139,250,0.45)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#C4B5FD" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M16 3v4M8 3v4M3 10h18"></path></svg>Takvim</a>
+    <a href="#" style="height: 44px; border-radius: 12px; display: flex; align-items: center; gap: 12px; padding: 0 12px; color: #ffffff; text-decoration: none; font-size: 15px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#86EFAC" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12a8 8 0 1 0 2.3-5.7"></path><path d="M4 4v4h4"></path></svg>Tekrarlayanlar</a>
+    <a href="#" style="height: 44px; border-radius: 12px; display: flex; align-items: center; gap: 12px; padding: 0 12px; color: #ffffff; text-decoration: none; font-size: 15px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FDBA74" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"></path><path d="M10 21a2 2 0 0 0 4 0"></path></svg>Hatırlatmalar</a>
+    <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.08em; padding: 18px 12px 6px">KATEGORİLER</span>
+    <span style="height: 32px; display: flex; align-items: center; gap: 10px; padding: 0 12px; font-size: 14px"><span style="width: 12px; height: 12px; border-radius: 4px; background: #15803D"></span>Spor</span>
+    <span style="height: 32px; display: flex; align-items: center; gap: 10px; padding: 0 12px; font-size: 14px"><span style="width: 12px; height: 12px; border-radius: 4px; background: #0F766E"></span>Seyahat ve gelişim</span>
+    <span style="height: 32px; display: flex; align-items: center; gap: 10px; padding: 0 12px; font-size: 14px"><span style="width: 12px; height: 12px; border-radius: 4px; background: #7C3AED"></span>İş</span>
+    <span style="height: 32px; display: flex; align-items: center; gap: 10px; padding: 0 12px; font-size: 14px"><span style="width: 12px; height: 12px; border-radius: 4px; background: #C2410C"></span>Yeme ve içme</span>
+    <div style="flex: 1"></div>
+    <a href="#" style="height: 48px; border-radius: 12px; display: flex; align-items: center; gap: 10px; padding: 0 8px; color: #ffffff; text-decoration: none; font-size: 14px"><span style="width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, #C2410C, #7C3AED); display: flex; align-items: center; justify-content: center; font-weight: 700">M</span>Mehmet Kırımlı</a>
+  </nav>
+
+  <main style="flex: 1 1 0; min-width: 0; box-sizing: border-box; padding: 24px 28px; display: flex; flex-direction: column; gap: 16px">
+    <header style="display: flex; align-items: center; gap: 12px">
+      <div style="display: flex; flex-direction: column">
+        <span style="font-family: 'Caveat', cursive; font-size: 24px; line-height: 1">haftana kuşbakışı</span>
+        <h1 style="margin: 0; font-size: 30px; font-weight: 800; letter-spacing: -0.02em">Kasım 2026</h1>
+      </div>
+      <div style="flex: 1"></div>
+      <div role="group" aria-label="Görünüm" style="display: flex; padding: 4px; border-radius: 14px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12)">
+        <button type="button" style="height: 36px; padding: 0 16px; border: 0; border-radius: 10px; background: linear-gradient(90deg, #0F766E, #7C3AED); color: #ffffff; font-family: inherit; font-size: 14px; font-weight: 700">Hafta</button>
+        <button type="button" style="height: 36px; padding: 0 16px; border: 0; border-radius: 10px; background: transparent; color: #ffffff; font-family: inherit; font-size: 14px">Ay</button>
+        <button type="button" style="height: 36px; padding: 0 16px; border: 0; border-radius: 10px; background: transparent; color: #ffffff; font-family: inherit; font-size: 14px">Gün</button>
+      </div>
+      <button type="button" aria-label="Önceki hafta" style="width: 44px; height: 44px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.14); background: rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: center"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M15 6l-6 6l6 6"></path></svg></button>
+      <button type="button" style="height: 44px; padding: 0 18px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.14); background: rgba(255,255,255,0.05); color: #ffffff; font-family: inherit; font-size: 14px; font-weight: 600">Bugün</button>
+      <button type="button" aria-label="Sonraki hafta" style="width: 44px; height: 44px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.14); background: rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: center"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M9 6l6 6l-6 6"></path></svg></button>
+    </header>
+
+    <section style="flex: 1 1 0; min-height: 0; border-radius: 20px; background: #1b1530; border: 1px solid rgba(255,255,255,0.08); overflow: hidden; display: flex; flex-direction: column">
+      <div style="display: grid; grid-template-columns: 56px repeat(7, minmax(0, 1fr)); height: 56px; border-bottom: 1px solid rgba(255,255,255,0.1)">
+        <span></span>
+        <span style="display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 13px">Pzt<b style="font-size: 18px">2</b></span>
+        <span style="display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 13px">Sal<b style="font-size: 18px">3</b></span>
+        <span style="display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 13px"><span style="display: flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 12px; background: linear-gradient(135deg, #7C3AED, #C2410C); font-weight: 700">Çar<b style="font-size: 18px">4</b></span></span>
+        <span style="display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 13px">Per<b style="font-size: 18px">5</b></span>
+        <span style="display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 13px">Cum<b style="font-size: 18px">6</b></span>
+        <span style="display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 13px">Cmt<b style="font-size: 18px">7</b></span>
+        <span style="display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 13px">Paz<b style="font-size: 18px">8</b></span>
+      </div>
+      <div style="flex: 1; display: grid; grid-template-columns: 56px repeat(7, minmax(0, 1fr)); background-image: repeating-linear-gradient(to bottom, transparent 0, transparent 43px, rgba(255,255,255,0.06) 43px, rgba(255,255,255,0.06) 44px)">
+        <div style="display: flex; flex-direction: column; font-family: 'JetBrains Mono', monospace; font-size: 11px">
+          <span style="height: 44px; padding: 4px 8px; box-sizing: border-box">08</span><span style="height: 44px; padding: 4px 8px; box-sizing: border-box">09</span><span style="height: 44px; padding: 4px 8px; box-sizing: border-box">10</span><span style="height: 44px; padding: 4px 8px; box-sizing: border-box">11</span><span style="height: 44px; padding: 4px 8px; box-sizing: border-box">12</span><span style="height: 44px; padding: 4px 8px; box-sizing: border-box">13</span><span style="height: 44px; padding: 4px 8px; box-sizing: border-box">14</span><span style="height: 44px; padding: 4px 8px; box-sizing: border-box">15</span><span style="height: 44px; padding: 4px 8px; box-sizing: border-box">16</span><span style="height: 44px; padding: 4px 8px; box-sizing: border-box">17</span><span style="height: 44px; padding: 4px 8px; box-sizing: border-box">18</span><span style="height: 44px; padding: 4px 8px; box-sizing: border-box">19</span><span style="height: 44px; padding: 4px 8px; box-sizing: border-box">20</span>
+        </div>
+        <div style="position: relative; border-left: 1px solid rgba(255,255,255,0.06)">
+          <div style="position: absolute; top: 2px; left: 4px; right: 4px; height: 40px; box-sizing: border-box; border-radius: 10px; padding: 6px 8px; background: linear-gradient(135deg, #15803D, #0F766E); font-size: 12px; font-weight: 700; box-shadow: 0 6px 14px rgba(21,128,61,0.35)">Spor salonu<br><span style="font-family: 'JetBrains Mono', monospace; font-weight: 500; font-size: 11px">08:00</span></div>
+        </div>
+        <div style="position: relative; border-left: 1px solid rgba(255,255,255,0.06)">
+          <div style="position: absolute; top: 90px; left: 4px; right: 4px; height: 40px; box-sizing: border-box; border-radius: 10px; padding: 6px 8px; background: linear-gradient(135deg, #7C3AED, #6D28D9); font-size: 12px; font-weight: 700; box-shadow: 0 6px 14px rgba(124,58,237,0.35)">Proje toplantısı<br><span style="font-family: 'JetBrains Mono', monospace; font-weight: 500; font-size: 11px">10:00</span></div>
+        </div>
+        <div style="position: relative; border-left: 1px solid rgba(255,255,255,0.06); background: rgba(124,58,237,0.08)">
+          <div style="position: absolute; top: 176px; left: 0; right: 0; height: 2px; background: #FB923C"></div>
+          <div style="position: absolute; top: 171px; left: -6px; width: 12px; height: 12px; border-radius: 50%; background: #FB923C"></div>
+          <div style="position: absolute; top: 222px; left: 4px; right: 4px; height: 40px; box-sizing: border-box; border-radius: 10px; padding: 6px 8px; background: linear-gradient(135deg, #0F766E, #0E7490); font-size: 12px; font-weight: 700; box-shadow: 0 6px 14px rgba(15,118,110,0.35)">Kitap okuma<br><span style="font-family: 'JetBrains Mono', monospace; font-weight: 500; font-size: 11px">13:00</span></div>
+          <div style="position: absolute; top: 508px; left: 4px; right: 4px; height: 42px; box-sizing: border-box; border-radius: 10px; padding: 6px 8px; background: linear-gradient(135deg, #C2410C, #9A3412); font-size: 12px; font-weight: 700; box-shadow: 0 6px 14px rgba(194,65,12,0.4)">Doğum günü<br><span style="font-family: 'JetBrains Mono', monospace; font-weight: 500; font-size: 11px">19:30</span></div>
+        </div>
+        <div style="position: relative; border-left: 1px solid rgba(255,255,255,0.06)">
+          <div style="position: absolute; top: 134px; left: 4px; right: 4px; height: 88px; box-sizing: border-box; border-radius: 10px; border: 2px dashed rgba(94,234,212,0.6); display: flex; align-items: center; justify-content: center; font-size: 12px; gap: 4px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>11:00 – 13:00</div>
+        </div>
+        <div style="position: relative; border-left: 1px solid rgba(255,255,255,0.06)">
+          <div style="position: absolute; top: 310px; left: 4px; right: 4px; height: 260px; box-sizing: border-box; border-radius: 10px; padding: 6px 8px; background: linear-gradient(160deg, #0F766E, #15803D); font-size: 12px; font-weight: 700; box-shadow: 0 6px 14px rgba(15,118,110,0.35)">Yalova merkez<br><span style="font-family: 'JetBrains Mono', monospace; font-weight: 500; font-size: 11px">15:00 – 23:30</span></div>
+        </div>
+        <div style="position: relative; border-left: 1px solid rgba(255,255,255,0.06); background: rgba(255,255,255,0.02)">
+          <div style="position: absolute; top: 90px; left: 4px; right: 4px; height: 62px; box-sizing: border-box; border-radius: 10px; padding: 6px 8px; background: linear-gradient(135deg, #C2410C, #7C3AED); font-size: 12px; font-weight: 700; box-shadow: 0 6px 14px rgba(194,65,12,0.35)">Aile kahvaltısı<br><span style="font-family: 'JetBrains Mono', monospace; font-weight: 500; font-size: 11px">10:00</span></div>
+        </div>
+        <div style="position: relative; border-left: 1px solid rgba(255,255,255,0.06); background: rgba(255,255,255,0.02)"></div>
+      </div>
+    </section>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":800}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
+</body>
+</html>

@@ -104,6 +104,32 @@ Arayüz dili Türkçe. Backend'in hata mesajları (zaten Türkçe) form alanlar�
   (zinc-400), "● Kategori" pill, 6 noktalı tutamak. Pano taslağındaki dolu renkli haplar bununla kalktı.
 - Boş gün: kesikli dropzone + silik çizgisel ikon + mikro metin; tıklanınca o günün formu açılır. Emoji yok.
 
+### 5e. "Özel Defter" görsel kimliği (2026-11-04, ürün sahibi geri bildirimi) — 5d'nin yerine geçer
+- **Neden:** Ürün sahibi 5d'yi kendi cihazında görünce "buzdolabı gibi, 1990'lardan muhasebe uygulaması,
+  hazır şablon; ajanda olduğu anlaşılmıyor" dedi. Hedef: kaliteli, telli, renkli bir defter alan kişi nasıl
+  daha özenli yazarsa, uygulama da eşsiz görünmeli ki kullanıcı özen göstersin ve hayatını düzene soktuğuna
+  inansın. İşlev ve etkileşimler (sürükle-bırak, ⌘K, formlar) AYNEN kalır; yalnızca görsel katman değişir.
+- **Referans:** onaylı taslaklar `docs/design/ozel-defter/*.dc.html` (giriş, pano masaüstü + mobil, takvim,
+  aktivite formu, profil, yönetim/entegrasyonlar). Ölçüler, renkler ve metinler buradan birebir alınır.
+- **Palet:** yeşil, turkuaz, mor, turuncu. Dolgularda koyu tonlar (#15803D, #0F766E, #7C3AED, #C2410C) →
+  TÜM metin beyaz ve okunur kalır; canlı tonlar (#4ADE80, #2DD4BF, #A78BFA, #FB923C) yalnızca parlama, çerçeve,
+  ikon ve illüstrasyonda. Zemin #120d22 + köşelerde mor/turkuaz radial ışık; kart zemini #1b1530.
+  Ana eylemler (giriş, Yeni aktivite, Kaydet) dört renkli gradyan.
+- **Tipografi:** Bricolage Grotesque (arayüz), Caveat (yalnızca kısa el yazısı notlar: "bugün", karşılama),
+  JetBrains Mono (saatler).
+- **Defter dokusu:** gün kartlarında üstte BEYAZ spiral halkalar ve çizgili sayfa zemini; formda gradyan şerit +
+  spiral; profilde defter kapağı. Bugün = gökkuşağı gradyan çerçeve + parlama.
+- **Kimlik:** spiralli defter + onay işareti logosu her ekranda; girişte büyük defter illüstrasyonu; boş günlerde
+  küçük illüstrasyon + samimi not. Görseller satır içi SVG illüstrasyon (fotoğraf yok: telif, boyut, tema uyumu).
+- **İkon:** her kategori ve menü öğesinde Tabler ikonu. Kategori → ikon/renk eşlemesi tek yerde tutulur.
+- **Yerleşim:** masaüstünde hep açık sol sidebar (5d'deki üst navbar kalkar; dönem başlığı + gezinme içerikte);
+  mobilde alt bar + ortada yüzen gradyan "+" butonu; mobil panoda boş günler tek satırda çip.
+- **Hareket:** sayfa geçişlerinde yumuşak belirme/kayma, kart eklenince belirme, sürüklerken hafif eğilme;
+  `prefers-reduced-motion`'da kapalı.
+- **Yönetim → Entegrasyonlar ve Yol Haritası:** Eklendi / Sırada / Planlandı / Fikir durumlarıyla özellik ve
+  MCP/yapay zeka listesi. Liste frontend'de SABİT bir veri dosyasıdır (veritabanı yok); her aşama bitince lider
+  `docs/roadmap.md` ile birlikte günceller.
+
 ### 6. Klasör ayrımı: `backend/` + `frontend/` (2026-10-10)
 ```
 backend/     AjandaAI.sln, src/, tests/   (.NET)
