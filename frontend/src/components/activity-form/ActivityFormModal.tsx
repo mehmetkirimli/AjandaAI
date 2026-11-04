@@ -3,7 +3,6 @@ import {
   Button,
   Collapse,
   Group,
-  Kbd,
   Loader,
   Modal,
   NumberInput,
@@ -20,14 +19,14 @@ import { DatePickerInput, TimePicker } from '@mantine/dates'
 import { useForm } from '@mantine/form'
 import { useMediaQuery } from '@mantine/hooks'
 import { notifications } from '@mantine/notifications'
-import { IconAlertCircle, IconBolt, IconChevronDown, IconCircleDashed, IconRepeat, IconTag } from '@tabler/icons-react'
+import { IconAlertCircle, IconBolt, IconCheck, IconChevronDown, IconCircleDashed, IconRepeat, IconX } from '@tabler/icons-react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import dayjs from 'dayjs'
 import { useMemo, useRef, useState } from 'react'
 import { createActivity, createSeries, fetchCategories, updateActivity } from '../../api/activities'
 import type { ActivityStatus, ActivityUpdateRequest, Level } from '../../api/types'
 import { LEVEL_OPTIONS, STATUS_OPTIONS } from '../../lib/activityOptions'
-import { categoryStrip } from '../../lib/categoryColor'
+import { categoryLook } from '../../lib/categoryColor'
 import { MOD_KEY } from '../../lib/commands'
 import {
   countOccurrences,
@@ -43,6 +42,7 @@ import { splitErrors } from '../../lib/formErrors'
 import { PriorityBars } from '../board/PriorityBars'
 import type { FormRequest } from './context'
 import { PillMenu } from './PillMenu'
+import './form.css'
 
 interface Values {
   title: string
@@ -172,15 +172,6 @@ export function ActivityFormModal({ request, onClose }: Props) {
 
   // Kategori seçilmediyse ilk aktif kategori; düzenlemede mevcut kategori pasif olsa bile listede kalır.
   const categoryId = v.categoryId ?? categories[0]?.id ?? null
-  const categoryOptions = categories.map((c) => ({
-    value: c.id,
-    label: c.name,
-    icon: (
-      <span
-        style={{ width: 8, height: 8, borderRadius: '50%', background: categoryStrip(c.id), display: 'inline-block' }}
-      />
-    ),
-  }))
   const selectedCategory = categories.find((c) => c.id === categoryId)
 
   const mutation = useMutation({
@@ -336,13 +327,22 @@ export function ActivityFormModal({ request, onClose }: Props) {
       <Modal
         opened
         onClose={requestClose}
-        size={600}
+        size={660}
         fullScreen={isMobile}
         withCloseButton={false}
         padding={0}
-        radius={isMobile ? 0 : 'lg'}
-        overlayProps={{ backgroundOpacity: 0.55, blur: 2 }}
-        styles={{ content: { background: 'var(--app-surface)', border: '1px solid var(--app-line-strong)' } }}
+        radius={isMobile ? 0 : 26}
+        overlayProps={{ backgroundOpacity: 0.6, blur: 3 }}
+        transitionProps={{ transition: 'pop', duration: 180 }}
+        styles={{
+          content: {
+            background: 'var(--ink-card)',
+            border: isMobile ? undefined : '1px solid var(--ink-line-strong)',
+            boxShadow: '0 40px 100px rgba(0,0,0,0.6), 0 0 60px rgba(124,58,237,0.25)',
+            overflow: 'hidden',
+          },
+          body: { padding: 0 },
+        }}
         trapFocus
       >
         <div
@@ -353,39 +353,59 @@ export function ActivityFormModal({ request, onClose }: Props) {
             }
           }}
         >
-          <Stack gap="sm" p="md" pb="sm">
-            <Text size="xs" c="dimmed">
-              {editing ? 'Aktiviteyi düzenle' : v.repeat ? 'Toplu aktivite' : 'Yeni aktivite'}
-            </Text>
+          {/* Defter dokusu: gradyan şerit + beyaz spiral */}
+          <div aria-hidden style={{ height: 10, background: 'var(--grad-rainbow)' }} />
+          <div className="spiral" aria-hidden style={{ height: 22, alignItems: 'center', padding: '0 40px' }}>
+            {Array.from({ length: isMobile ? 6 : 10 }, (_, i) => (
+              <span key={i} style={{ boxShadow: 'none' }} />
+            ))}
+          </div>
+
+          <Stack gap={18} px={isMobile ? 18 : 32} pt={10} pb={20}>
+            <Group gap={10} wrap="nowrap">
+              <span className="hand" style={{ fontSize: 24 }}>
+                {editing ? 'sayfayı düzenliyoruz' : v.repeat ? 'tekrarlayan bir plan' : 'yeni bir sayfa açıyoruz'}
+              </span>
+              <div style={{ flex: 1 }} />
+              <button type="button" className="icon-btn" aria-label="Kapat" onClick={requestClose} style={{ width: 44, height: 44, border: 0, background: 'rgba(255,255,255,0.08)' }}>
+                <IconX size={18} stroke={2.2} aria-hidden />
+              </button>
+            </Group>
+
             <TextInput
               variant="unstyled"
               placeholder="Aktivite başlığı"
               data-autofocus
-              aria-label="Aktivite başlığı"
-              styles={{ input: { fontSize: 18, fontWeight: 600, height: 32 } }}
+              aria-label="Başlık"
+              className="title-input"
+              styles={{
+                input: {
+                  fontSize: isMobile ? 26 : 32,
+                  fontWeight: 800,
+                  height: 56,
+                  borderRadius: 0,
+                  color: '#fff',
+                  background: 'transparent',
+                },
+              }}
               error={form.errors.title}
               {...form.getInputProps('title')}
             />
-            <Textarea
-              variant="unstyled"
-              placeholder="Açıklama ekle…"
-              aria-label="Açıklama"
-              autosize
-              minRows={2}
-              maxRows={8}
-              {...form.getInputProps('description')}
-            />
 
             {/* Özellik hapları */}
-            <Group gap={6}>
-              <PillMenu
-                ariaLabel="Kategori"
-                value={categoryId}
-                options={categoryOptions}
-                placeholder="Kategori"
-                icon={<IconTag size={13} />}
-                onChange={(id) => form.setFieldValue('categoryId', id)}
-              />
+            <Group gap={8}>
+              {!editing && (
+                <button
+                  type="button"
+                  className="form-pill"
+                  aria-pressed={v.repeat}
+                  data-tone="green"
+                  onClick={() => toggleRepeat(!v.repeat)}
+                >
+                  <IconRepeat size={16} color="var(--l-green)" aria-hidden />
+                  Tekrarla
+                </button>
+              )}
               <PillMenu
                 ariaLabel="Öncelik"
                 value={v.priority}
@@ -398,7 +418,7 @@ export function ActivityFormModal({ request, onClose }: Props) {
                 value={v.energyLevel}
                 options={LEVEL_OPTIONS.map((o) => ({ ...o, label: `Enerji: ${o.label}` }))}
                 placeholder="Enerji"
-                icon={<IconBolt size={13} />}
+                icon={<IconBolt size={16} color="var(--l-orange)" />}
                 onChange={(l) => form.setFieldValue('energyLevel', l)}
               />
               <PillMenu
@@ -406,48 +426,83 @@ export function ActivityFormModal({ request, onClose }: Props) {
                 value={v.status}
                 options={STATUS_OPTIONS}
                 placeholder="Durum"
-                icon={<IconCircleDashed size={13} />}
+                icon={<IconCircleDashed size={16} color="var(--l-violet)" />}
                 onChange={(s) => form.setFieldValue('status', s)}
               />
             </Group>
-            {categoriesQuery.isPending && (
-              <Group gap={6}>
-                <Loader size={10} />
-                <Text size="xs" c="dimmed">
-                  Kategoriler yükleniyor…
-                </Text>
-              </Group>
-            )}
-            {categoriesQuery.isError && (
-              <Group gap={6}>
-                <Text size="xs" c="red">
-                  Kategoriler yüklenemedi.
-                </Text>
-                <Button size="compact-xs" variant="default" onClick={() => void categoriesQuery.refetch()}>
-                  Tekrar dene
-                </Button>
-              </Group>
-            )}
-            {form.errors.categoryId && (
-              <Text size="xs" c="red">
-                {form.errors.categoryId}
+
+            {/* Kategori: ikonlu kutular */}
+            <Stack gap={10}>
+              <Text fz={13} fw={700} id="form-category-label">
+                Kategori
               </Text>
-            )}
-            {selectedCategory === undefined && categoriesQuery.isSuccess && categories.length === 0 && (
-              <Text size="xs" c="red">
-                Aktif kategori bulunamadı.
-              </Text>
-            )}
+              {categoriesQuery.isPending && (
+                <Group gap={6}>
+                  <Loader size={12} color="var(--v-teal)" />
+                  <Text size="xs">Kategoriler yükleniyor…</Text>
+                </Group>
+              )}
+              {categoriesQuery.isError && (
+                <Group gap={6}>
+                  <Text size="xs" c="var(--l-orange)">
+                    Kategoriler yüklenemedi.
+                  </Text>
+                  <Button size="compact-sm" variant="glass" onClick={() => void categoriesQuery.refetch()}>
+                    Tekrar dene
+                  </Button>
+                </Group>
+              )}
+              {categories.length > 0 && (
+                <div className="cat-grid" role="radiogroup" aria-labelledby="form-category-label">
+                  {categories.map((c) => {
+                    const look = categoryLook(c.id, c.name)
+                    const Icon = look.icon
+                    const on = c.id === categoryId
+                    return (
+                      <button
+                        key={c.id}
+                        type="button"
+                        role="radio"
+                        aria-checked={on}
+                        className="cat-box"
+                        title={c.name}
+                        onClick={() => form.setFieldValue('categoryId', c.id)}
+                        style={
+                          on
+                            ? { background: look.gradient, border: `2px solid ${look.vivid}`, fontWeight: 700, boxShadow: look.shadow.replace('16px', '24px') }
+                            : { background: `color-mix(in srgb, ${look.fill} 25%, transparent)` }
+                        }
+                      >
+                        <Icon size={22} color={on ? '#fff' : look.light} aria-hidden />
+                        <span className="nav-label" style={{ maxWidth: '100%' }}>
+                          {c.name}
+                        </span>
+                      </button>
+                    )
+                  })}
+                </div>
+              )}
+              {form.errors.categoryId && (
+                <Text size="xs" c="var(--l-orange)">
+                  {form.errors.categoryId}
+                </Text>
+              )}
+              {selectedCategory === undefined && categoriesQuery.isSuccess && categories.length === 0 && (
+                <Text size="xs" c="var(--l-orange)">
+                  Aktif kategori bulunamadı.
+                </Text>
+              )}
+            </Stack>
 
             {/* Zaman satırı */}
             <Stack gap={6} mt={4}>
-              <Group gap="xs" wrap="nowrap">
-                <Text size="xs" c="dimmed" w={72}>
+              <Group gap="xs" wrap="wrap">
+                <Text fz={13} fw={600} w={84}>
                   {v.repeat ? 'İlk aktivite' : 'Başlangıç'}
                 </Text>
                 <DatePickerInput
-                  size="xs"
-                  w={150}
+                  size="md"
+                  w={170}
                   valueFormat="D MMM YYYY"
                   aria-label="Başlangıç tarihi"
                   value={v.startDate || null}
@@ -455,8 +510,8 @@ export function ActivityFormModal({ request, onClose }: Props) {
                 />
                 {!v.isAllDay && (
                   <TimePicker
-                    size="xs"
-                    w={84}
+                    size="md"
+                    w={104}
                     format="24h"
                     aria-label="Başlangıç saati"
                     value={v.startTime}
@@ -465,21 +520,21 @@ export function ActivityFormModal({ request, onClose }: Props) {
                 )}
                 <Switch
                   ml="auto"
-                  size="xs"
+                  size="md"
                   label="Tüm gün"
                   checked={v.isAllDay}
                   onChange={(e) => form.setFieldValue('isAllDay', e.currentTarget.checked)}
                 />
               </Group>
               {!(v.repeat && v.isAllDay) && (
-              <Group gap="xs" wrap="nowrap">
-                <Text size="xs" c="dimmed" w={72}>
+              <Group gap="xs" wrap="wrap">
+                <Text fz={13} fw={600} w={84}>
                   Bitiş
                 </Text>
                 {!v.repeat && (
                 <DatePickerInput
-                  size="xs"
-                  w={150}
+                  size="md"
+                  w={170}
                   valueFormat="D MMM YYYY"
                   aria-label="Bitiş tarihi"
                   value={v.endDate || null}
@@ -489,8 +544,8 @@ export function ActivityFormModal({ request, onClose }: Props) {
                 )}
                 {!v.isAllDay && (
                   <TimePicker
-                    size="xs"
-                    w={84}
+                    size="md"
+                    w={104}
                     format="24h"
                     aria-label="Bitiş saati"
                     value={v.endTime}
@@ -500,42 +555,32 @@ export function ActivityFormModal({ request, onClose }: Props) {
               </Group>
               )}
               {endError && (
-                <Text size="xs" c="red">
+                <Text size="xs" c="var(--l-orange)">
                   {endError}
                 </Text>
               )}
 
               {longDays >= 1 && (
-                <Alert color="yellow" py={6} icon={<IconRepeat size={16} />}>
+                <Alert color="orange" py={6} icon={<IconRepeat size={16} />}>
                   <Group justify="space-between" wrap="nowrap" gap="xs">
                     <Text size="xs">
                       Bu aktivite {humanDuration} sürüyor. Her hafta tekrarlamak mı istedin?
                     </Text>
-                    <Button size="compact-sm" variant="default" onClick={switchToRepeat} style={{ flexShrink: 0 }}>
+                    <Button size="compact-sm" variant="glass" onClick={switchToRepeat} style={{ flexShrink: 0 }}>
                       Tekrarla'ya geç
                     </Button>
                   </Group>
                 </Alert>
               )}
 
-              {!editing && (
-                <Switch
-                  size="xs"
-                  mt={2}
-                  label="Tekrarla"
-                  checked={v.repeat}
-                  onChange={(e) => toggleRepeat(e.currentTarget.checked)}
-                />
-              )}
-
               {!editing && v.repeat && (
                 <Stack
                   gap="xs"
                   p="sm"
-                  style={{ border: '1px solid var(--app-line)', borderRadius: 8, background: 'var(--app-surface-2)' }}
+                  style={{ border: '1px solid rgba(74,222,128,0.3)', borderRadius: 16, background: 'rgba(21,128,61,0.14)' }}
                 >
                   <SegmentedControl
-                    size="xs"
+                    size="md"
                     fullWidth
                     value={v.frequency}
                     data={FREQUENCY_OPTIONS}
@@ -557,12 +602,12 @@ export function ActivityFormModal({ request, onClose }: Props) {
                     </Group>
                   )}
                   <Group gap="xs" wrap="nowrap" align="center">
-                    <Text size="xs" c="dimmed" w={72}>
+                    <Text fz={13} fw={600} w={84}>
                       Bitiş tarihi
                     </Text>
                     <DatePickerInput
-                      size="xs"
-                      w={150}
+                      size="md"
+                      w={170}
                       valueFormat="D MMM YYYY"
                       aria-label="Tekrar bitiş tarihi"
                       value={v.until || null}
@@ -575,11 +620,11 @@ export function ActivityFormModal({ request, onClose }: Props) {
                     />
                   </Group>
                   <Group gap="xs" wrap="nowrap" align="center">
-                    <Text size="xs" c="dimmed" w={72}>
+                    <Text fz={13} fw={600} w={84}>
                       Hatırlatma
                     </Text>
                     <SegmentedControl
-                      size="xs"
+                      size="md"
                       value={v.reminderMinutes}
                       data={[
                         { value: '0', label: 'Yok' },
@@ -591,7 +636,7 @@ export function ActivityFormModal({ request, onClose }: Props) {
                     />
                   </Group>
                   {preview && (
-                    <Text size="xs" c={previewBlocked ? 'red' : 'dimmed'}>
+                    <Text size="xs" c={previewBlocked ? 'var(--l-orange)' : undefined}>
                       {preview.invalidRange
                         ? 'Bitiş tarihi başlangıç gününden önce olamaz.'
                         : preview.tooMany
@@ -602,12 +647,28 @@ export function ActivityFormModal({ request, onClose }: Props) {
                     </Text>
                   )}
                   {(form.errors.recurrence || form.errors.reminder) && (
-                    <Text size="xs" c="red">
+                    <Text size="xs" c="var(--l-orange)">
                       {form.errors.recurrence} {form.errors.reminder}
                     </Text>
                   )}
                 </Stack>
               )}
+            </Stack>
+
+            {/* Not: çizgili defter satırı, el yazısı */}
+            <Stack gap={8}>
+              <Text component="label" htmlFor="form-note" fz={13} fw={700}>
+                Not
+              </Text>
+              <Textarea
+                id="form-note"
+                placeholder="Aklına gelenleri yaz…"
+                autosize
+                minRows={3}
+                maxRows={8}
+                classNames={{ input: 'ruled-note' }}
+                {...form.getInputProps('description')}
+              />
             </Stack>
 
             {/* Ek alanlar */}
@@ -623,9 +684,9 @@ export function ActivityFormModal({ request, onClose }: Props) {
             <Collapse expanded={moreOpen}>
               <Stack gap="xs" pt={4}>
                 <Group grow align="flex-start">
-                  <TextInput size="xs" label="Konum" placeholder="Nerede?" {...form.getInputProps('location')} />
+                  <TextInput size="md" label="Konum" placeholder="Nerede?" {...form.getInputProps('location')} />
                   <NumberInput
-                    size="xs"
+                    size="md"
                     label="Tahmini bütçe"
                     prefix="₺ "
                     min={0}
@@ -653,7 +714,7 @@ export function ActivityFormModal({ request, onClose }: Props) {
                   <Text size="xs">{v.rating}/10</Text>
                 </Group>
                 {form.errors.rating && (
-                  <Text size="xs" c="red">
+                  <Text size="xs" c="var(--l-orange)">
                     {form.errors.rating}
                   </Text>
                 )}
@@ -667,7 +728,7 @@ export function ActivityFormModal({ request, onClose }: Props) {
             )}
 
             {generalErrors.length > 0 && (
-              <Alert color="red" icon={<IconAlertCircle size={16} />}>
+              <Alert color="orange" icon={<IconAlertCircle size={16} />}>
                 {generalErrors.map((m) => (
                   <div key={m}>{m}</div>
                 ))}
@@ -675,23 +736,29 @@ export function ActivityFormModal({ request, onClose }: Props) {
             )}
           </Stack>
 
-          <Group
-            justify="space-between"
-            px="md"
-            py="sm"
-            style={{ borderTop: '1px solid var(--app-line)' }}
-          >
-            <Group gap="xs">
-              <Button size="compact-md" loading={mutation.isPending} disabled={previewBlocked} onClick={submit}>
-                {editing ? 'Kaydet' : preview && !previewBlocked ? `${preview.count} aktivite oluştur` : 'Oluştur'}
-              </Button>
-              <Group gap={3}>
-                <Kbd size="xs">{MOD_KEY}</Kbd>
-                <Kbd size="xs">Enter</Kbd>
-              </Group>
+          <Group gap={10} px={isMobile ? 18 : 32} pb={isMobile ? 24 : 28} pt={4} wrap="wrap">
+            <Group gap={8} visibleFrom="sm">
+              <span className="mono" style={{ fontSize: 12, padding: '4px 8px', borderRadius: 6, background: 'rgba(255,255,255,0.08)' }}>
+                {MOD_KEY} + Enter
+              </span>
+              <Text fz={13}>ile kaydet</Text>
             </Group>
-            <Button size="compact-md" variant="subtle" color="gray" onClick={requestClose}>
+            <div style={{ flex: 1 }} />
+            <Button variant="glass" h={48} px={20} radius={14} fz={15} fw={400} onClick={requestClose}>
               Vazgeç
+            </Button>
+            <Button
+              variant="rainbow"
+              h={48}
+              px={26}
+              radius={14}
+              fz={15}
+              loading={mutation.isPending}
+              disabled={previewBlocked}
+              onClick={submit}
+              leftSection={<IconCheck size={18} stroke={2.4} />}
+            >
+              {editing ? 'Kaydet' : preview && !previewBlocked ? `Deftere yaz · ${preview.count} aktivite` : 'Deftere yaz'}
             </Button>
           </Group>
         </div>

@@ -6,7 +6,7 @@ import { useMemo, useState } from 'react'
 import { deactivateAdminActivity, fetchAdminActivities, fetchAllAdminUsers, fetchAllCategories } from '../../api/admin'
 import type { AdminActivity } from '../../api/types'
 import { PageBody, PanelHeader } from '../../components/PanelHeader'
-import { categoryColor } from '../../lib/categoryColor'
+import { categoryStrip } from '../../lib/categoryColor'
 import { STATUS_OPTIONS, statusLabel } from '../../lib/activityOptions'
 import { AdminState } from './AdminState'
 import { errorMessage, useConfirm } from './adminUtils'
@@ -167,7 +167,7 @@ export function AdminActivitiesPage() {
                           <Group gap={6} wrap="nowrap">
                             <span
                               aria-hidden
-                              style={{ width: 8, height: 8, borderRadius: 2, background: categoryColor(a.categoryId) }}
+                              style={{ width: 8, height: 8, borderRadius: 2, background: categoryStrip(a.categoryId) }}
                             />
                             {categoryById.get(a.categoryId) ?? `#${a.categoryId}`}
                           </Group>

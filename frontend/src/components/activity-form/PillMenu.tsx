@@ -26,12 +26,14 @@ export function PillMenu<T extends string | number>({ ariaLabel, value, options,
     <Menu position="bottom-start" width={220} withinPortal>
       <Menu.Target>
         <Button
-          variant="default"
-          size="compact-sm"
-          radius="xl"
+          variant="glass"
+          h={44}
+          px={14}
+          radius={12}
+          fz={14}
           aria-label={ariaLabel}
           title={label}
-          maw={200}
+          maw={220}
           leftSection={selected?.icon ?? icon}
           styles={{ root: { fontWeight: 500 }, inner: { minWidth: 0 }, label: { minWidth: 0 } }}
         >

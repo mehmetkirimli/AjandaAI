@@ -7,6 +7,7 @@ import { AppLayout } from './components/AppLayout'
 import { AdminActivitiesPage } from './pages/admin/AdminActivitiesPage'
 import { AdminCategoriesPage } from './pages/admin/AdminCategoriesPage'
 import { AdminUsersPage } from './pages/admin/AdminUsersPage'
+import { IntegrationsPage } from './pages/admin/IntegrationsPage'
 import { BoardPage } from './pages/BoardPage'
 import { CheckEmailPage } from './pages/CheckEmailPage'
 import { NotFoundPage } from './pages/NotFoundPage'
@@ -51,6 +52,7 @@ export default function App() {
             <Route path="/admin/users" element={<AdminUsersPage />} />
             <Route path="/admin/categories" element={<AdminCategoriesPage />} />
             <Route path="/admin/activities" element={<AdminActivitiesPage />} />
+            <Route path="/admin/integrations" element={<IntegrationsPage />} />
           </Route>
           <Route path="*" element={<NotFoundPage />} />
         </Route>

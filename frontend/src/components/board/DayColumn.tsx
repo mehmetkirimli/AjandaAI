@@ -1,12 +1,12 @@
 import { useDraggable, useDroppable } from '@dnd-kit/core'
-import { Box, Button, Skeleton, Stack, Text } from '@mantine/core'
-import { IconCoffee, IconPlus } from '@tabler/icons-react'
+import { Skeleton } from '@mantine/core'
+import { IconPlus } from '@tabler/icons-react'
 import type { Dayjs } from 'dayjs'
+import type { ReactNode } from 'react'
 import type { ActivityListItem } from '../../api/types'
-import { dayKey } from '../../lib/week'
+import { DAY_NAMES, dayKey } from '../../lib/week'
+import { CoffeeCup, EmptyPage, Spiral } from '../illustrations'
 import { ActivityCard } from './ActivityCard'
-
-const SHORT_DAYS = ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz']
 
 interface Props {
   day: Dayjs
@@ -16,18 +16,20 @@ interface Props {
   loading: boolean
   isToday: boolean
   onOpen: (id: number) => void
-  // F3'te o günle ekleme formu açılacak.
   onAddActivity: (day: Dayjs) => void
 }
 
-function DraggableCard({
+export function DraggableCard({
   item,
   categoryName,
   onOpen,
+  children,
 }: {
   item: ActivityListItem
   categoryName: string
   onOpen: (id: number) => void
+  // Verilirse kartın yerine bu içerik sürüklenir (mobil liste).
+  children?: ReactNode
 }) {
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({ id: item.id })
   return (
@@ -36,92 +38,146 @@ function DraggableCard({
       {...listeners}
       {...attributes}
       onClick={() => onOpen(item.id)}
+      className="card-enter"
       aria-label={`${item.title}. Taşımak için boşluk tuşuna basın, sağ ve sol ok tuşlarıyla gün değiştirin.`}
-      style={{ touchAction: 'manipulation', WebkitTouchCallout: 'none', userSelect: 'none', outlineOffset: 2, borderRadius: 8 }}
+      style={{
+        touchAction: 'manipulation',
+        WebkitTouchCallout: 'none',
+        userSelect: 'none',
+        outlineOffset: 2,
+        borderRadius: 12,
+        minWidth: 0,
+        opacity: isDragging ? 0.35 : 1,
+        filter: isDragging ? 'grayscale(0.6)' : undefined,
+      }}
     >
-      <ActivityCard
-        item={item}
-        categoryName={categoryName}
-        style={{ opacity: isDragging ? 0.35 : 1, filter: isDragging ? 'grayscale(0.6)' : undefined }}
-      />
+      {children ?? <ActivityCard item={item} categoryName={categoryName} />}
     </div>
   )
 }
 
+function LoadingCards({ count }: { count: number }) {
+  return (
+    <>
+      {Array.from({ length: count }, (_, i) => (
+        <Skeleton key={i} h={48} radius={12} style={{ opacity: 0.35 }} />
+      ))}
+    </>
+  )
+}
+
+// Hafta içi gün kartı: beyaz spiral halkalar + çizgili sayfa; bugün gradyan çerçeve + parlama.
 export function DayColumn({ day, index, items, categoryName, loading, isToday, onOpen, onAddActivity }: Props) {
   const { setNodeRef, isOver } = useDroppable({ id: `day-${dayKey(day)}` })
-  const weekend = index >= 5
+  const empty = !loading && items.length === 0
 
   return (
-    <Box
-      ref={setNodeRef}
-      className={weekend ? 'board-day weekend' : 'board-day'}
-      p="xs"
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        minHeight: 160,
-        background: isOver
-          ? 'color-mix(in srgb, var(--mantine-color-accent-filled) 6%, var(--app-surface))'
-          : 'var(--app-surface)',
-        border: isOver ? '1px dashed var(--mantine-color-accent-filled)' : '1px solid var(--app-line)',
-        borderRadius: 10,
-        transition: 'background 120ms ease',
-        minWidth: 0,
-      }}
-    >
-      {/* Gün başlığı: "12 Pzt"; bugün parlayan accent rozet. */}
-      <Box mb={8} px={4}>
-        <Text
-          span
-          fz={12.5}
-          fw={600}
-          style={{
-            display: 'inline-block',
-            padding: '1px 9px',
-            marginLeft: -6,
-            borderRadius: 999,
-            background: isToday ? 'var(--mantine-color-accent-filled)' : 'transparent',
-            color: isToday ? '#fff' : undefined,
-            boxShadow: isToday ? '0 0 12px rgba(94, 106, 210, 0.45)' : undefined,
-          }}
-        >
-          {day.format('D')} {SHORT_DAYS[index]}
-        </Text>
-      </Box>
-
-      <Stack gap={6} style={{ flex: 1 }}>
-        {loading ? (
-          <>
-            <Skeleton h={40} radius={8} />
-            {index % 2 === 0 && <Skeleton h={40} radius={8} />}
-          </>
-        ) : items.length === 0 ? (
-          <button type="button" className="day-dropzone" data-over={isOver} onClick={() => onAddActivity(day)}>
-            <IconCoffee size={18} aria-hidden />
-            <span>{isOver ? 'Buraya bırak' : 'Boş · eklemek için tıkla'}</span>
-          </button>
-        ) : (
-          items.map((item) => (
-            <DraggableCard key={item.id} item={item} categoryName={categoryName(item.categoryId)} onOpen={onOpen} />
-          ))
-        )}
-      </Stack>
-
-      {items.length > 0 && (
-      <Button
-        mt={8}
-        size="compact-sm"
-        variant="subtle"
-        color="gray"
-        justify="center"
-        className="board-add"
-        leftSection={<IconPlus size={14} />}
-        onClick={() => onAddActivity(day)}
-      >
-        Aktivite Ekle
-      </Button>
+    <section ref={setNodeRef} className="day-card" data-today={isToday} data-over={isOver} aria-label={`${day.format('D')} ${DAY_NAMES[index]}`}>
+      <Spiral />
+      {isToday ? (
+        <div className="day-head" style={{ alignItems: 'center' }}>
+          <span className="day-today-badge">{day.format('D')}</span>
+          <span style={{ display: 'flex', flexDirection: 'column' }}>
+            <span style={{ fontSize: 14, fontWeight: 700 }}>{DAY_NAMES[index]}</span>
+            <span className="hand" style={{ fontSize: 18 }}>
+              bugün
+            </span>
+          </span>
+        </div>
+      ) : (
+        <div className="day-head">
+          <span className="day-num">{day.format('D')}</span>
+          <span style={{ fontSize: 14 }}>{DAY_NAMES[index]}</span>
+        </div>
       )}
-    </Box>
+
+      {empty ? (
+        <button type="button" className="day-empty" onClick={() => onAddActivity(day)} aria-label={`${DAY_NAMES[index]} gününe aktivite ekle`}>
+          <EmptyPage width={84} />
+          <span className="hand" style={{ fontSize: 20 }}>
+            {isOver ? 'Buraya bırak' : 'Boş sayfa, yeni fırsat'}
+          </span>
+        </button>
+      ) : (
+        <div className="day-body ruled">
+          {loading ? (
+            <LoadingCards count={index % 2 === 0 ? 2 : 1} />
+          ) : (
+            items.map((item) => (
+              <DraggableCard key={item.id} item={item} categoryName={categoryName(item.categoryId)} onOpen={onOpen} />
+            ))
+          )}
+          {!loading && (
+            <button type="button" className="day-add" onClick={() => onAddActivity(day)}>
+              <IconPlus size={14} stroke={2.4} aria-hidden />
+              Ekle
+            </button>
+          )}
+        </div>
+      )}
+    </section>
+  )
+}
+
+// Hafta sonu: iki geniş yatay kart.
+export function WeekendCard({ day, index, items, categoryName, loading, isToday, onOpen, onAddActivity }: Props) {
+  const { setNodeRef, isOver } = useDroppable({ id: `day-${dayKey(day)}` })
+  const empty = !loading && items.length === 0
+  return (
+    <section
+      ref={setNodeRef}
+      className="weekend-card"
+      data-idx={index - 5}
+      data-today={isToday}
+      data-over={isOver}
+      aria-label={`${day.format('D')} ${DAY_NAMES[index]}`}
+    >
+      <div style={{ display: 'flex', flexDirection: 'column', flex: 'none' }}>
+        <span className="day-num">{day.format('D')}</span>
+        <span style={{ fontSize: 14 }}>{DAY_NAMES[index]}</span>
+        {isToday && (
+          <span className="hand" style={{ fontSize: 18 }}>
+            bugün
+          </span>
+        )}
+      </div>
+      {empty ? (
+        <button
+          type="button"
+          className="day-empty"
+          style={{ flexDirection: 'row', justifyContent: 'flex-start', minHeight: 64 }}
+          onClick={() => onAddActivity(day)}
+          aria-label={`${DAY_NAMES[index]} gününe aktivite ekle`}
+        >
+          {index === 6 ? <CoffeeCup width={56} /> : <EmptyPage width={56} />}
+          <span className="hand" style={{ fontSize: 22, textAlign: 'left' }}>
+            {isOver ? 'Buraya bırak' : index === 6 ? 'Dinlenme günü, keyfine bak' : 'Hafta sonu, boş sayfa'}
+          </span>
+        </button>
+      ) : (
+        <>
+          <div className="weekend-items">
+            {loading ? (
+              <LoadingCards count={1} />
+            ) : (
+              items.map((item) => (
+                <DraggableCard key={item.id} item={item} categoryName={categoryName(item.categoryId)} onOpen={onOpen}>
+                  <ActivityCard item={item} categoryName={categoryName(item.categoryId)} inline />
+                </DraggableCard>
+              ))
+            )}
+            {!loading && (
+              <button type="button" className="day-add" style={{ padding: '0 14px', height: 44 }} onClick={() => onAddActivity(day)}>
+                <IconPlus size={14} stroke={2.4} aria-hidden />
+                Ekle
+              </button>
+            )}
+          </div>
+          <span className="hand" style={{ fontSize: 22, flex: 'none' }}>
+            hafta sonu
+          </span>
+        </>
+      )}
+    </section>
   )
 }

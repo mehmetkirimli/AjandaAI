@@ -1,4 +1,4 @@
-import { Kbd, useComputedColorScheme, useMantineColorScheme } from '@mantine/core'
+import { Kbd } from '@mantine/core'
 import { Spotlight, type SpotlightActionData, type SpotlightActionGroupData } from '@mantine/spotlight'
 import {
   IconArrowLeft,
@@ -11,21 +11,18 @@ import {
   IconCategory,
   IconUsers,
   IconLayoutKanban,
-  IconLayoutSidebar,
   IconLogout,
-  IconMoon,
+  IconPlug,
   IconPlus,
   IconRepeat,
   IconSearch,
   IconShieldLock,
-  IconSun,
   IconUser,
 } from '@tabler/icons-react'
 import { useMemo } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../auth/context'
 import { useActivityForm } from './activity-form/context'
-import { useLayout } from '../layout/context'
 import { runPageCommand, type PageCommand } from '../lib/commands'
 
 const ICON = 16
@@ -34,9 +31,6 @@ export function CommandPalette() {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
   const { pathname } = useLocation()
-  const { setColorScheme } = useMantineColorScheme()
-  const scheme = useComputedColorScheme('dark')
-  const { collapsed, toggleSidebar } = useLayout()
   const { openActivityForm } = useActivityForm()
 
   const actions = useMemo<SpotlightActionGroupData[]>(() => {
@@ -93,20 +87,6 @@ export function CommandPalette() {
         leftSection: <IconCalendar size={ICON} />,
         onClick: calendar('view:timeGridDay'),
       },
-      {
-        id: 'toggle-sidebar',
-        label: collapsed ? 'Kenar çubuğunu aç' : 'Kenar çubuğunu daralt',
-        leftSection: <IconLayoutSidebar size={ICON} />,
-        rightSection: <Kbd size="xs">[</Kbd>,
-        onClick: toggleSidebar,
-      },
-      {
-        id: 'toggle-theme',
-        label: 'Temayı değiştir',
-        description: scheme === 'dark' ? 'Açık temaya geç' : 'Koyu temaya geç',
-        leftSection: scheme === 'dark' ? <IconSun size={ICON} /> : <IconMoon size={ICON} />,
-        onClick: () => setColorScheme(scheme === 'dark' ? 'light' : 'dark'),
-      },
     ]
 
     const account: SpotlightActionData[] = [
@@ -126,7 +106,8 @@ export function CommandPalette() {
         ? [
             { id: 'admin-users', label: 'Kullanıcılar', description: 'Yönetim', leftSection: <IconUsers size={ICON} />, onClick: () => navigate('/admin/users') },
             { id: 'admin-categories', label: 'Kategoriler', description: 'Yönetim', leftSection: <IconCategory size={ICON} />, onClick: () => navigate('/admin/categories') },
-            { id: 'admin-activities', label: 'Tüm aktiviteler', description: 'Yönetim', leftSection: <IconShieldLock size={ICON} />, onClick: () => navigate('/admin/activities') },
+            { id: 'admin-activities', label: 'Moderasyon', description: 'Yönetim · tüm aktiviteler', leftSection: <IconShieldLock size={ICON} />, onClick: () => navigate('/admin/activities') },
+            { id: 'admin-integrations', label: 'Entegrasyonlar ve Yol Haritası', description: 'Yönetim · MCP', leftSection: <IconPlug size={ICON} />, onClick: () => navigate('/admin/integrations') },
           ]
         : []
 
@@ -136,7 +117,7 @@ export function CommandPalette() {
       ...(admin.length > 0 ? [{ group: 'Yönetim', actions: admin }] : []),
       { group: 'Hesap', actions: account },
     ]
-  }, [pathname, navigate, scheme, setColorScheme, user?.role, logout, collapsed, toggleSidebar, openActivityForm])
+  }, [pathname, navigate, user?.role, logout, openActivityForm])
 
   return (
     <Spotlight

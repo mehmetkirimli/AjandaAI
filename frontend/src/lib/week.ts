@@ -57,6 +57,13 @@ export function timeDative(minute: number): string {
   return minute % 10 === 0 ? TENS_SUFFIX[minute] : DIGIT_SUFFIX[minute % 10]
 }
 
+// Kart saati: "07:30 – 08:30", "Tüm gün" veya yalnızca başlangıç.
+export function activityTime(item: Pick<ActivityListItem, 'isAllDay' | 'start' | 'end'>, startOnly = false): string {
+  if (item.isAllDay) return 'Tüm gün'
+  const start = dayjs(item.start).format('HH:mm')
+  return startOnly ? start : `${start} – ${dayjs(item.end).format('HH:mm')}`
+}
+
 export function formatDuration(minutes: number): string {
   const h = Math.floor(minutes / 60)
   const m = minutes % 60

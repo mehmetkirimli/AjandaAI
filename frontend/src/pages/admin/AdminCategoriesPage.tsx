@@ -24,7 +24,7 @@ import { useState } from 'react'
 import { createCategory, fetchAllCategories, reorderCategories, updateCategory } from '../../api/admin'
 import type { Category } from '../../api/types'
 import { PageBody, PanelHeader } from '../../components/PanelHeader'
-import { categoryColor } from '../../lib/categoryColor'
+import { categoryStrip } from '../../lib/categoryColor'
 import { AdminState } from './AdminState'
 import { errorMessage, useConfirm } from './adminUtils'
 
@@ -95,7 +95,7 @@ function CategoryRow({
           height: 8,
           borderRadius: 2,
           flex: 'none',
-          background: categoryColor(category.id),
+          background: categoryStrip(category.id, category.name),
           opacity: category.isActive ? 1 : 0.4,
         }}
       />

@@ -26,7 +26,11 @@ import { PanelHeader } from '../components/PanelHeader'
 import { ActivityDrawer } from '../components/ActivityDrawer'
 import { useReschedule } from '../hooks/useReschedule'
 import { ActivityCard } from '../components/board/ActivityCard'
-import { DayColumn } from '../components/board/DayColumn'
+import { DayColumn, WeekendCard } from '../components/board/DayColumn'
+import { MobileBoard } from '../components/board/MobileBoard'
+import { useAuth } from '../auth/context'
+import { useLayout } from '../layout/context'
+import { greeting } from '../lib/greeting'
 import { columnCollision, columnKeyboardCoordinates } from '../components/board/keyboard'
 import { UNCATEGORIZED } from '../lib/categoryColor'
 import { dayKey, dayNameDative, moveToDay, sortActivities, startOfWeek, weekRangeLabel } from '../lib/week'
@@ -138,36 +142,59 @@ export function BoardPage() {
       end: day.hour(10).minute(0).second(0).millisecond(0).toISOString(),
     })
   }
-  const isCurrentWeek = weekKey === dayKey(startOfWeek(dayjs()))
+  const { isMobile } = useLayout()
+  const { user } = useAuth()
+  const hello = greeting(user?.displayName)
+  const goToday = () => setWeekStart(startOfWeek(dayjs()))
+  const goPrev = () => setWeekStart((w) => w.subtract(7, 'day'))
+  const goNext = () => setWeekStart((w) => w.add(7, 'day'))
+
+  const errorBox = activitiesQuery.isError && (
+    <Box px={isMobile ? 16 : 28} pt="sm">
+      <Alert color="orange" icon={<IconAlertCircle size={16} />} title="Aktiviteler yüklenemedi">
+        <Group justify="space-between">
+          <Text size="sm">
+            {activitiesQuery.error instanceof ApiError ? activitiesQuery.error.message : 'Beklenmeyen bir hata oluştu.'}
+          </Text>
+          <Button size="compact-sm" variant="glass" onClick={() => activitiesQuery.refetch()}>
+            Tekrar dene
+          </Button>
+        </Group>
+      </Alert>
+    </Box>
+  )
+
+  const dayProps = (day: Dayjs, i: number) => ({
+    day,
+    index: i,
+    items: byDay.get(dayKey(day)) ?? [],
+    categoryName,
+    loading,
+    onOpen: setOpenId,
+    isToday: dayKey(day) === todayKey,
+    onAddActivity: handleAddActivity,
+  })
 
   return (
     <>
-      <PanelHeader
-        title="Pano"
-        meta={weekRangeLabel(weekStart)}
-        view="timeGridWeek"
-        onViewChange={(v) => {
-          if (v !== 'timeGridWeek') runPageCommand(`view:${v}`, pathname, '/calendar', navigate)
-        }}
-        onToday={isCurrentWeek ? undefined : () => setWeekStart(startOfWeek(dayjs()))}
-        onPrev={() => setWeekStart((w) => w.subtract(7, 'day'))}
-        onNext={() => setWeekStart((w) => w.add(7, 'day'))}
-      />
-
-      {activitiesQuery.isError && (
-        <Box px="md" pt="sm">
-          <Alert color="red" icon={<IconAlertCircle size={16} />} title="Aktiviteler yüklenemedi">
-            <Group justify="space-between">
-              <Text size="sm">
-                {activitiesQuery.error instanceof ApiError ? activitiesQuery.error.message : 'Beklenmeyen bir hata oluştu.'}
-              </Text>
-              <Button size="compact-sm" variant="default" onClick={() => activitiesQuery.refetch()}>
-                Tekrar dene
-              </Button>
-            </Group>
-          </Alert>
-        </Box>
+      {!isMobile && (
+        <PanelHeader
+          title="Pano"
+          kicker={hello}
+          meta={weekRangeLabel(weekStart)}
+          view="timeGridWeek"
+          onViewChange={(v) => {
+            if (v !== 'timeGridWeek') runPageCommand(`view:${v}`, pathname, '/calendar', navigate)
+          }}
+          onToday={goToday}
+          onPrev={goPrev}
+          onNext={goNext}
+          prevLabel="Önceki hafta"
+          nextLabel="Sonraki hafta"
+        />
       )}
+
+      {!isMobile && errorBox}
 
       <DndContext
         sensors={sensors}
@@ -182,23 +209,37 @@ export function BoardPage() {
           },
         }}
       >
-        <Box style={{ flex: 1, minHeight: 0, overflowY: 'auto', padding: 'var(--mantine-spacing-md)' }}>
-          <Box className="board-grid">
-            {days.map((day, i) => (
-              <DayColumn
-                key={dayKey(day)}
-                day={day}
-                index={i}
-                items={byDay.get(dayKey(day)) ?? []}
-                categoryName={categoryName}
-                loading={loading}
-                onOpen={setOpenId}
-                isToday={dayKey(day) === todayKey}
-                onAddActivity={handleAddActivity}
-              />
-            ))}
-          </Box>
-        </Box>
+        {isMobile ? (
+          <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
+            <MobileBoard
+              greeting={hello}
+              days={days}
+              byDay={byDay}
+              todayKey={todayKey}
+              loading={loading}
+              categoryName={categoryName}
+              onOpen={setOpenId}
+              onAddActivity={handleAddActivity}
+              onPrev={goPrev}
+              onNext={goNext}
+              onToday={goToday}
+            />
+            {errorBox}
+          </div>
+        ) : (
+          <div className="page-body board-page">
+            <div className="board-week">
+              {days.slice(0, 5).map((day, i) => (
+                <DayColumn key={dayKey(day)} {...dayProps(day, i)} />
+              ))}
+            </div>
+            <div className="board-weekend">
+              {days.slice(5).map((day, i) => (
+                <WeekendCard key={dayKey(day)} {...dayProps(day, i + 5)} />
+              ))}
+            </div>
+          </div>
+        )}
         <DragOverlay dropAnimation={{ duration: 200 }}>
           {activeItem ? <ActivityCard item={activeItem} categoryName={categoryName(activeItem.categoryId)} overlay /> : null}
         </DragOverlay>

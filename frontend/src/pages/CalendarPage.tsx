@@ -25,14 +25,16 @@ import { PanelHeader } from '../components/PanelHeader'
 import { useActivityForm } from '../components/activity-form/context'
 import { ActivityDrawer } from '../components/ActivityDrawer'
 import { useReschedule } from '../hooks/useReschedule'
-import { categoryStrip } from '../lib/categoryColor'
+import { categoryTone } from '../lib/categoryColor'
 import { MONO } from '../components/board/ActivityCard'
 import { DAY_NAMES, formatDuration, moveToDay, timeDative } from '../lib/week'
 import './calendar.css'
 
 type ViewType = 'timeGridWeek' | 'dayGridMonth' | 'timeGridDay'
 
-const TIME_FORMAT = { hour: '2-digit', minute: '2-digit', hour12: false } as const
+const SHORT_DAY = ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz']
+
+const TIME_FORMAT ={ hour: '2-digit', minute: '2-digit', hour12: false } as const
 
 function dayName(d: dayjs.Dayjs): string {
   return DAY_NAMES[(d.day() + 6) % 7]
@@ -41,7 +43,7 @@ function dayName(d: dayjs.Dayjs): string {
 function renderEvent(arg: EventContentArg) {
   const isSeries = arg.event.extendedProps.seriesId != null
   const repeatIcon = isSeries ? <IconRepeat size={12} style={{ marginLeft: 4, opacity: 0.6, verticalAlign: 'middle' }} /> : null
-  const mono = { fontFamily: MONO, color: 'var(--app-text-muted)' }
+  const mono = { fontFamily: MONO, color: '#ffffff' }
   const month = arg.view.type === 'dayGridMonth'
   const ellipsis = { overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } as const
   if (month || arg.event.allDay) {
@@ -81,7 +83,6 @@ export default function CalendarPage() {
         : 'timeGridWeek',
   )
   const [viewType, setViewType] = useState<ViewType>(initialView)
-  const [showToday, setShowToday] = useState(false)
   const [openId, setOpenId] = useState<number | null>(null)
   const reschedule = useReschedule()
   const { openActivityForm } = useActivityForm()
@@ -103,9 +104,10 @@ export default function CalendarPage() {
     () =>
       (items ?? []).map((a) => {
         // Pano hapıyla aynı kural: iptal veya kategorisiz gri, aksi halde kategori rengi (shade 7).
-        const known = categoriesQuery.data?.some((c) => c.id === a.categoryId) ?? true
+        const category = categoriesQuery.data?.find((c) => c.id === a.categoryId)
+        const known = categoriesQuery.data ? category !== undefined : true
         const neutral = a.status === 'Cancelled' || !known
-        const fill = neutral ? 'var(--mantine-color-gray-6)' : categoryStrip(a.categoryId)
+        const tone = neutral ? 'neutral' : categoryTone(a.categoryId, category?.name)
         return {
           id: String(a.id),
           title: a.title,
@@ -114,9 +116,9 @@ export default function CalendarPage() {
           allDay: a.isAllDay,
           extendedProps: { seriesId: a.seriesId ?? null },
           // Pano kartıyla aynı dil: kategori renginin ~%12 tonu (opak, zeminle karışık) + 4 px tam renk sol çizgi.
-          backgroundColor: `color-mix(in srgb, ${fill} 12%, var(--mantine-color-body))`,
-          borderColor: fill,
-          textColor: 'var(--mantine-color-text)',
+          // Kategori gradyanı calendar.css'te sınıfla verilir (FullCalendar backgroundColor gradyan almaz).
+          classNames: [`ev-${tone}`],
+          textColor: '#ffffff',
           // Tüm gün etkinliğinin süresi uzatılmaz (IsAllDay değişimi F3'ün işi).
           durationEditable: !a.isAllDay,
         }
@@ -143,9 +145,6 @@ export default function CalendarPage() {
   const handleDatesSet = (info: DatesSetArg) => {
     setTitle(info.view.title)
     setViewType(info.view.type as ViewType)
-    // Bugünü içeren dönemdeyken "Bugün" butonu gizli (Pano ile aynı davranış).
-    const now = Date.now()
-    setShowToday(!(info.start.getTime() <= now && now < info.end.getTime()))
     const from = info.start.toISOString()
     const to = new Date(info.end.getTime() - 1).toISOString()
     setRange((r) => (r?.from === from && r?.to === to ? r : { from, to }))
@@ -211,24 +210,25 @@ export default function CalendarPage() {
     <>
       <PanelHeader
         title="Takvim"
+        kicker={viewType === 'timeGridDay' ? 'günün sayfası' : viewType === 'dayGridMonth' ? 'ayın defteri' : 'haftana kuşbakışı'}
         meta={title}
         view={viewType}
         onViewChange={(v) => api()?.changeView(v)}
-        onToday={showToday ? () => api()?.today() : undefined}
+        onToday={() => api()?.today()}
         onPrev={() => api()?.prev()}
         onNext={() => api()?.next()}
       >
-        {activitiesQuery.isFetching && <Loader size={12} aria-label="Yükleniyor" />}
+        {activitiesQuery.isFetching && <Loader size={16} color="var(--v-teal)" aria-label="Yükleniyor" />}
       </PanelHeader>
 
       {activitiesQuery.isError && (
-        <Box px="md" pt="sm">
-          <Alert color="red" icon={<IconAlertCircle size={16} />} title="Aktiviteler yüklenemedi">
+        <Box px={28} pt="sm">
+          <Alert color="orange" icon={<IconAlertCircle size={16} />} title="Aktiviteler yüklenemedi">
             <Group justify="space-between">
               <Text size="sm">
                 {activitiesQuery.error instanceof ApiError ? activitiesQuery.error.message : 'Beklenmeyen bir hata oluştu.'}
               </Text>
-              <Button size="compact-sm" variant="default" onClick={() => void activitiesQuery.refetch()}>
+              <Button size="compact-sm" variant="glass" onClick={() => void activitiesQuery.refetch()}>
                 Tekrar dene
               </Button>
             </Group>
@@ -236,7 +236,8 @@ export default function CalendarPage() {
         </Box>
       )}
 
-      <div style={{ flex: 1, minHeight: 0 }}>
+      <div className="cal-wrap">
+      <div className="cal-card">
       <FullCalendar
         ref={calendarRef}
         plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
@@ -254,6 +255,21 @@ export default function CalendarPage() {
         slotLabelFormat={TIME_FORMAT}
         eventTimeFormat={TIME_FORMAT}
         allDayText="Tüm gün"
+        // Taslak: "Pzt 2" başlıkları, dönem başlığı "Kasım 2026".
+        dayHeaderContent={(arg) => {
+          const d = dayjs(arg.date)
+          const short = SHORT_DAY[(d.day() + 6) % 7]
+          return arg.view.type === 'dayGridMonth' ? short : (
+            <>
+              {short}
+              <b style={{ fontSize: 18 }}>{d.date()}</b>
+            </>
+          )
+        }}
+        views={{
+          timeGridWeek: { titleFormat: { year: 'numeric', month: 'long' } },
+          timeGridDay: { titleFormat: { day: 'numeric', month: 'long', year: 'numeric', weekday: 'long' } },
+        }}
         dayMaxEvents
         eventDisplay="block"
         editable
@@ -272,6 +288,7 @@ export default function CalendarPage() {
           calendarRef.current?.getApi().view.type === 'dayGridMonth' || dropInfo.allDay === dragged?.allDay
         }
       />
+      </div>
       </div>
 
       <ActivityDrawer activityId={openId} onClose={() => setOpenId(null)} categoryName={categoryName} />

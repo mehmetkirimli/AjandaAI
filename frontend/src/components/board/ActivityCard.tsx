@@ -1,73 +1,75 @@
-import { Text } from '@mantine/core'
-import { IconGripVertical, IconRepeat } from '@tabler/icons-react'
-import dayjs from 'dayjs'
+import { IconRepeat } from '@tabler/icons-react'
 import type { CSSProperties } from 'react'
 import type { ActivityListItem } from '../../api/types'
-import { categoryStrip, UNCATEGORIZED } from '../../lib/categoryColor'
+import { categoryLook, UNCATEGORIZED } from '../../lib/categoryColor'
+import { activityTime } from '../../lib/week'
 
 interface Props {
   item: ActivityListItem
   categoryName: string
-  // Sürükleme katmanında (DragOverlay) kart hafif büyür ve gölge alır.
+  // Sürükleme katmanında (DragOverlay) kart hafifçe eğilir ve gölge alır.
   overlay?: boolean
+  // Hafta sonu kartında yatay, tek satır hap.
+  inline?: boolean
   style?: CSSProperties
 }
 
-export const MONO = 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace'
+export const MONO = "'JetBrains Mono Variable', 'JetBrains Mono', ui-monospace, monospace"
 
-// Linear tarzı kart: kategori renginin %10 tonu (hover %14), solda 4 px tam renk çizgi, üstte mikro ışık.
-// Başlık 13/500, saat monospace 12 px; kategori solunda renkli noktalı mini pill.
-export function ActivityCard({ item, categoryName, overlay = false, style }: Props) {
+// Özel Defter kartı: kategori gradyanı, ikon kutusu, beyaz başlık, monospace saat.
+export function ActivityCard({ item, categoryName, overlay = false, inline = false, style }: Props) {
   const neutral = item.status === 'Cancelled' || categoryName === UNCATEGORIZED
-  const color = neutral ? 'var(--mantine-color-gray-6)' : categoryStrip(item.categoryId)
-  const time = item.isAllDay
-    ? 'Tüm gün'
-    : `${dayjs(item.start).format('HH:mm')} – ${dayjs(item.end).format('HH:mm')}`
+  const look = categoryLook(item.categoryId, categoryName, neutral)
+  const Icon = look.icon
+  const time = activityTime(item, inline)
+  const cancelled = item.status === 'Cancelled'
 
   return (
     <div
-      className="activity-pill"
-      style={
-        {
-          '--cat': color,
-          boxShadow: `inset 4px 0 0 0 ${color}, inset 0 1px 0 0 rgba(255,255,255,0.08)${overlay ? ', var(--mantine-shadow-xl)' : ''}`,
-          transform: overlay ? 'scale(1.04)' : undefined,
-          cursor: overlay ? 'grabbing' : 'grab',
-          ...style,
-        } as CSSProperties
-      }
+      className="act-card"
+      data-overlay={overlay}
+      title={`${item.title} · ${activityTime(item)} · ${categoryName}`}
+      style={{
+        background: look.gradient,
+        boxShadow: look.shadow,
+        padding: inline ? '10px 12px' : undefined,
+        ...style,
+      }}
     >
-      <IconGripVertical size={14} style={{ flex: 'none', color: 'var(--app-icon-faint)' }} />
-      <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 3 }}>
-        <Text
-          fz={13}
-          fw={500}
-          lh={1.3}
-          lineClamp={2}
-          style={{ overflowWrap: 'anywhere' }}
-          title={`${item.title} - ${time} [${categoryName}]`}
-        >
-          {item.title}
-        </Text>
-        <Text fz={12} lh={1.2} style={{ fontFamily: MONO, color: 'var(--app-text-muted)' }}>
-          {time}
-        </Text>
-        <span className="cat-pill">
-          <span style={{ width: 6, height: 6, borderRadius: '50%', background: color, flex: 'none' }} />
-          <span className="cat-pill-label">{categoryName}</span>
+      {inline ? (
+        <Icon size={16} color="#fff" aria-hidden style={{ flex: 'none' }} />
+      ) : (
+        <span className="act-icon" aria-hidden>
+          <Icon size={16} color="#fff" />
         </span>
-      </div>
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, flex: 'none' }}>
-        {item.seriesId != null && (
-          <IconRepeat size={12} aria-label="Seri" style={{ color: 'var(--app-text-faint)' }} />
-        )}
-        {item.priority === 'High' && (
-          <span
-            aria-label="Yüksek öncelik"
-            style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--mantine-color-red-5)' }}
-          />
-        )}
-      </div>
+      )}
+      <span
+        style={{
+          display: 'flex',
+          flexDirection: inline ? 'row' : 'column',
+          alignItems: inline ? 'baseline' : undefined,
+          gap: inline ? 8 : 1,
+          minWidth: 0,
+          flex: 1,
+        }}
+      >
+        <span className="act-title" style={{ textDecoration: cancelled ? 'line-through' : undefined }}>
+          {item.title}
+        </span>
+        <span className="act-time">{time}</span>
+      </span>
+      {(item.seriesId != null || item.priority === 'High') && (
+        <span style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, flex: 'none' }}>
+          {item.seriesId != null && <IconRepeat size={13} aria-label="Seri" color="#fff" />}
+          {item.priority === 'High' && (
+            <span
+              aria-label="Yüksek öncelik"
+              title="Yüksek öncelik"
+              style={{ width: 8, height: 8, borderRadius: '50%', background: '#fff', boxShadow: '0 0 0 2px rgba(255,255,255,0.35)' }}
+            />
+          )}
+        </span>
+      )}
     </div>
   )
 }

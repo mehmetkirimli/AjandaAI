@@ -10,7 +10,7 @@ import { useState, type ReactNode } from 'react'
 import { deactivateActivity, deactivateSeries, fetchActivity } from '../api/activities'
 import { ApiError } from '../api/client'
 import { useAuth } from '../auth/context'
-import { categoryColor } from '../lib/categoryColor'
+import { categoryLook } from '../lib/categoryColor'
 import { frequencyLabel } from '../lib/recurrence'
 import { useActivityForm } from './activity-form/context'
 import { ReminderSection } from './ReminderSection'
@@ -119,7 +119,9 @@ export function ActivityDrawer({ activityId, onClose, categoryName }: Props) {
   })
 
   return (
-    <Drawer opened={activityId !== null} onClose={onClose} position="right" size={isMobile ? '100%' : 'md'} title="Aktivite detayı">
+    <Drawer opened={activityId !== null} onClose={onClose} position="right" size={isMobile ? '100%' : 'md'} title={<span className="hand" style={{ fontSize: 24 }}>sayfa detayı</span>}
+      styles={{ content: { background: 'var(--ink-card)' }, header: { background: 'var(--ink-card)' } }}
+    >
       {query.isPending && (
         <Stack gap="md" aria-busy="true" aria-label="Yükleniyor">
           <Skeleton h={24} w="70%" />
@@ -139,17 +141,13 @@ export function ActivityDrawer({ activityId, onClose, categoryName }: Props) {
       )}
       {a && (
         <Stack gap="md">
-          <Stack gap="xs">
-            <Title order={3}>{a.title}</Title>
-            <Group gap="xs">
-              <Badge variant="light" color={categoryColor(a.categoryId)}>
-                {categoryName(a.categoryId)}
-              </Badge>
-              <Badge variant="outline" color="gray">
-                {STATUS[a.status] ?? a.status}
-              </Badge>
-            </Group>
-          </Stack>
+          <DrawerHero
+            title={a.title}
+            categoryId={a.categoryId}
+            categoryName={categoryName(a.categoryId)}
+            status={STATUS[a.status] ?? a.status}
+            neutral={a.status === 'Cancelled'}
+          />
           <Divider />
           <Row icon={<IconCalendar size={16} />} label="Tarih ve saat">
             {formatRange(a.start, a.end, a.isAllDay)}
@@ -193,9 +191,9 @@ export function ActivityDrawer({ activityId, onClose, categoryName }: Props) {
           <Divider />
           <Group justify="space-between">
             <Button
-              size="compact-md"
-              variant="default"
-              leftSection={<IconPencil size={14} />}
+              variant="rainbow"
+              h={44}
+              leftSection={<IconPencil size={16} />}
               onClick={() => {
                 openActivityForm({ mode: 'edit', activity: a })
                 onClose()
@@ -204,10 +202,10 @@ export function ActivityDrawer({ activityId, onClose, categoryName }: Props) {
               Düzenle
             </Button>
             <Button
-              size="compact-md"
+              h={44}
               variant="subtle"
-              color="red"
-              leftSection={<IconArchive size={14} />}
+              color="orange"
+              leftSection={<IconArchive size={16} />}
               onClick={() => setConfirmOpen(true)}
             >
               Pasife al
@@ -242,5 +240,31 @@ export function ActivityDrawer({ activityId, onClose, categoryName }: Props) {
         </Group>
       </Modal>
     </Drawer>
+  )
+}
+
+// Üst kart: kategori gradyanı + ikon, beyaz başlık (Özel Defter aktivite kartının büyüğü).
+function DrawerHero({ title, categoryId, categoryName, status, neutral }: { title: string; categoryId: number; categoryName: string; status: string; neutral: boolean }) {
+  const look = categoryLook(categoryId, categoryName, neutral)
+  const Icon = look.icon
+  return (
+    <div style={{ borderRadius: 18, padding: 16, background: look.gradient, boxShadow: look.shadow, display: 'flex', gap: 12, alignItems: 'center' }}>
+      <span className="act-icon" style={{ width: 44, height: 44, borderRadius: 12 }} aria-hidden>
+        <Icon size={22} color="#fff" />
+      </span>
+      <div style={{ minWidth: 0, flex: 1 }}>
+        <Title order={3} style={{ overflowWrap: 'anywhere' }}>
+          {title}
+        </Title>
+        <Group gap={6} mt={4}>
+          <Badge variant="white" c="#1b1530">
+            {categoryName}
+          </Badge>
+          <Badge variant="outline" color="white">
+            {status}
+          </Badge>
+        </Group>
+      </div>
+    </div>
   )
 }

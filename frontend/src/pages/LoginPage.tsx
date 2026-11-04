@@ -1,6 +1,6 @@
 import { Alert, Anchor, Button, PasswordInput, Stack, Text, TextInput } from '@mantine/core'
 import { useForm } from '@mantine/form'
-import { IconAlertCircle, IconAt, IconCircleCheck, IconLock } from '@tabler/icons-react'
+import { IconAlertCircle, IconCircleCheck } from '@tabler/icons-react'
 import { useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { AuthLayout } from '../components/AuthLayout'
@@ -41,16 +41,16 @@ export function LoginPage() {
   })
 
   return (
-    <AuthLayout title="AjandaAI'ye giriş yap">
+    <AuthLayout title="Tekrar hoş geldin" subtitle="Defterini açmak için giriş yap.">
       <form onSubmit={submit} noValidate>
-        <Stack>
+        <Stack gap={18}>
           {info && (
             <Alert color="teal" icon={<IconCircleCheck size={18} />}>
               {info}
             </Alert>
           )}
           {errors.length > 0 && (
-            <Alert color="red" icon={<IconAlertCircle size={18} />}>
+            <Alert color="orange" icon={<IconAlertCircle size={18} />}>
               {errors.map((m) => (
                 <div key={m}>{m}</div>
               ))}
@@ -59,21 +59,19 @@ export function LoginPage() {
           <TextInput
             label="E-posta"
             placeholder="ornek@mail.com"
-            leftSection={<IconAt size={16} />}
             autoComplete="email"
             {...form.getInputProps('email')}
           />
           <PasswordInput
             label="Şifre"
             placeholder="Şifreniz"
-            leftSection={<IconLock size={16} />}
             autoComplete="current-password"
             {...form.getInputProps('password')}
           />
-          <Button type="submit" loading={submitting} fullWidth size="md" mt="xs">
-            Giriş yap
+          <Button type="submit" variant="rainbow" loading={submitting} fullWidth h={52} radius={14} fz={16} mt="xs">
+            Defterimi aç
           </Button>
-          <Text ta="center" size="sm" c="dimmed">
+          <Text ta="center" fz={14}>
             Hesabın yok mu?{' '}
             <Anchor component={Link} to="/register" fw={600}>
               Kayıt ol

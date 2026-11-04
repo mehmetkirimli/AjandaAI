@@ -1,11 +1,9 @@
 import { createContext, useContext } from 'react'
 
 export interface LayoutState {
-  // Masaüstünde sidebar daraltılmış mı.
-  collapsed: boolean
-  toggleSidebar: () => void
-  // <900 px: sidebar drawer olarak açılır.
+  // Mantine `sm` altı (<768 px): sidebar yerine alt bar + yüzen "+" butonu.
   isMobile: boolean
+  // Mobilde tam menü (yönetim, hesap) alt bardaki "Menü" ile drawer olarak açılır.
   openMobileNav: () => void
 }
 

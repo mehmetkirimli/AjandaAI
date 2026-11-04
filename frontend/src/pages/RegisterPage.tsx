@@ -1,6 +1,6 @@
 import { Alert, Anchor, Button, PasswordInput, Select, Stack, Text, TextInput } from '@mantine/core'
 import { useForm } from '@mantine/form'
-import { IconAlertCircle, IconAt, IconLock, IconUser, IconWorld } from '@tabler/icons-react'
+import { IconAlertCircle } from '@tabler/icons-react'
 import { useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { register } from '../api/auth'
@@ -45,11 +45,11 @@ export function RegisterPage() {
   })
 
   return (
-    <AuthLayout title="Hesap oluştur" subtitle="E-postana bir doğrulama bağlantısı göndereceğiz.">
+    <AuthLayout title="Yeni bir defter aç" subtitle="E-postana bir doğrulama bağlantısı göndereceğiz.">
       <form onSubmit={submit} noValidate>
-        <Stack>
+        <Stack gap={16}>
           {errors.length > 0 && (
-            <Alert color="red" icon={<IconAlertCircle size={18} />}>
+            <Alert color="orange" icon={<IconAlertCircle size={18} />}>
               {errors.map((m) => (
                 <div key={m}>{m}</div>
               ))}
@@ -58,14 +58,12 @@ export function RegisterPage() {
           <TextInput
             label="E-posta"
             placeholder="ornek@mail.com"
-            leftSection={<IconAt size={16} />}
             autoComplete="email"
             {...form.getInputProps('email')}
           />
           <TextInput
             label="Görünen ad"
             placeholder="Adınız"
-            leftSection={<IconUser size={16} />}
             autoComplete="name"
             {...form.getInputProps('displayName')}
           />
@@ -74,20 +72,18 @@ export function RegisterPage() {
             data={zones}
             searchable
             allowDeselect={false}
-            leftSection={<IconWorld size={16} />}
             {...form.getInputProps('timeZoneId')}
           />
           <PasswordInput
             label="Şifre"
             description="En az 10 karakter. Uzun bir cümle kullanabilirsiniz."
-            leftSection={<IconLock size={16} />}
             autoComplete="new-password"
             {...form.getInputProps('password')}
           />
-          <Button type="submit" loading={submitting} fullWidth size="md" mt="xs">
+          <Button type="submit" variant="rainbow" loading={submitting} fullWidth h={52} radius={14} fz={16} mt="xs">
             Kayıt ol
           </Button>
-          <Text ta="center" size="sm" c="dimmed">
+          <Text ta="center" fz={14}>
             Zaten hesabın var mı?{' '}
             <Anchor component={Link} to="/login" fw={600}>
               Giriş yap
