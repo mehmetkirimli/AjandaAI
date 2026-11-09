@@ -158,3 +158,8 @@ export async function request<T>(path: string, options: RequestOptions = {}): Pr
   }
   return (envelope?.data ?? undefined) as T
 }
+
+// MCP komutu gibi kullanıcıya gösterilen tam adresler için (LAN modunda göreli taban → origin).
+export function apiBaseUrl(): string {
+  return (BASE_URL || window.location.origin).replace(/\/+$/, '')
+}

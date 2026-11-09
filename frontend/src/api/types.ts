@@ -198,3 +198,23 @@ export interface SeriesCreated {
   firstStart: string
   lastStart: string
 }
+
+// Kişisel erişim anahtarı (ADR 0024 §1). Düz anahtar yalnızca oluşturma yanıtında gelir.
+export interface PersonalAccessToken {
+  id: number
+  name: string
+  prefix: string
+  createdAt: string
+  expiresAt: string
+  lastUsedAt: string | null
+  revokedAt: string | null
+}
+
+export interface PersonalAccessTokenCreated {
+  id: number
+  name: string
+  prefix: string
+  token: string
+  createdAt: string
+  expiresAt: string
+}

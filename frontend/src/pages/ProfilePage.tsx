@@ -7,6 +7,7 @@ import { useMemo, useState, type ReactNode } from 'react'
 import { changePassword, updateProfile } from '../api/auth'
 import { useAuth } from '../auth/context'
 import { NoteAndPencil } from '../components/illustrations'
+import { ClaudeConnectionCard } from './ClaudeConnectionCard'
 import './profile.css'
 import { splitErrors } from '../lib/formErrors'
 import { timeZoneOptions } from '../lib/timeZones'
@@ -208,6 +209,7 @@ export function ProfilePage() {
         <ProfileInfoCard key={`${user.displayName}|${user.timeZoneId}`} />
         <PasswordCard />
       </SimpleGrid>
+      <ClaudeConnectionCard />
     </div>
   )
 }

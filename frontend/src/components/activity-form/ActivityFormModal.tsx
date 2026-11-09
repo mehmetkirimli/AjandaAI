@@ -142,6 +142,7 @@ function initialValues(request: FormRequest): Values {
 const ERROR_PREFIXES = {
   title: ['başlık'],
   categoryId: ['kategori'],
+  start: ['başlangıç'],
   end: ['bitiş zamanı'],
   estimatedBudget: ['tahmini bütçe'],
   rating: ['puan'],
@@ -321,6 +322,8 @@ export function ActivityFormModal({ request, onClose }: Props) {
 
   const requestClose = () => (form.isDirty() ? setConfirmClose(true) : onClose())
   const endError = form.errors.endDate ?? form.errors.end
+  // ADR 0024 §2b: başlangıç en fazla 30 gün öncesi olabilir (mevcut eski kayıt kendi tarihini korur).
+  const minStartDate = dayjs().subtract(30, 'day').format(DATE)
 
   return (
     <>
@@ -506,6 +509,7 @@ export function ActivityFormModal({ request, onClose }: Props) {
                   valueFormat="D MMM YYYY"
                   aria-label="Başlangıç tarihi"
                   value={v.startDate || null}
+                  minDate={v.startDate && v.startDate < minStartDate ? v.startDate : minStartDate}
                   onChange={(d) => d && setStart(d, v.startTime)}
                 />
                 {!v.isAllDay && (
@@ -526,6 +530,11 @@ export function ActivityFormModal({ request, onClose }: Props) {
                   onChange={(e) => form.setFieldValue('isAllDay', e.currentTarget.checked)}
                 />
               </Group>
+              {form.errors.start && (
+                <Text size="xs" c="var(--l-orange)">
+                  {form.errors.start}
+                </Text>
+              )}
               {!(v.repeat && v.isAllDay) && (
               <Group gap="xs" wrap="wrap">
                 <Text fz={13} fw={600} w={84}>
