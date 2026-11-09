@@ -12,7 +12,7 @@ Son güncelleme: 2026-11-09
 | v1: CRUD, sayfalama, log altyapısı | ✅ Bitti | ADR 0001–0016 |
 | v2.1: Authentication | ✅ Bitti | ADR 0018, 0019, 0020 |
 | v2.2: Frontend (web) | ✅ Bitti | ADR 0021 |
-| **v2.3a: MCP sunucusu (Claude Code)** | ✅ Bitti (2026-11-09, [ekranlar](screenshots/mcp/)), ürün sahibinin Claude Code denemesi bekliyor | ADR 0024 |
+| **v2.3a: MCP sunucusu (Claude Code)** | ✅ Bitti (2026-11-09, [ekranlar](screenshots/mcp/)), ürün sahibi Claude Code ile denedi ✅ | ADR 0024 |
 | **v2.3b: Hazır MCP'ler** (MongoDB log, hava, harita, server-memory) | ⏳ **Sıradaki** | ADR 0024 §3, §5 |
 | v2.4: Bildirim altyapısı (SMTP, hatırlatma gönderimi, temizlik işleri) | Ertelendi | — |
 | v2.5: Davet sistemi / ortak aktivite | Ertelendi | — |
@@ -36,6 +36,7 @@ Kritik yol: F0 → F1 → F2 → F3 → F4 → F5. Sıralı çalışılır (ADR 
 | **F4** Admin (ADR 0023) ✅ (2026-10-12, [ekranlar](screenshots/f4/)) | db-agent → catalog-agent → web-agent | Yalnızca Admin'de görünen menü: kullanıcılar (liste, ekle, rol, pasife al), kategoriler, aktivite üstverisi + moderasyon | User rolünde admin menüsü yok; Admin rolünde kullanıcıyı pasife alınca listede pasif görünür |
 | **F5** Cila + review + demo — cila ✅ (2026-10-21, [ekranlar](screenshots/f5/)), demo ✅ (2026-11-04, ürün sahibi kendi cihazında + telefonda LAN modu) | web-agent + review agent | Uzun kategori adı açılır listede taşıyor (F4 notu); boş durumlar, yükleniyor/hata ekranları, küçük ekran uyumu; final review; demo turu | Ekran görüntüleriyle uçtan uca demo |
 | **F6** "Özel Defter" görsel kimliği (ADR 0021 Karar 5e) ✅ lider kabulü (2026-11-04, [ekranlar](screenshots/f6/)), ürün sahibi onayı ✅ (2026-11-09) | web-agent | Onaylı taslaklar `docs/design/ozel-defter/` birebir: palet + beyaz metin, logo, defter dokusu (spiral, çizgili sayfa), illüstrasyonlar, kategori ikonları, geçişler; masaüstü hep açık sidebar, mobil alt bar; Yönetim → Entegrasyonlar ve Yol Haritası (sabit liste) | Tüm ekranlar taslakla aynı (masaüstü + mobil ekran görüntüsü); işlevler değişmeden çalışır |
+| **F7** "Eskiz Defter" görsel dili (ADR 0021 Karar 5f) ✅ lider kabulü (2026-11-09, [ekranlar](screenshots/f7/)), ürün sahibi onayı bekliyor | web-agent | Onaylı taslaklar `docs/design/eskiz/`: açık nötr gri kâğıt + noktalı ızgara, grafit, Kalam başlık, kartlarda spiral tel, kategori = solgun sol çizgi; TÜM ekranlar (giriş/kayıt, pano, mobil, takvim, form, profil + Claude kartı, admin, entegrasyonlar, 404, ⌘K, drawer) | Tüm ekranlar taslak diliyle (1280 + 390 ekran görüntüsü); işlevler değişmez |
 
 ## v2.3 MCP — taslak (ADR yazılacak)
 

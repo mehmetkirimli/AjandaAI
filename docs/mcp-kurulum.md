@@ -41,6 +41,45 @@ Sınırlar: anahtar başına dakikada 30 çağrı; başlangıç en fazla 30 gün
 - Claude'un okuduğu aktiviteler sohbetin parçası olur (Anthropic modeline gider); şirket hesabıyla
   kullanıyorsan şirket hesabının sohbetlerinden geçer.
 
-## v2.3b: hazır MCP'ler (planlandı)
-MongoDB (log analizi, salt okunur kullanıcı), hava durumu, harita (ücretsiz seçenekle başla), `server-memory`
-(Claude Desktop'ta planlama tercihleri). Kurulum adımları seçildikçe buraya eklenecek.
+## v2.3b: hazır MCP'ler (ADR 0024 §3, §5)
+Kod yazılmaz; her biri tek komutla Claude Code'a eklenir. Komutları **kendin** çalıştır (Claude kendi ayarını
+değiştiremez). `--scope user`: tüm projelerde geçerli, ayar yalnızca senin makinende. Windows'ta `npx` tabanlı
+sunucular `cmd /c` ile sarılır. Hepsi ücretsiz, anahtar istemez. Gereken: Node 22+ (makinede 24 var).
+
+| Sunucu | Ne işe yarar | Yayıncı |
+|---|---|---|
+| `mongodb-mcp-server` | Log analizi (yalnızca okuma) | MongoDB (resmi) |
+| `@modelcontextprotocol/server-memory` | Planlama tercihlerini hatırlar | MCP (resmi) |
+| `open-meteo-mcp-server` | Hava durumu (Open-Meteo, anahtarsız) | Topluluk (cmer81, MIT) |
+| `@cyanheads/openstreetmap-mcp-server` | Yer arama, adres ↔ konum (OpenStreetMap) | Topluluk (cyanheads, Apache-2.0) |
+
+```
+claude mcp add mongodb-loglar --scope user --env MDB_MCP_CONNECTION_STRING=mongodb://localhost:27018/ajandaai_logs --env MDB_MCP_READ_ONLY=true -- cmd /c npx -y mongodb-mcp-server@3.2.2
+
+claude mcp add hafiza --scope user --env MEMORY_FILE_PATH=C:\Users\mehmet.kirimli\.ajandaai\hafiza.jsonl -- cmd /c npx -y @modelcontextprotocol/server-memory
+
+claude mcp add hava --scope user -- cmd /c npx -y -p open-meteo-mcp-server open-meteo-mcp-server
+
+claude mcp add harita --scope user -- cmd /c npx -y @cyanheads/openstreetmap-mcp-server@0.7.1
+```
+Kontrol: `claude mcp list` → dördü de `Connected`. Önce `C:\Users\mehmet.kirimli\.ajandaai` klasörünü oluştur
+(hafıza dosyası orada durur; npx önbelleğinde durursa güncellemede silinir).
+
+**Bilinçli sınırlar**
+- **Mongo:** veritabanında şifre yok; salt okunurluk MCP bayrağıyla (`MDB_MCP_READ_ONLY`) sağlanır. Canlıya
+  çıkışta Mongo'ya kimlik doğrulama + salt okunur kullanıcı gelir. Loglarda maskeli kişisel veri var (ADR 0016).
+- **Harita:** yer arama ve adres var, **yol süresi/rota YOK** (ücretsiz ve güvenilir rota sunucusu bulunamadı).
+  OpenStreetMap kuralı: saniyede en fazla 1 istek, toplu sorgu yasak; normal sohbet kullanımında sorun değil.
+- **Hava ve harita topluluk yapımı:** harita sürümü sabit (`@0.7.1`); hava sunucusunun yayınlanmış sürümü yok,
+  her açılışta en yenisi gelir — şüphede kaldırılır (`claude mcp remove hava`).
+
+**Deneme cümleleri**
+- "Bugün kaç hata logu var, en sık hangisi?" · "Dün kaç başarısız giriş denemesi oldu?" · "En yavaş 5 istek hangisi?"
+- "Cumartesi İstanbul'da hava nasıl? Güzelse sabah 10'a yürüyüş ekle."
+- "Medicana Çamlıca'nın adresi ne?"
+- "Sporu sabah yapmayı sevdiğimi hatırla." → sonra "Bu hafta spor için uygun saat bul."
+
+**Log yapısı (Mongo `ajandaai_logs.logs`)**: `Timestamp`, `Level` (Information/Warning/Error/Debug),
+`MessageTemplate`, `RenderedMessage`, `Properties` (`RequestPath`, `StatusCode`, `Elapsed`, `UserId`,
+`ClientIp`, `RequestId`, `SourceContext`...). Her HTTP isteği bir Information kaydıdır; auth olayları
+(kayıt, giriş, hatalı giriş, oturum yenileme) ve iş olayları ayrı mesajlarla yazılır.

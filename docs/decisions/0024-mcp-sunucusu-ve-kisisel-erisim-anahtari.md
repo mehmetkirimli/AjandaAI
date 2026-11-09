@@ -62,6 +62,14 @@ Claude bu sunucuları bizim araçlarla kendisi birleştirir ("Cumartesi hava gü
 - **MongoDB (log analizi):** resmi MongoDB MCP; **salt okunur** ayrı veritabanı kullanıcısıyla.
   Küçük ölçekte Elastic yerine yeterli.
 - **Hava durumu, harita:** hazır sunucular; seçim v2.3b'de yapılır.
+- **Seçim (2026-11-09, ürün sahibi onayı):** `mongodb-mcp-server` (resmi, `MDB_MCP_READ_ONLY=true`),
+  `@modelcontextprotocol/server-memory` (resmi), `open-meteo-mcp-server` (topluluk, anahtarsız),
+  `@cyanheads/openstreetmap-mcp-server@0.7.1` (topluluk, anahtarsız; rota/süre YOK). Google Maps resmi sunucusu
+  arşivlendiği ve faturalandırma istediği için seçilmedi. Mongo'da kimlik doğrulama olmadığından salt okunurluk
+  yalnızca MCP bayrağıyladır (geliştirme için kabul; canlıda DB kullanıcısı).
+- **Ertelenen:** güncelleme/silme aracı — ürün sahibi Claude'dan "kitap okumayı 10:00'a kaydır" istedi; araç
+  olmadığı için Claude yeni kayıt ekleyip eskisini silmeyi kullanıcıya bıraktı. Güvenli bir `aktivite_tasi`
+  (yalnızca zaman değişikliği, 30 gün kuralıyla) sonraki tur adayıdır.
 - Kurulum adımları `docs/mcp-kurulum.md`'de tutulur.
 
 ### 4. Kapsam dışı (bilinçli)

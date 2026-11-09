@@ -130,6 +130,26 @@ Arayüz dili Türkçe. Backend'in hata mesajları (zaten Türkçe) form alanlar�
   MCP/yapay zeka listesi. Liste frontend'de SABİT bir veri dosyasıdır (veritabanı yok); her aşama bitince lider
   `docs/roadmap.md` ile birlikte günceller.
 
+### 5f. "Eskiz Defter" görsel dili (2026-11-09, ürün sahibi geri bildirimi) — 5e'nin GÖRSEL katmanının yerine geçer
+- **Neden:** 5e'nin koyu zemin + gradyanları birkaç gün sonra "fazla yoğun" geldi. İstenen: sade, yeni alınmış
+  eskiz / method defter, kara kalem hissi. 5e'nin GEREKÇESİ (defter hissi, özen) ve yerleşimi (hep açık sidebar,
+  mobil alt bar + ortada "+", Entegrasyonlar sayfası, illüstrasyonlu boş durumlar) AYNEN kalır; değişen görünümdür.
+- **Referans:** onaylı taslaklar `docs/design/eskiz/Eskiz-Pano.dc.html` ve `Eskiz-Mobil.dc.html`.
+- **Renk (açık tema, nötr gri — sarımtırak DEĞİL):** zemin #f2f1ed + noktalı ızgara (rgba(60,60,58,.2), 22px),
+  kart #fcfcfa, sidebar/başlık #e4e3df / #e9e8e4, metin ve çizgi grafit #2b2a27, ikincil #5c5b56 / #6b6a65 /
+  #8a8984, kesikli çizgi #bdbcb6. Gradyan, parlama, neon YOK. Ana eylem: grafit dolu buton, açık metin.
+  Seçili menü: gri fosforlu kalem çizgisi (rgba(120,120,115,.22)).
+- **Kategori rengi:** yalnızca 3px sol çizgi, solgun tonlar — adaçayı #6f8f6a, petrol #5e8a8a, lavanta #7d7aa6,
+  terrakota #b07a5a. Kart dolgusu kategori renginde DEĞİL.
+- **Tipografi:** Kalam (başlık, gün numarası, el yazısı notlar), Inter (gövde), JetBrains Mono (saat).
+- **Defter dokusu:** her gün kartının üst kenarında koyu metal SPİRAL tel halkalar (delikten geçip kenarın üstünden
+  kıvrılan; ürün sahibinin en sevdiği öğe), hafif düzensiz kalem çerçeve (1.6px grafit) + 3px ofset gölge,
+  bugün = daire içinde tarih, tamamlanan = üstü çizili + ✓, el çizimi alt çizgi başlıklarda.
+- **Pano:** hafta sonu kartları hafta içinin yarısı kadar değil, belirgin yükseklikte (taslakta 256px), içerik
+  alt alta.
+- İkonlar: Tabler, çizgisel, grafit. İllüstrasyonlar tek renk kalem çizimi (5e'nin renkli SVG'leri grafite çevrilir).
+- Uygulama tek tema (açık); 5e'deki `forceColorScheme="dark"` açığa döner.
+
 ### 6. Klasör ayrımı: `backend/` + `frontend/` (2026-10-10)
 ```
 backend/     AjandaAI.sln, src/, tests/   (.NET)
