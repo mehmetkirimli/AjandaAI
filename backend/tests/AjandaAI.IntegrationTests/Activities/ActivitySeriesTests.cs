@@ -85,10 +85,10 @@ public class ActivitySeriesTests : AuthTestBase, IClassFixture<AuthApiFactory>
     public async Task SERIES_01_Daily_six_months_creates_183_activities_in_one_series()
     {
         var user = await NewUserAsync();
-        var start = new DateTimeOffset(2026, 10, 12, 21, 0, 0, Istanbul);
+        var start = new DateTimeOffset(2027, 10, 12, 21, 0, 0, Istanbul);
 
         var response = await SendAsync(HttpMethod.Post, "/api/activities/series", user.Token,
-            SeriesBody(start, "Daily", "2027-04-12"));
+            SeriesBody(start, "Daily", "2028-04-11"));
 
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
         var data = await ReadDataAsync(response);
@@ -108,11 +108,11 @@ public class ActivitySeriesTests : AuthTestBase, IClassFixture<AuthApiFactory>
 
         // SERIES-12
         Assert.Equal(start, data.GetProperty("firstStart").GetDateTimeOffset());
-        Assert.Equal(new DateTimeOffset(2027, 4, 12, 21, 0, 0, Istanbul), data.GetProperty("lastStart").GetDateTimeOffset());
+        Assert.Equal(new DateTimeOffset(2028, 4, 11, 21, 0, 0, Istanbul), data.GetProperty("lastStart").GetDateTimeOffset());
         var series = await Factory.WithDbAsync(db => db.ActivitySeries.AsNoTracking().SingleAsync(s => s.Id == seriesId));
         Assert.Equal(user.Id, series.UserId);
-        Assert.Equal(new DateOnly(2026, 10, 12), series.StartDate);
-        Assert.Equal(new DateOnly(2027, 4, 12), series.EndDate);
+        Assert.Equal(new DateOnly(2027, 10, 12), series.StartDate);
+        Assert.Equal(new DateOnly(2028, 4, 11), series.EndDate);
     }
 
     // SERIES-05

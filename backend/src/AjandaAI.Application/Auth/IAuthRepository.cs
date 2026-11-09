@@ -35,4 +35,24 @@ public interface IAuthRepository
 
     /// <summary>Kullanıcının revoke edilmemiş tüm refresh token'larını revoke eder.</summary>
     Task RevokeAllRefreshTokensAsync(int userId, DateTimeOffset now, CancellationToken cancellationToken = default);
+
+    // Kişisel erişim anahtarları (ADR 0024 §1).
+
+    /// <summary>İptal edilmemiş ve süresi dolmamış anahtar sayısı.</summary>
+    Task<int> CountActivePersonalAccessTokensAsync(int userId, DateTimeOffset now, CancellationToken cancellationToken = default);
+
+    Task AddPersonalAccessTokenAsync(PersonalAccessToken token, CancellationToken cancellationToken = default);
+
+    /// <summary>Kullanıcının tüm anahtarları (en yeni önce), izlenmez.</summary>
+    Task<List<PersonalAccessToken>> GetPersonalAccessTokensAsync(int userId, CancellationToken cancellationToken = default);
+
+    /// <summary>Id ve sahibe göre anahtar; başkasınınsa null. İzlenmez.</summary>
+    Task<PersonalAccessToken?> GetPersonalAccessTokenAsync(int id, int userId, CancellationToken cancellationToken = default);
+
+    /// <summary>Hash'e göre anahtar; User dahil, izlenmez.</summary>
+    Task<PersonalAccessToken?> GetPersonalAccessTokenByHashAsync(string tokenHash, CancellationToken cancellationToken = default);
+
+    Task RevokePersonalAccessTokenAsync(int id, int userId, DateTimeOffset now, CancellationToken cancellationToken = default);
+
+    Task TouchPersonalAccessTokenAsync(int id, DateTimeOffset now, CancellationToken cancellationToken = default);
 }

@@ -17,5 +17,7 @@ public class AuthModule : IModule
         services.AddScoped<ProfileService>();
         services.AddScoped<IValidator<ProfileUpdateDto>, ProfileUpdateDtoValidator>();
         services.AddScoped<IValidator<RegisterDto>, RegisterDtoValidator>();
+        services.AddScoped<PersonalAccessTokenService>();
+        services.AddScoped<IValidator<PersonalAccessTokenCreateDto>, PersonalAccessTokenCreateDtoValidator>();
     }
 }

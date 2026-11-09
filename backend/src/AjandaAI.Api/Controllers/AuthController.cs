@@ -19,12 +19,30 @@ public class AuthController : ControllerBase
 {
     private readonly AuthService _service;
     private readonly ProfileService _profile;
+    private readonly PersonalAccessTokenService _pats;
 
-    public AuthController(AuthService service, ProfileService profile)
+    public AuthController(AuthService service, ProfileService profile, PersonalAccessTokenService pats)
     {
         _service = service;
         _profile = profile;
+        _pats = pats;
     }
+
+    // Kişisel erişim anahtarları (ADR 0024 §1). Normal JWT oturumu gerekir; PAT ile çağrılamaz (MCP-05).
+    [Authorize]
+    [HttpGet("tokens")]
+    public Task<ApiResponse<List<PersonalAccessTokenDto>>> ListTokensAsync(CancellationToken cancellationToken) =>
+        _pats.ListAsync(cancellationToken);
+
+    [Authorize]
+    [HttpPost("tokens")]
+    public Task<ApiResponse<PersonalAccessTokenCreatedDto>> CreateTokenAsync(PersonalAccessTokenCreateDto dto, CancellationToken cancellationToken) =>
+        _pats.CreateAsync(dto, cancellationToken);
+
+    [Authorize]
+    [HttpDelete("tokens/{id:int}")]
+    public Task<ApiResponse<bool>> RevokeTokenAsync(int id, CancellationToken cancellationToken) =>
+        _pats.RevokeAsync(id, cancellationToken);
 
     [AllowAnonymous]
     [HttpPost("register")]

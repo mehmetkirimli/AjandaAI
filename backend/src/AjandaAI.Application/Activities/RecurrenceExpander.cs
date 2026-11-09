@@ -87,6 +87,10 @@ public static class RecurrenceExpander
     public static DateTimeOffset StartOfLocalDayUtc(DateOnly date, TimeZoneInfo zone) =>
         ToUtc(date.ToDateTime(TimeOnly.MinValue), zone);
 
+    /// <summary>Yerel gün + saati UTC ana çevirir (DST kuralları ToUtc ile aynı).</summary>
+    public static DateTimeOffset LocalToUtc(DateOnly date, TimeOnly time, TimeZoneInfo zone) =>
+        ToUtc(date.ToDateTime(time), zone);
+
     private static DateTimeOffset ToUtc(DateTime local, TimeZoneInfo zone)
     {
         local = DateTime.SpecifyKind(local, DateTimeKind.Unspecified);

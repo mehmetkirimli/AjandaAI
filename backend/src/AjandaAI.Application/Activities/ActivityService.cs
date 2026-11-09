@@ -4,6 +4,7 @@
 // Sahip her zaman ICurrentUser'dır; sahiplik koşulu repository sorgusundadır (ADR 0018), serviste ayrı if yoktur.
 // Başkasının kaydı "yok" ile aynı 404'tür; yalnızca bu hata yolunda ExistsAsync ile yetkisiz deneme loglanır.
 // Liste yalnızca kullanıcının aktiflerini filtreli ve sayfalı döner; Delete gerçek silme yapmaz, IsActive = false yapar.
+// Geçmiş tarih kuralı (PastStartRule, ADR 0024 §2b) burada uygulanır; "şimdi" TimeProvider'dan gelir.
 
 using AjandaAI.Application.Activities.Dtos;
 using AjandaAI.Application.Common;
@@ -23,6 +24,7 @@ public class ActivityService
     private readonly IValidator<ActivitySeriesCreateDto> _seriesValidator;
     private readonly IUserRepository _users;
     private readonly ICurrentUser _currentUser;
+    private readonly TimeProvider _time;
     private readonly ILogger<ActivityService> _logger;
 
     public ActivityService(
@@ -33,8 +35,10 @@ public class ActivityService
         IValidator<ActivitySeriesCreateDto> seriesValidator,
         IUserRepository users,
         ICurrentUser currentUser,
+        TimeProvider time,
         ILogger<ActivityService> logger)
     {
+        _time = time;
         _repository = repository;
         _currentUser = currentUser;
         _createValidator = createValidator;
@@ -77,7 +81,13 @@ public class ActivityService
             return ApiResponse<ActivityDetailDto>.Fail("Doğrulama hatası.", errors);
         }
 
-        var now = DateTimeOffset.UtcNow;
+        if (!await IsStartAllowedAsync(userId, dto.Start, cancellationToken))
+        {
+            _logger.LogWarning("Aktivite oluşturma doğrulama hatası {UserId} {@Errors}", userId, new[] { PastStartRule.Message });
+            return ApiResponse<ActivityDetailDto>.Fail("Doğrulama hatası.", new List<string> { PastStartRule.Message });
+        }
+
+        var now = _time.GetUtcNow();
         var activity = new Activity
         {
             UserId = userId,
@@ -102,6 +112,12 @@ public class ActivityService
         }
 
         var zone = await GetUserZoneAsync(userId, cancellationToken);
+        var now = _time.GetUtcNow();
+        if (!PastStartRule.IsAllowed(dto.Start, now, zone))
+        {
+            return SeriesFail(userId, new List<string> { PastStartRule.Message });
+        }
+
         var recurrence = dto.Recurrence!;
         var mask = recurrence.Frequency == Domain.Enums.RecurrenceFrequency.Weekly
             ? RecurrenceExpander.ToMask(recurrence.DaysOfWeek!)
@@ -123,7 +139,6 @@ public class ActivityService
             return SeriesFail(userId, new List<string> { "Bu kuralla hiç aktivite oluşmuyor." });
         }
 
-        var now = DateTimeOffset.UtcNow;
         var occurrences = expansion.Occurrences;
         var series = new ActivitySeries
         {
@@ -182,7 +197,7 @@ public class ActivityService
         var zone = await GetUserZoneAsync(userId, cancellationToken);
         var fromUtc = RecurrenceExpander.StartOfLocalDayUtc(from.Value, zone);
 
-        var count = await _repository.DeactivateSeriesFromAsync(seriesId, userId, fromUtc, DateTimeOffset.UtcNow, cancellationToken);
+        var count = await _repository.DeactivateSeriesFromAsync(seriesId, userId, fromUtc, _time.GetUtcNow(), cancellationToken);
         _logger.LogInformation("Seri pasife alındı {SeriesId} {UserId} {Count}", seriesId, userId, count);
         return ApiResponse<SeriesDeactivatedDto>.Ok(new SeriesDeactivatedDto(count), "Seri durduruldu.");
     }
@@ -201,6 +216,9 @@ public class ActivityService
             : TimeZoneInfo.Utc;
     }
 
+    private async Task<bool> IsStartAllowedAsync(int userId, DateTimeOffset start, CancellationToken cancellationToken) =>
+        PastStartRule.IsAllowed(start, _time.GetUtcNow(), await GetUserZoneAsync(userId, cancellationToken));
+
     public async Task<ApiResponse<ActivityDetailDto>> UpdateAsync(int id, ActivityUpdateDto dto, CancellationToken cancellationToken = default)
     {
         var activity = await FindOwnedAsync(id, cancellationToken);
@@ -217,9 +235,16 @@ public class ActivityService
             return ApiResponse<ActivityDetailDto>.Fail("Doğrulama hatası.", errors);
         }
 
+        // Kural yalnızca başlangıç değişiyorsa uygulanır: eski aktivitenin puanı/notu düzenlenebilir (PAST-03).
+        if (dto.Start != activity.Start && !await IsStartAllowedAsync(_currentUser.UserId, dto.Start, cancellationToken))
+        {
+            _logger.LogWarning("Aktivite güncelleme doğrulama hatası {ActivityId} {@Errors}", id, new[] { PastStartRule.Message });
+            return ApiResponse<ActivityDetailDto>.Fail("Doğrulama hatası.", new List<string> { PastStartRule.Message });
+        }
+
         Apply(activity, dto.CategoryId, dto.Title, dto.Description, dto.Status, dto.Priority, dto.EnergyLevel,
             dto.Start, dto.End, dto.IsAllDay, dto.Location, dto.IsFlexible, dto.EstimatedBudget, dto.Rating, dto.WouldRepeat);
-        activity.UpdatedAt = DateTimeOffset.UtcNow;
+        activity.UpdatedAt = _time.GetUtcNow();
 
         await _repository.UpdateAsync(activity, cancellationToken);
         _logger.LogInformation("Aktivite güncellendi {ActivityId} {Title}", id, activity.Title);
@@ -237,7 +262,7 @@ public class ActivityService
         if (activity.IsActive)
         {
             activity.IsActive = false;
-            activity.UpdatedAt = DateTimeOffset.UtcNow;
+            activity.UpdatedAt = _time.GetUtcNow();
             await _repository.UpdateAsync(activity, cancellationToken);
             _logger.LogInformation("Aktivite pasife alındı {ActivityId}", id);
         }

@@ -5,8 +5,10 @@ using System.Threading.RateLimiting;
 using AjandaAI.Api.Auth;
 using AjandaAI.Api.Filters;
 using AjandaAI.Api.Logging;
+using AjandaAI.Api.Mcp;
 using AjandaAI.Api.Middleware;
 using AjandaAI.Application.Common;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -62,13 +64,27 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             NameClaimType = JwtOptions.UserIdClaim,
             RoleClaimType = JwtOptions.RoleClaim
         };
-    });
+    })
+    // Kişisel erişim anahtarı (ADR 0024): yalnızca /mcp politikası ister; varsayılan şema JWT kalır.
+    .AddScheme<AuthenticationSchemeOptions, PersonalAccessTokenAuthenticationHandler>(
+        PersonalAccessTokenAuthenticationHandler.SchemeName, null);
 
 // Her endpoint varsayılan olarak kimlik ister; herkese açık olanlar [AllowAnonymous] alır (ADR 0019).
+// /mcp yalnızca anahtar kabul eder; JWT ile /mcp'ye girilemez (MCP-17).
 builder.Services.AddAuthorization(options =>
+{
     options.FallbackPolicy = new AuthorizationPolicyBuilder()
         .RequireAuthenticatedUser()
-        .Build());
+        .Build();
+    options.AddPolicy(McpEndpoint.AuthorizationPolicy, policy => policy
+        .AddAuthenticationSchemes(PersonalAccessTokenAuthenticationHandler.SchemeName)
+        .RequireAuthenticatedUser());
+});
+
+// MCP sunucusu (ADR 0024): Streamable HTTP, durumsuz (her istek kendi kimliğiyle gelir).
+builder.Services.AddMcpServer()
+    .WithHttpTransport(options => options.Stateless = true)
+    .WithTools<AjandaTools>();
 
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ICurrentUser, HttpCurrentUser>();
@@ -97,6 +113,20 @@ builder.Services.AddRateLimiter(options =>
                 PermitLimit = authRateLimit.GetValue("PermitLimit", AuthRateLimit.DefaultPermitLimit),
                 Window = TimeSpan.FromSeconds(
                     authRateLimit.GetValue("WindowSeconds", AuthRateLimit.DefaultWindowSeconds)),
+                QueueLimit = 0
+            }));
+
+    // /mcp: anahtar başına sınır (ADR 0024 §2). Toplu ekleme seri_ekle ile yapılır; bu sınır emniyet kemeridir.
+    var mcpRateLimit = builder.Configuration.GetSection("RateLimiting:Mcp");
+    options.AddPolicy(McpEndpoint.RateLimitPolicy, httpContext =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            httpContext.User.FindFirst(PersonalAccessTokenAuthenticationHandler.TokenIdClaim)?.Value
+                ?? httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+            _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = mcpRateLimit.GetValue("PermitLimit", McpEndpoint.DefaultPermitLimit),
+                Window = TimeSpan.FromSeconds(
+                    mcpRateLimit.GetValue("WindowSeconds", McpEndpoint.DefaultWindowSeconds)),
                 QueueLimit = 0
             }));
 });
@@ -197,6 +227,9 @@ app.UseAuthorization();
 app.UseRateLimiter();
 
 app.MapControllers();
+app.MapMcp(McpEndpoint.Path)
+    .RequireAuthorization(McpEndpoint.AuthorizationPolicy)
+    .RequireRateLimiting(McpEndpoint.RateLimitPolicy);
 
 app.Run();
 

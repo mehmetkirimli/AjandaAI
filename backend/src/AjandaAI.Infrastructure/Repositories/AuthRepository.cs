@@ -122,6 +122,57 @@ public class AuthRepository : IAuthRepository
             .ExecuteUpdateAsync(s => s.SetProperty(t => t.RevokedAt, (DateTimeOffset?)now), cancellationToken);
     }
 
+    public Task<int> CountActivePersonalAccessTokensAsync(int userId, DateTimeOffset now, CancellationToken cancellationToken = default)
+    {
+        return _context.PersonalAccessTokens
+            .CountAsync(t => t.UserId == userId && t.RevokedAt == null && t.ExpiresAt > now, cancellationToken);
+    }
+
+    public async Task AddPersonalAccessTokenAsync(PersonalAccessToken token, CancellationToken cancellationToken = default)
+    {
+        _context.PersonalAccessTokens.Add(token);
+        await _context.SaveChangesAsync(cancellationToken);
+    }
+
+    public Task<List<PersonalAccessToken>> GetPersonalAccessTokensAsync(int userId, CancellationToken cancellationToken = default)
+    {
+        return _context.PersonalAccessTokens
+            .AsNoTracking()
+            .Where(t => t.UserId == userId)
+            .OrderByDescending(t => t.CreatedAt)
+            .ThenByDescending(t => t.Id)
+            .ToListAsync(cancellationToken);
+    }
+
+    public Task<PersonalAccessToken?> GetPersonalAccessTokenAsync(int id, int userId, CancellationToken cancellationToken = default)
+    {
+        return _context.PersonalAccessTokens
+            .AsNoTracking()
+            .FirstOrDefaultAsync(t => t.Id == id && t.UserId == userId, cancellationToken);
+    }
+
+    public Task<PersonalAccessToken?> GetPersonalAccessTokenByHashAsync(string tokenHash, CancellationToken cancellationToken = default)
+    {
+        return _context.PersonalAccessTokens
+            .AsNoTracking()
+            .Include(t => t.User)
+            .FirstOrDefaultAsync(t => t.TokenHash == tokenHash, cancellationToken);
+    }
+
+    public Task RevokePersonalAccessTokenAsync(int id, int userId, DateTimeOffset now, CancellationToken cancellationToken = default)
+    {
+        return _context.PersonalAccessTokens
+            .Where(t => t.Id == id && t.UserId == userId && t.RevokedAt == null)
+            .ExecuteUpdateAsync(s => s.SetProperty(t => t.RevokedAt, (DateTimeOffset?)now), cancellationToken);
+    }
+
+    public Task TouchPersonalAccessTokenAsync(int id, DateTimeOffset now, CancellationToken cancellationToken = default)
+    {
+        return _context.PersonalAccessTokens
+            .Where(t => t.Id == id)
+            .ExecuteUpdateAsync(s => s.SetProperty(t => t.LastUsedAt, (DateTimeOffset?)now), cancellationToken);
+    }
+
     // users tablosundaki tek unique kısıt email index'idir; 23505 DuplicateEmailException'a çevrilir.
     private async Task SaveChangesAsync(CancellationToken cancellationToken)
     {

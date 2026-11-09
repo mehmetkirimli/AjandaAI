@@ -18,6 +18,15 @@ namespace AjandaAI.Tests.Activities;
 
 public class ActivityServiceTests
 {
+    private sealed class FixedTimeProvider : TimeProvider
+    {
+        private readonly DateTimeOffset _now;
+
+        public FixedTimeProvider(DateTimeOffset now) => _now = now;
+
+        public override DateTimeOffset GetUtcNow() => _now;
+    }
+
     private sealed class FakeCurrentUser : ICurrentUser
     {
         public FakeCurrentUser(int userId) => UserId = userId;
@@ -163,6 +172,7 @@ public class ActivityServiceTests
             new ActivitySeriesCreateDtoValidator(new ActivityCreateDtoValidator(categories)),
             new FakeUserRepository(),
             new FakeCurrentUser(currentUserId),
+            new FixedTimeProvider(BaseTime),
             logger ?? NullLogger<ActivityService>.Instance);
     }
 

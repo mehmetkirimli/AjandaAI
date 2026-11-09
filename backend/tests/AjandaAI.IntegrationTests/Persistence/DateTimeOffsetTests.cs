@@ -20,7 +20,7 @@ public class DateTimeOffsetTests : AuthTestBase, IClassFixture<AuthApiFactory>
         await RegisterAndVerifyAsync(email);
         var (access, _) = await LoginOkAsync(email);
         var categoryId = await Factory.WithDbAsync(db => db.Categories.Where(c => c.IsActive).Select(c => c.Id).FirstAsync());
-        var start = new DateTimeOffset(2026, 10, 12, 10, 0, 0, TimeSpan.FromHours(3));
+        var start = new DateTimeOffset(2027, 10, 12, 10, 0, 0, TimeSpan.FromHours(3));
 
         var request = new HttpRequestMessage(HttpMethod.Post, "/api/activities")
         {
@@ -28,7 +28,7 @@ public class DateTimeOffsetTests : AuthTestBase, IClassFixture<AuthApiFactory>
             {
                 CategoryId = categoryId, Title = "Offset testi", Description = "", Status = "Planned",
                 Priority = "Medium", EnergyLevel = "Medium",
-                Start = "2026-10-12T10:00:00+03:00", End = "2026-10-12T11:30:00+03:00",
+                Start = "2027-10-12T10:00:00+03:00", End = "2027-10-12T11:30:00+03:00",
                 IsAllDay = false, Location = (string?)null, IsFlexible = false, EstimatedBudget = 0
             }, options: Json)
         };

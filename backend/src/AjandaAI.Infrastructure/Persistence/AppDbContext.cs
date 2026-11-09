@@ -29,6 +29,8 @@ public class AppDbContext : DbContext
 
     public DbSet<EmailVerificationToken> EmailVerificationTokens => Set<EmailVerificationToken>();
 
+    public DbSet<PersonalAccessToken> PersonalAccessTokens => Set<PersonalAccessToken>();
+
     // Tüm DateTimeOffset (ve DateTimeOffset?) alanları UTC olarak yazılır; bkz. UtcDateTimeOffsetConverter.
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
     {
