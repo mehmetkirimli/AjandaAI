@@ -10,14 +10,14 @@ export function NotFoundPage() {
       <PageBody>
         <Center mih="50vh">
           <Stack align="center" gap="sm">
-            <LostPage width={160} />
-            <Text fw={800} fz={22}>
+            <LostPage width={150} />
+            <Text fw={700} fz={26} ff="var(--font-hand)">
               404 · Sayfa bulunamadı
             </Text>
-            <Text ta="center" maw={360} style={{ opacity: 0.8 }}>
+            <Text ta="center" maw={360} c="dimmed">
               Aradığın sayfa yırtılmış ya da hiç yazılmamış olabilir.
             </Text>
-            <Button component={Link} to="/" variant="rainbow" h={48} px={24} radius={14} mt="xs">
+            <Button component={Link} to="/" variant="ink" h={44} px={24} mt="xs">
               Panoya dön
             </Button>
           </Stack>

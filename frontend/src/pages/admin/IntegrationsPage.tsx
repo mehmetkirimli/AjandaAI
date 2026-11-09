@@ -16,7 +16,8 @@ import {
   type Icon,
 } from '@tabler/icons-react'
 import { PageBody, PanelHeader } from '../../components/PanelHeader'
-import { NEXT_STEP, ROADMAP, STATUS_FILL, STATUS_ORDER, type RoadmapIcon, type RoadmapItem } from '../../lib/roadmap'
+import { Spiral } from '../../components/illustrations'
+import { NEXT_STEP, ROADMAP, STATUS_LINE, STATUS_ORDER, type RoadmapIcon, type RoadmapItem } from '../../lib/roadmap'
 import './integrations.css'
 
 const ICONS: Record<Exclude<RoadmapIcon, 'claude'>, Icon> = {
@@ -35,28 +36,26 @@ const ICONS: Record<Exclude<RoadmapIcon, 'claude'>, Icon> = {
   group: IconLayoutGrid,
 }
 
-// Satır görünümü duruma göre: Eklendi yeşil düz çerçeve; Planlandı mor kesikli; Fikir turuncu kesikli.
-const ROW_STYLE: Record<string, { bg: string; border: string; icon: string }> = {
-  Eklendi: { bg: 'rgba(21,128,61,0.25)', border: '1px solid rgba(74,222,128,0.3)', icon: '#86EFAC' },
-  Planlandı: { bg: 'rgba(124,58,237,0.2)', border: '1px dashed rgba(167,139,250,0.5)', icon: '#C4B5FD' },
-  Fikir: { bg: 'rgba(194,65,12,0.2)', border: '1px dashed rgba(251,146,60,0.5)', icon: '#FDBA74' },
-  Sırada: { bg: 'rgba(15,118,110,0.25)', border: '1px solid rgba(94,234,212,0.4)', icon: '#5EEAD4' },
+// Satır: 3 px durum çizgisi; eklenen/sıradaki düz, planlanan/fikir kesikli çizgi (henüz yazılmamış sayfa).
+function StatusBadge({ status }: { status: RoadmapItem['status'] }) {
+  return (
+    <span className="rm-badge" style={{ borderLeftColor: STATUS_LINE[status] }}>
+      {status}
+    </span>
+  )
 }
 
 function Row({ item, statusBadge = false }: { item: RoadmapItem; statusBadge?: boolean }) {
-  const s = ROW_STYLE[item.status]
   const RowIcon = item.icon === 'claude' ? IconSparkles : ICONS[item.icon]
   return (
-    <div className="rm-row" style={{ background: s.bg, border: s.border }}>
-      <RowIcon size={20} color={s.icon} aria-hidden style={{ flex: 'none' }} />
+    <div className="rm-row" data-dashed={item.status === 'Planlandı' || item.status === 'Fikir'} style={{ borderLeftColor: STATUS_LINE[item.status] }}>
+      <RowIcon size={20} stroke={1.7} aria-hidden style={{ flex: 'none' }} />
       <span style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
-        <span style={{ fontSize: 14, fontWeight: 700 }}>{item.title}</span>
-        <span style={{ fontSize: 12 }}>{item.description}</span>
+        <span style={{ fontSize: 14, fontWeight: 600 }}>{item.title}</span>
+        <span style={{ fontSize: 12, color: 'var(--graphite-2)' }}>{item.description}</span>
       </span>
       {statusBadge ? (
-        <span className="rm-badge" style={{ background: STATUS_FILL[item.status] }}>
-          {item.status}
-        </span>
+        <StatusBadge status={item.status} />
       ) : (
         item.tag && (
           <span className="mono" style={{ fontSize: 11, flex: 'none' }}>
@@ -76,12 +75,10 @@ function ModelCard({ item }: { item: RoadmapItem }) {
           {item.title.charAt(0)}
         </span>
         <span style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
-          <span style={{ fontSize: 15, fontWeight: 700 }}>{item.title}</span>
-          <span style={{ fontSize: 12 }}>{item.description}</span>
+          <span style={{ fontSize: 14, fontWeight: 600 }}>{item.title}</span>
+          <span style={{ fontSize: 12, color: 'var(--graphite-2)' }}>{item.description}</span>
         </span>
-        <span className="rm-badge" style={{ background: STATUS_FILL[item.status] }}>
-          {item.status}
-        </span>
+        <StatusBadge status={item.status} />
       </div>
       {item.tools && (
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
@@ -108,21 +105,22 @@ export function IntegrationsPage() {
       <PanelHeader title="Entegrasyonlar ve Yol Haritası" kicker="nereden geldik, nereye gidiyoruz">
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', fontSize: 13, fontWeight: 600 }}>
           {counts.map((c) => (
-            <span key={c.status} className="rm-count" style={{ background: STATUS_FILL[c.status] }}>
+            <span key={c.status} className="rm-count" style={{ borderLeftColor: STATUS_LINE[c.status] }}>
               {c.status} · {c.count}
             </span>
           ))}
         </div>
       </PanelHeader>
       <PageBody>
-        <section className="rm-hero">
+        <section className="rm-hero paper">
+          <Spiral />
           <div className="rm-hero-icon" aria-hidden>
-            <IconSparkles size={40} stroke={1.8} color="#fff" />
+            <IconSparkles size={34} stroke={1.5} />
           </div>
           <div style={{ flex: '1 1 260px', display: 'flex', flexDirection: 'column', gap: 4, minWidth: 0 }}>
-            <span style={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.08em' }}>{NEXT_STEP.label}</span>
-            <span style={{ fontSize: 24, fontWeight: 800, lineHeight: 1.2 }}>{NEXT_STEP.title}</span>
-            <span style={{ fontSize: 15 }}>{NEXT_STEP.description}</span>
+            <span className="hand muted" style={{ fontSize: 17 }}>{NEXT_STEP.label.toLocaleLowerCase('tr')}</span>
+            <span style={{ fontFamily: 'var(--font-hand)', fontSize: 28, fontWeight: 700, lineHeight: 1.1 }}>{NEXT_STEP.title}</span>
+            <span style={{ fontSize: 14, color: 'var(--graphite-2)' }}>{NEXT_STEP.description}</span>
           </div>
           <div style={{ width: 180, display: 'flex', flexDirection: 'column', gap: 6 }}>
             <span style={{ fontSize: 13, display: 'flex', justifyContent: 'space-between', gap: 8 }}>
@@ -134,19 +132,20 @@ export function IntegrationsPage() {
               aria-valuenow={NEXT_STEP.progress}
               aria-valuemin={0}
               aria-valuemax={100}
-              style={{ height: 10, borderRadius: 5, background: 'rgba(255,255,255,0.25)', overflow: 'hidden' }}
+              style={{ height: 10, border: '1.4px solid var(--graphite)', borderRadius: 3, overflow: 'hidden' }}
             >
-              <div style={{ width: `${NEXT_STEP.progress}%`, height: '100%', background: '#fff' }} />
+              <div style={{ width: `${NEXT_STEP.progress}%`, height: '100%', background: 'var(--graphite)' }} />
             </div>
           </div>
         </section>
 
         <div className="rm-grid">
-          <section className="ink-card rm-col">
+          <section className="paper rm-col">
+            <Spiral />
             <div className="rm-col-head">
-              <span className="rm-dot" style={{ background: '#4ADE80' }} />
-              <span style={{ fontSize: 17, fontWeight: 700 }}>Eklendi</span>
-              <span className="hand" style={{ fontSize: 19, marginLeft: 'auto' }}>
+              <span className="rm-dot" style={{ background: STATUS_LINE.Eklendi }} />
+              <span style={{ fontFamily: 'var(--font-hand)', fontSize: 21, fontWeight: 700 }}>Eklendi</span>
+              <span className="hand muted" style={{ fontSize: 16, marginLeft: 'auto' }}>
                 defterde hazır
               </span>
             </div>
@@ -155,11 +154,12 @@ export function IntegrationsPage() {
             ))}
           </section>
 
-          <section className="ink-card rm-col">
+          <section className="paper rm-col">
+            <Spiral />
             <div className="rm-col-head">
-              <span className="rm-dot" style={{ background: '#A78BFA' }} />
-              <span style={{ fontSize: 17, fontWeight: 700 }}>Planlandı</span>
-              <span className="hand" style={{ fontSize: 19, marginLeft: 'auto' }}>
+              <span className="rm-dot" style={{ background: STATUS_LINE.Planlandı }} />
+              <span style={{ fontFamily: 'var(--font-hand)', fontSize: 21, fontWeight: 700 }}>Planlandı</span>
+              <span className="hand muted" style={{ fontSize: 16, marginLeft: 'auto' }}>
                 MCP araçları
               </span>
             </div>
@@ -168,14 +168,15 @@ export function IntegrationsPage() {
             ))}
           </section>
 
-          <section className="ink-card rm-col">
+          <section className="paper rm-col">
+            <Spiral />
             <div className="rm-col-head">
-              <span className="rm-dot" style={{ background: '#2DD4BF' }} />
-              <span style={{ fontSize: 17, fontWeight: 700 }}>Yapay zeka modelleri</span>
+              <span className="rm-dot" style={{ background: STATUS_LINE.Sırada }} />
+              <span style={{ fontFamily: 'var(--font-hand)', fontSize: 21, fontWeight: 700 }}>Yapay zeka modelleri</span>
             </div>
             {ai.map((r) => (r.tools ? <ModelCard key={r.id} item={r} /> : <Row key={r.id} item={r} statusBadge />))}
             <div style={{ flex: 1 }} />
-            <span className="hand" style={{ fontSize: 20, textAlign: 'center' }}>
+            <span className="hand muted" style={{ fontSize: 17, textAlign: 'center' }}>
               her yeni özellik, defterine yeni bir sayfa
             </span>
           </section>

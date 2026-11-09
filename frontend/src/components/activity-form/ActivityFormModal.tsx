@@ -22,11 +22,12 @@ import { notifications } from '@mantine/notifications'
 import { IconAlertCircle, IconBolt, IconCheck, IconChevronDown, IconCircleDashed, IconRepeat, IconX } from '@tabler/icons-react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import dayjs from 'dayjs'
-import { useMemo, useRef, useState } from 'react'
+import { useMemo, useRef, useState, type CSSProperties } from 'react'
 import { createActivity, createSeries, fetchCategories, updateActivity } from '../../api/activities'
 import type { ActivityStatus, ActivityUpdateRequest, Level } from '../../api/types'
 import { LEVEL_OPTIONS, STATUS_OPTIONS } from '../../lib/activityOptions'
 import { categoryLook } from '../../lib/categoryColor'
+import { Spiral } from '../illustrations'
 import { MOD_KEY } from '../../lib/commands'
 import {
   countOccurrences,
@@ -334,15 +335,18 @@ export function ActivityFormModal({ request, onClose }: Props) {
         fullScreen={isMobile}
         withCloseButton={false}
         padding={0}
-        radius={isMobile ? 0 : 26}
-        overlayProps={{ backgroundOpacity: 0.6, blur: 3 }}
+        radius={isMobile ? 0 : 4}
+        overlayProps={{ backgroundOpacity: 0.25, color: '#2b2a27' }}
         transitionProps={{ transition: 'pop', duration: 180 }}
         styles={{
           content: {
-            background: 'var(--ink-card)',
-            border: isMobile ? undefined : '1px solid var(--ink-line-strong)',
-            boxShadow: '0 40px 100px rgba(0,0,0,0.6), 0 0 60px rgba(124,58,237,0.25)',
-            overflow: 'hidden',
+            background: 'var(--paper)',
+            border: isMobile ? undefined : 'var(--pen)',
+            borderRadius: isMobile ? 0 : 'var(--radius-sketch)',
+            boxShadow: 'var(--sketch-shadow-lg)',
+            // Yatayda köşe yuvarlaklığı korunur, dikeyde kayar: kısa ekranda / yakınlaştırmada alttaki alanlara ulaşılır.
+            overflowX: 'hidden',
+            overflowY: 'auto',
           },
           body: { padding: 0 },
         }}
@@ -356,22 +360,19 @@ export function ActivityFormModal({ request, onClose }: Props) {
             }
           }}
         >
-          {/* Defter dokusu: gradyan şerit + beyaz spiral */}
-          <div aria-hidden style={{ height: 10, background: 'var(--grad-rainbow)' }} />
-          <div className="spiral" aria-hidden style={{ height: 22, alignItems: 'center', padding: '0 40px' }}>
-            {Array.from({ length: isMobile ? 6 : 10 }, (_, i) => (
-              <span key={i} style={{ boxShadow: 'none' }} />
-            ))}
+          {/* Defter dokusu: üst şeritte spiral tel (modal kaydırıldığı için tel kartın içinde kalır). */}
+          <div aria-hidden style={{ position: 'relative', height: 30, borderBottom: '1.2px dashed var(--dash)', background: 'var(--paper-strip)' }}>
+            <Spiral inset={24} style={{ top: 2 }} />
           </div>
 
           <Stack gap={18} px={isMobile ? 18 : 32} pt={10} pb={20}>
             <Group gap={10} wrap="nowrap">
-              <span className="hand" style={{ fontSize: 24 }}>
+              <span className="hand muted" style={{ fontSize: 20 }}>
                 {editing ? 'sayfayı düzenliyoruz' : v.repeat ? 'tekrarlayan bir plan' : 'yeni bir sayfa açıyoruz'}
               </span>
               <div style={{ flex: 1 }} />
-              <button type="button" className="icon-btn" aria-label="Kapat" onClick={requestClose} style={{ width: 44, height: 44, border: 0, background: 'rgba(255,255,255,0.08)' }}>
-                <IconX size={18} stroke={2.2} aria-hidden />
+              <button type="button" className="icon-btn" aria-label="Kapat" onClick={requestClose} style={{ width: 44, height: 44, border: 0 }}>
+                <IconX size={18} stroke={1.8} aria-hidden />
               </button>
             </Group>
 
@@ -383,11 +384,12 @@ export function ActivityFormModal({ request, onClose }: Props) {
               className="title-input"
               styles={{
                 input: {
-                  fontSize: isMobile ? 26 : 32,
-                  fontWeight: 800,
-                  height: 56,
+                  fontFamily: 'var(--font-hand)',
+                  fontSize: isMobile ? 26 : 30,
+                  fontWeight: 700,
+                  height: 54,
                   borderRadius: 0,
-                  color: '#fff',
+                  color: 'var(--graphite)',
                   background: 'transparent',
                 },
               }}
@@ -402,10 +404,9 @@ export function ActivityFormModal({ request, onClose }: Props) {
                   type="button"
                   className="form-pill"
                   aria-pressed={v.repeat}
-                  data-tone="green"
                   onClick={() => toggleRepeat(!v.repeat)}
                 >
-                  <IconRepeat size={16} color="var(--l-green)" aria-hidden />
+                  <IconRepeat size={16} stroke={1.7} aria-hidden />
                   Tekrarla
                 </button>
               )}
@@ -421,7 +422,7 @@ export function ActivityFormModal({ request, onClose }: Props) {
                 value={v.energyLevel}
                 options={LEVEL_OPTIONS.map((o) => ({ ...o, label: `Enerji: ${o.label}` }))}
                 placeholder="Enerji"
-                icon={<IconBolt size={16} color="var(--l-orange)" />}
+                icon={<IconBolt size={16} stroke={1.7} />}
                 onChange={(l) => form.setFieldValue('energyLevel', l)}
               />
               <PillMenu
@@ -429,28 +430,28 @@ export function ActivityFormModal({ request, onClose }: Props) {
                 value={v.status}
                 options={STATUS_OPTIONS}
                 placeholder="Durum"
-                icon={<IconCircleDashed size={16} color="var(--l-violet)" />}
+                icon={<IconCircleDashed size={16} stroke={1.7} />}
                 onChange={(s) => form.setFieldValue('status', s)}
               />
             </Group>
 
             {/* Kategori: ikonlu kutular */}
             <Stack gap={10}>
-              <Text fz={13} fw={700} id="form-category-label">
+              <Text fz={13} fw={600} id="form-category-label">
                 Kategori
               </Text>
               {categoriesQuery.isPending && (
                 <Group gap={6}>
-                  <Loader size={12} color="var(--v-teal)" />
+                  <Loader size={12} color="var(--graphite)" />
                   <Text size="xs">Kategoriler yükleniyor…</Text>
                 </Group>
               )}
               {categoriesQuery.isError && (
                 <Group gap={6}>
-                  <Text size="xs" c="var(--l-orange)">
+                  <Text size="xs" c="var(--danger)">
                     Kategoriler yüklenemedi.
                   </Text>
-                  <Button size="compact-sm" variant="glass" onClick={() => void categoriesQuery.refetch()}>
+                  <Button size="compact-sm" variant="sketch" onClick={() => void categoriesQuery.refetch()}>
                     Tekrar dene
                   </Button>
                 </Group>
@@ -470,13 +471,9 @@ export function ActivityFormModal({ request, onClose }: Props) {
                         className="cat-box"
                         title={c.name}
                         onClick={() => form.setFieldValue('categoryId', c.id)}
-                        style={
-                          on
-                            ? { background: look.gradient, border: `2px solid ${look.vivid}`, fontWeight: 700, boxShadow: look.shadow.replace('16px', '24px') }
-                            : { background: `color-mix(in srgb, ${look.fill} 25%, transparent)` }
-                        }
+                        style={{ '--cat': look.line } as CSSProperties}
                       >
-                        <Icon size={22} color={on ? '#fff' : look.light} aria-hidden />
+                        <Icon size={20} stroke={1.7} aria-hidden />
                         <span className="nav-label" style={{ maxWidth: '100%' }}>
                           {c.name}
                         </span>
@@ -486,12 +483,12 @@ export function ActivityFormModal({ request, onClose }: Props) {
                 </div>
               )}
               {form.errors.categoryId && (
-                <Text size="xs" c="var(--l-orange)">
+                <Text size="xs" c="var(--danger)">
                   {form.errors.categoryId}
                 </Text>
               )}
               {selectedCategory === undefined && categoriesQuery.isSuccess && categories.length === 0 && (
-                <Text size="xs" c="var(--l-orange)">
+                <Text size="xs" c="var(--danger)">
                   Aktif kategori bulunamadı.
                 </Text>
               )}
@@ -531,7 +528,7 @@ export function ActivityFormModal({ request, onClose }: Props) {
                 />
               </Group>
               {form.errors.start && (
-                <Text size="xs" c="var(--l-orange)">
+                <Text size="xs" c="var(--danger)">
                   {form.errors.start}
                 </Text>
               )}
@@ -564,7 +561,7 @@ export function ActivityFormModal({ request, onClose }: Props) {
               </Group>
               )}
               {endError && (
-                <Text size="xs" c="var(--l-orange)">
+                <Text size="xs" c="var(--danger)">
                   {endError}
                 </Text>
               )}
@@ -575,7 +572,7 @@ export function ActivityFormModal({ request, onClose }: Props) {
                     <Text size="xs">
                       Bu aktivite {humanDuration} sürüyor. Her hafta tekrarlamak mı istedin?
                     </Text>
-                    <Button size="compact-sm" variant="glass" onClick={switchToRepeat} style={{ flexShrink: 0 }}>
+                    <Button size="compact-sm" variant="sketch" onClick={switchToRepeat} style={{ flexShrink: 0 }}>
                       Tekrarla'ya geç
                     </Button>
                   </Group>
@@ -586,7 +583,7 @@ export function ActivityFormModal({ request, onClose }: Props) {
                 <Stack
                   gap="xs"
                   p="sm"
-                  style={{ border: '1px solid rgba(74,222,128,0.3)', borderRadius: 16, background: 'rgba(21,128,61,0.14)' }}
+                  style={{ border: '1.4px dashed var(--faint)', borderRadius: 4, background: 'transparent' }}
                 >
                   <SegmentedControl
                     size="md"
@@ -645,7 +642,7 @@ export function ActivityFormModal({ request, onClose }: Props) {
                     />
                   </Group>
                   {preview && (
-                    <Text size="xs" c={previewBlocked ? 'var(--l-orange)' : undefined}>
+                    <Text size="xs" c={previewBlocked ? 'var(--danger)' : undefined}>
                       {preview.invalidRange
                         ? 'Bitiş tarihi başlangıç gününden önce olamaz.'
                         : preview.tooMany
@@ -656,7 +653,7 @@ export function ActivityFormModal({ request, onClose }: Props) {
                     </Text>
                   )}
                   {(form.errors.recurrence || form.errors.reminder) && (
-                    <Text size="xs" c="var(--l-orange)">
+                    <Text size="xs" c="var(--danger)">
                       {form.errors.recurrence} {form.errors.reminder}
                     </Text>
                   )}
@@ -723,7 +720,7 @@ export function ActivityFormModal({ request, onClose }: Props) {
                   <Text size="xs">{v.rating}/10</Text>
                 </Group>
                 {form.errors.rating && (
-                  <Text size="xs" c="var(--l-orange)">
+                  <Text size="xs" c="var(--danger)">
                     {form.errors.rating}
                   </Text>
                 )}
@@ -747,21 +744,20 @@ export function ActivityFormModal({ request, onClose }: Props) {
 
           <Group gap={10} px={isMobile ? 18 : 32} pb={isMobile ? 24 : 28} pt={4} wrap="wrap">
             <Group gap={8} visibleFrom="sm">
-              <span className="mono" style={{ fontSize: 12, padding: '4px 8px', borderRadius: 6, background: 'rgba(255,255,255,0.08)' }}>
+              <span className="mono" style={{ fontSize: 12, padding: '3px 7px', borderRadius: 4, border: '1px solid var(--faint)' }}>
                 {MOD_KEY} + Enter
               </span>
               <Text fz={13}>ile kaydet</Text>
             </Group>
             <div style={{ flex: 1 }} />
-            <Button variant="glass" h={48} px={20} radius={14} fz={15} fw={400} onClick={requestClose}>
+            <Button variant="sketch" h={44} px={20} fz={14} onClick={requestClose}>
               Vazgeç
             </Button>
             <Button
-              variant="rainbow"
-              h={48}
+              variant="ink"
+              h={44}
               px={26}
-              radius={14}
-              fz={15}
+              fz={14}
               loading={mutation.isPending}
               disabled={previewBlocked}
               onClick={submit}

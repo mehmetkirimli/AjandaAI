@@ -2,13 +2,14 @@
 // Düz anahtar yalnızca bu bileşenin state'inde yaşar: kapatınca/sayfadan çıkınca silinir,
 // localStorage'a ve console'a yazılmaz.
 
-import { Alert, Badge, Button, CopyButton, Group, Modal, Stack, Text, TextInput, Title } from '@mantine/core'
+import { Alert, Badge, Button, CopyButton, Group, Modal, Stack, Text, TextInput } from '@mantine/core'
 import { notifications } from '@mantine/notifications'
 import { IconAlertTriangle, IconCheck, IconCopy, IconPlug } from '@tabler/icons-react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import dayjs from 'dayjs'
 import { useState, type FormEvent } from 'react'
 import { ApiError, apiBaseUrl } from '../api/client'
+import { CardTitle } from '../components/CardTitle'
 import { createToken, listTokens, revokeToken } from '../api/tokens'
 import type { PersonalAccessToken, PersonalAccessTokenCreated } from '../api/types'
 
@@ -124,19 +125,9 @@ export function ClaudeConnectionCard() {
     : ''
 
   return (
-    <section className="ink-card" style={{ padding: 22 }}>
+    <section className="paper" style={{ padding: 22 }}>
       <Stack>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <span
-            style={{ width: 36, height: 36, borderRadius: 10, background: 'linear-gradient(135deg, #C2410C, #7C3AED)', display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 'none' }}
-            aria-hidden
-          >
-            <IconPlug size={18} color="#fff" />
-          </span>
-          <Title order={2} fz={19} fw={700}>
-            Claude bağlantısı
-          </Title>
-        </div>
+        <CardTitle icon={<IconPlug size={18} stroke={1.7} />}>Claude bağlantısı</CardTitle>
         <Text fz={14}>Claude'un ajandana erişmesi için anahtar. Yalnızca araçlara erişir, şifren değildir.</Text>
 
         {created ? (
@@ -167,7 +158,7 @@ export function ClaudeConnectionCard() {
                 }}
                 error={nameError}
               />
-              <Button type="submit" loading={create.isPending} mt={25} variant="rainbow" style={{ background: 'linear-gradient(90deg, #C2410C, #7C3AED)' }}>
+              <Button type="submit" loading={create.isPending} mt={25} h={36} variant="ink">
                 Anahtar oluştur
               </Button>
             </Group>

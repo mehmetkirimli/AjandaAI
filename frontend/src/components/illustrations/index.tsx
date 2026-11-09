@@ -1,155 +1,144 @@
-// Satır içi SVG illüstrasyonlar (fotoğraf/emoji yok). Hepsi dekoratif: aria-hidden.
-import type { CSSProperties } from 'react'
+// Satır içi SVG illüstrasyonlar: tek renk grafit kalem çizimi (ADR 0021 Karar 5f). Hepsi dekoratif: aria-hidden.
+import type { CSSProperties, ReactNode } from 'react'
+
+export { Scribble, Spiral } from './Spiral'
 
 interface P {
   width?: number | string
   style?: CSSProperties
+  // Çizgi rengi; varsayılan grafit. Boş durumlarda silik gri (#8a8984).
+  color?: string
 }
 
-// Giriş ekranı: gradyan kapaklı spiralli defter, yapışkan notlar, kalem, kupa.
-export function NotebookHero({ width = 520, style }: P) {
+function Pencil({ viewBox, width, style, color = '#2b2a27', strokeWidth = 1.5, children }: P & { viewBox: string; strokeWidth?: number; children: ReactNode }) {
   return (
-    <svg width={width} viewBox="0 0 520 440" aria-hidden style={{ maxWidth: '100%', height: 'auto', ...style }}>
-      <defs>
-        <linearGradient id="nh-kapak" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stopColor="#15803D" />
-          <stop offset="0.35" stopColor="#0F766E" />
-          <stop offset="0.7" stopColor="#7C3AED" />
-          <stop offset="1" stopColor="#C2410C" />
-        </linearGradient>
-        <linearGradient id="nh-kalem" x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0" stopColor="#F97316" />
-          <stop offset="1" stopColor="#FB923C" />
-        </linearGradient>
-      </defs>
-      <ellipse cx="260" cy="410" rx="200" ry="16" fill="#000000" opacity="0.35" />
-      <rect x="120" y="40" width="300" height="360" rx="22" fill="#0b0816" transform="rotate(-6 270 220)" />
-      <g transform="rotate(-6 270 220)">
-        <rect x="110" y="30" width="300" height="360" rx="22" fill="url(#nh-kapak)" />
-        <rect x="110" y="30" width="300" height="360" rx="22" fill="none" stroke="#ffffff" strokeOpacity="0.25" strokeWidth="2" />
-        <rect x="150" y="80" width="230" height="250" rx="14" fill="#ffffff" fillOpacity="0.12" />
-        <line x1="170" y1="130" x2="360" y2="130" stroke="#ffffff" strokeOpacity="0.35" strokeWidth="2" />
-        <line x1="170" y1="170" x2="360" y2="170" stroke="#ffffff" strokeOpacity="0.35" strokeWidth="2" />
-        <line x1="170" y1="210" x2="330" y2="210" stroke="#ffffff" strokeOpacity="0.35" strokeWidth="2" />
-        <line x1="170" y1="250" x2="300" y2="250" stroke="#ffffff" strokeOpacity="0.35" strokeWidth="2" />
-        <circle cx="180" cy="290" r="10" fill="none" stroke="#86EFAC" strokeWidth="3" />
-        <path d="M175 290 l4 4 l8 -9" fill="none" stroke="#86EFAC" strokeWidth="3" strokeLinecap="round" />
-        <line x1="200" y1="290" x2="320" y2="290" stroke="#ffffff" strokeOpacity="0.5" strokeWidth="3" strokeLinecap="round" />
-        <g fill="#e9e5f5" stroke="#5b4e86" strokeWidth="2">
-          {[60, 100, 140, 180, 220, 260, 300, 340].map((y) => (
-            <rect key={y} x="96" y={y} width="30" height="12" rx="6" />
-          ))}
-        </g>
-        <rect x="380" y="70" width="18" height="70" rx="3" fill="#F97316" />
+    <svg
+      width={width}
+      viewBox={viewBox}
+      fill="none"
+      stroke={color}
+      strokeWidth={strokeWidth}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+      style={{ maxWidth: '100%', height: 'auto', flex: 'none', ...style }}
+    >
+      {children}
+    </svg>
+  )
+}
+
+// Giriş ekranı: açık spiralli defter, kalem, kupa, yapışkan not.
+export function NotebookHero({ width = 480, style }: P) {
+  return (
+    <Pencil viewBox="0 0 480 400" width={width} style={style} strokeWidth={1.8}>
+      {/* gölge çizgisi */}
+      <path d="M70 372c90 6 250 6 340-2" strokeWidth="1.2" strokeDasharray="4 6" />
+      {/* defter */}
+      <g transform="rotate(-4 240 200)">
+        <path d="M110 52c60-3 170-2 240 1c3 100 1 200 2 296c-70 3-180 3-242-1c-3-98-4-198 0-296z" fill="#fcfcfa" />
+        <path d="M114 352l6 6c70 3 170 3 238 0l-4-8" />
+        {[80, 112, 144, 176, 208, 240, 272, 304, 336].map((y) => (
+          <path key={y} d={`M98 ${y}c-6-8 4-16 18-12`} strokeWidth="2.2" />
+        ))}
+        <path d="M150 104c40-2 110-2 170 0" />
+        <path d="M150 140c40-1 100-1 150 1" strokeWidth="1.2" />
+        <path d="M150 176c40-1 90-1 130 0" strokeWidth="1.2" />
+        <path d="M152 222l7 7l13-15" strokeWidth="2" />
+        <path d="M186 224c30-1 70-1 104 0" strokeWidth="1.2" />
+        <path d="M152 262l7 7l13-15" strokeWidth="2" />
+        <path d="M186 264c26-1 56-1 84 1" strokeWidth="1.2" />
+        <rect x="150" y="298" width="16" height="16" rx="2" strokeWidth="1.4" />
+        <path d="M186 306c22-1 44-1 66 0" strokeWidth="1.2" />
       </g>
-      <g transform="rotate(12 430 120)">
-        <rect x="400" y="60" width="96" height="96" rx="8" fill="#A78BFA" />
-        <path d="M400 140 l0 16 l16 0 z" fill="#7C3AED" />
-        <line x1="414" y1="88" x2="480" y2="88" stroke="#ffffff" strokeWidth="3" strokeLinecap="round" />
-        <line x1="414" y1="106" x2="466" y2="106" stroke="#ffffff" strokeWidth="3" strokeLinecap="round" />
+      {/* kalem */}
+      <g transform="rotate(36 380 300)">
+        <path d="M296 292h150l22 8l-22 8h-150z" fill="#fcfcfa" />
+        <path d="M446 292v16M318 292v16" strokeWidth="1.2" />
+        <path d="M462 298l6 2l-6 2" fill="#2b2a27" />
       </g>
-      <g transform="rotate(-10 60 300)">
-        <rect x="20" y="260" width="84" height="84" rx="8" fill="#2DD4BF" />
-        <line x1="34" y1="286" x2="90" y2="286" stroke="#0b3b36" strokeWidth="3" strokeLinecap="round" />
-        <line x1="34" y1="304" x2="76" y2="304" stroke="#0b3b36" strokeWidth="3" strokeLinecap="round" />
+      {/* yapışkan not */}
+      <g transform="rotate(9 410 110)">
+        <path d="M368 66c28-1 56-1 84 1c1 28 0 56 1 82c-28 1-56 1-84-1c-1-26-2-54-1-82z" fill="#fcfcfa" />
+        <path d="M382 94c18-1 38-1 56 0M382 112c14-1 28-1 40 0" strokeWidth="1.2" />
       </g>
-      <g transform="rotate(38 380 330)">
-        <rect x="300" y="322" width="170" height="18" rx="9" fill="url(#nh-kalem)" />
-        <path d="M470 322 l26 9 l-26 9 z" fill="#fde7d4" />
-        <rect x="300" y="322" width="22" height="18" rx="4" fill="#4ADE80" />
-      </g>
+      {/* kupa */}
       <g>
-        <path d="M40 120 q0 -6 6 -6 h52 q6 0 6 6 v34 q0 22 -32 22 q-32 0 -32 -22 z" fill="#C2410C" />
-        <path d="M104 128 q18 0 18 14 q0 14 -18 14" fill="none" stroke="#C2410C" strokeWidth="6" />
-        <path d="M58 100 q6 -10 0 -20 M74 100 q6 -10 0 -20" fill="none" stroke="#ffffff" strokeOpacity="0.6" strokeWidth="3" strokeLinecap="round" />
+        <path d="M30 120c18-1 44-1 60 0c1 16 0 32-4 42c-8 12-44 12-52 0c-4-10-5-26-4-42z" fill="#fcfcfa" />
+        <path d="M90 128c16 0 16 22 0 22" />
+        <path d="M48 104c4-6-2-10 2-16M64 104c4-6-2-10 2-16" strokeWidth="1.3" />
       </g>
-      <path d="M470 220 l4 10 l10 4 l-10 4 l-4 10 l-4 -10 l-10 -4 l10 -4 z" fill="#4ADE80" />
-      <path d="M70 40 l3 7 l7 3 l-7 3 l-3 7 l-3 -7 l-7 -3 l7 -3 z" fill="#FDBA74" />
-    </svg>
+      {/* yıldız işaretleri */}
+      <path d="M440 220l4 10M437 226l10-2" strokeWidth="1.3" />
+      <path d="M58 40l4 10M55 46l10-2" strokeWidth="1.3" />
+    </Pencil>
   )
 }
 
-// Boş gün: eğik yapışkan not + turuncu nokta.
-export function EmptyPage({ width = 84, style }: P) {
+// Boş gün: sayfa + satırlar + kalem çizgisi (taslaktaki ikon).
+export function EmptyPage({ width = 56, style, color = '#8a8984' }: P) {
   return (
-    <svg width={width} viewBox="0 0 84 70" aria-hidden style={{ height: 'auto', ...style }}>
-      <rect x="14" y="8" width="56" height="54" rx="6" fill="#2DD4BF" transform="rotate(-6 42 35)" />
-      <rect x="20" y="22" width="34" height="3" rx="1.5" fill="#0b3b36" transform="rotate(-6 42 35)" />
-      <rect x="20" y="32" width="24" height="3" rx="1.5" fill="#0b3b36" transform="rotate(-6 42 35)" />
-      <circle cx="62" cy="12" r="6" fill="#FB923C" />
-    </svg>
+    <Pencil viewBox="0 0 56 48" width={width} style={style} color={color} strokeWidth={1.4}>
+      <path d="M10 10c10-1 26-1 36 0c1 10 0 20 .5 28c-10 1-26 1-36 0c-1-9-1-19-.5-28z" />
+      <path d="M16 20h22M16 27h14" />
+      <path d="M38 34l8-8" />
+    </Pencil>
   )
 }
 
-// Hafta sonu boş gün: buharı tüten kupa.
-export function CoffeeCup({ width = 56, style }: P) {
+// Hafta sonu: buharı tüten kupa.
+export function CoffeeCup({ width = 46, style, color = '#6b6a65' }: P) {
   return (
-    <svg width={width} viewBox="0 0 56 44" aria-hidden style={{ height: 'auto', flex: 'none', ...style }}>
-      <path d="M10 14q0-4 4-4h24q4 0 4 4v12q0 12-16 12q-16 0-16-12z" fill="#C2410C" />
-      <path d="M42 18q8 0 8 6q0 6-8 6" fill="none" stroke="#C2410C" strokeWidth="4" />
-      <path d="M20 6q3-3 0-6M28 6q3-3 0-6" fill="none" stroke="#ffffff" strokeWidth="2" strokeLinecap="round" />
-    </svg>
+    <Pencil viewBox="0 0 46 38" width={width} style={style} color={color} strokeWidth={1.4}>
+      <path d="M8 12c8-.5 18-.5 24 0c.5 6 0 12-12 15c-12-3-12.5-9-12-15z" />
+      <path d="M32 15c6 0 6 7 0 7" />
+      <path d="M16 7c2-2 0-4 2-6M23 7c2-2 0-4 2-6" />
+    </Pencil>
   )
 }
 
-// Profil kapağı: not kağıdı + kalem.
-export function NoteAndPencil({ width = 150, style }: P) {
+// Profil kapağı: not kâğıdı + kalem.
+export function NoteAndPencil({ width = 140, style, color }: P) {
   return (
-    <svg width={width} viewBox="0 0 150 120" aria-hidden style={{ height: 'auto', flex: 'none', ...style }}>
-      <g transform="rotate(10 80 50)">
-        <rect x="40" y="10" width="80" height="80" rx="8" fill="#ffffff" fillOpacity="0.9" />
-        <line x1="54" y1="36" x2="106" y2="36" stroke="#7C3AED" strokeWidth="4" strokeLinecap="round" />
-        <line x1="54" y1="54" x2="92" y2="54" stroke="#7C3AED" strokeWidth="4" strokeLinecap="round" />
+    <Pencil viewBox="0 0 150 120" width={width} style={style} color={color} strokeWidth={1.6}>
+      <g transform="rotate(8 80 50)">
+        <path d="M40 12c26-1 54-1 80 1c1 26 0 52 1 76c-26 1-54 1-80-1c-1-24-2-50-1-76z" fill="#fcfcfa" />
+        <path d="M54 36c18-1 34-1 52 0M54 54c12-1 26-1 38 0M54 72c8-1 16-1 24 0" strokeWidth="1.2" />
       </g>
-      <g transform="rotate(-30 60 100)">
-        <rect x="10" y="94" width="110" height="14" rx="7" fill="#FB923C" />
-        <path d="M120 94 l18 7 l-18 7 z" fill="#fde7d4" />
+      <g transform="rotate(-28 60 100)">
+        <path d="M12 94h104l18 7l-18 7h-104z" fill="#fcfcfa" />
+        <path d="M116 94v14M30 94v14" strokeWidth="1.1" />
       </g>
-    </svg>
+    </Pencil>
   )
 }
 
 // 404: yırtık sayfa + soru işareti.
-export function LostPage({ width = 160, style }: P) {
+export function LostPage({ width = 150, style, color }: P) {
   return (
-    <svg width={width} viewBox="0 0 160 130" aria-hidden style={{ height: 'auto', ...style }}>
-      <ellipse cx="80" cy="120" rx="56" ry="6" fill="#000" opacity="0.35" />
-      <g transform="rotate(-8 80 60)">
-        <path d="M36 10 h88 v84 l-10 -6 l-10 8 l-10 -8 l-10 8 l-10 -8 l-10 8 l-10 -8 l-10 8 l-8 -6 z" fill="#A78BFA" />
-        <line x1="50" y1="34" x2="108" y2="34" stroke="#ffffff" strokeOpacity="0.7" strokeWidth="3" strokeLinecap="round" />
-        <line x1="50" y1="50" x2="96" y2="50" stroke="#ffffff" strokeOpacity="0.7" strokeWidth="3" strokeLinecap="round" />
+    <Pencil viewBox="0 0 160 130" width={width} style={style} color={color} strokeWidth={1.6}>
+      <path d="M40 122c30 3 60 3 84-1" strokeWidth="1.1" strokeDasharray="3 5" />
+      <g transform="rotate(-7 80 60)">
+        <path d="M36 12c30-1 60-1 88 1c1 26 0 54 0 80l-10-6l-10 8l-10-8l-10 8l-10-8l-10 8l-10-8l-10 8l-8-6c-1-26-1-52 0-77z" fill="#fcfcfa" />
+        <path d="M50 36c20-1 38-1 58 0M50 52c16-1 30-1 46 0" strokeWidth="1.2" />
       </g>
-      <circle cx="128" cy="26" r="16" fill="#FB923C" />
-      <path d="M123 22 q0 -6 5 -6 q5 0 5 5 q0 4 -5 5 v3" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" />
-      <circle cx="128" cy="35" r="1.8" fill="#fff" />
-      <path d="M22 70 l3 7 l7 3 l-7 3 l-3 7 l-3 -7 l-7 -3 l7 -3 z" fill="#4ADE80" />
-    </svg>
+      <path d="M121 20c0-7 14-8 14 0c0 6-7 6-7 12" strokeWidth="2" />
+      <path d="M128 40v1" strokeWidth="2.6" />
+    </Pencil>
   )
 }
 
 // E-posta kontrolü: zarf + onay.
-export function MailCheck({ width = 140, style }: P) {
+export function MailCheck({ width = 130, style, color }: P) {
   return (
-    <svg width={width} viewBox="0 0 140 110" aria-hidden style={{ height: 'auto', ...style }}>
-      <ellipse cx="70" cy="102" rx="50" ry="6" fill="#000" opacity="0.35" />
-      <g transform="rotate(-6 70 55)">
-        <rect x="18" y="22" width="104" height="70" rx="10" fill="#0F766E" />
-        <path d="M18 30 l52 34 l52 -34" fill="none" stroke="#5EEAD4" strokeWidth="4" strokeLinejoin="round" />
+    <Pencil viewBox="0 0 140 110" width={width} style={style} color={color} strokeWidth={1.6}>
+      <path d="M30 102c26 3 54 3 80-1" strokeWidth="1.1" strokeDasharray="3 5" />
+      <g transform="rotate(-5 70 55)">
+        <path d="M18 24c34-1 70-1 104 1c1 22 0 46 1 66c-34 1-70 1-104-1c-1-22-2-44-1-66z" fill="#fcfcfa" />
+        <path d="M19 30l51 34l52-34" />
       </g>
-      <circle cx="112" cy="26" r="18" fill="#15803D" stroke="#120d22" strokeWidth="4" />
-      <path d="M104 26 l6 6 l10 -11" fill="none" stroke="#fff" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" />
-      <path d="M20 8 l3 7 l7 3 l-7 3 l-3 7 l-3 -7 l-7 -3 l7 -3 z" fill="#FDBA74" />
-    </svg>
-  )
-}
-
-// Spiral halkalar (beyaz tel).
-export function Spiral({ count = 5, style }: { count?: number; style?: CSSProperties }) {
-  return (
-    <div className="spiral" aria-hidden style={style}>
-      {Array.from({ length: count }, (_, i) => (
-        <span key={i} />
-      ))}
-    </div>
+      <circle cx="112" cy="24" r="15" fill="#fcfcfa" />
+      <path d="M105 24l5 5l9-10" strokeWidth="2" />
+    </Pencil>
   )
 }

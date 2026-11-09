@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { NotebookHero } from './illustrations'
+import { NotebookHero, Scribble, Spiral } from './illustrations'
 import { Logo } from './Logo'
 import './auth.css'
 
@@ -11,27 +11,35 @@ interface Props {
   children: ReactNode
 }
 
-// Giriş, kayıt, doğrulama ekranları (taslak: Main.dc.html): solda büyük defter illüstrasyonu, sağda cam kart.
+// Giriş, kayıt, doğrulama ekranları: noktalı kâğıt zemin, solda kalem çizimi defter, sağda spiral telli kâğıt kart.
 export function AuthLayout({ title, subtitle, art, children }: Props) {
   return (
-    <div className="auth-shell">
+    <div className="auth-shell paper-bg">
       <div className="auth-hero" aria-hidden>
-        <NotebookHero width={520} />
+        <NotebookHero width={460} />
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, textAlign: 'center' }}>
-          <span className="hand" style={{ fontSize: 34 }}>
-            Hayatının en düzenli sayfası.
+          <span className="hand" style={{ fontSize: 30, fontWeight: 700 }}>
+            hayatının en düzenli sayfası.
           </span>
-          <span style={{ fontSize: 15, opacity: 0.8 }}>Planla, sürükle, tamamla. Senin defterin, senin düzenin.</span>
+          <span className="muted" style={{ fontSize: 14 }}>
+            Planla, sürükle, tamamla. Senin defterin, senin düzenin.
+          </span>
         </div>
       </div>
 
       <div className="auth-side">
-        <main className="auth-card page-enter">
+        <main className="auth-card paper page-enter">
+          <Spiral />
           <Logo size="large" />
           {art}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-            <h1 style={{ margin: 0, fontSize: 30, fontWeight: 700, letterSpacing: '-0.02em', lineHeight: 1.15 }}>{title}</h1>
-            {subtitle && <p style={{ margin: 0, fontSize: 15, opacity: 0.75 }}>{subtitle}</p>}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <h1 style={{ margin: 0, fontFamily: 'var(--font-hand)', fontSize: 32, fontWeight: 700, lineHeight: 1.1 }}>{title}</h1>
+            <Scribble width={180} />
+            {subtitle && (
+              <p className="muted" style={{ margin: '4px 0 0', fontSize: 14 }}>
+                {subtitle}
+              </p>
+            )}
           </div>
           {children}
         </main>

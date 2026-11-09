@@ -12,7 +12,7 @@ import '../layout.css'
 // Mantine `sm` kırılımı (48em = 768 px).
 export const MOBILE_QUERY = `(max-width: ${em(767.98)})`
 
-// Özel Defter yerleşimi: masaüstünde hep açık sol sidebar; mobilde alt bar + ortada gradyan "+".
+// Eskiz Defter yerleşimi: masaüstünde hep açık sol sidebar; mobilde alt bar + ortada grafit "+".
 export function AppLayout() {
   const isMobile = useMediaQuery(MOBILE_QUERY) ?? false
   const [mobileOpen, { open: openMobile, close: closeMobile }] = useDisclosure(false)
@@ -24,7 +24,7 @@ export function AppLayout() {
     <LayoutContext.Provider value={layout}>
       <ActivityFormProvider>
         <CommandPalette />
-        <Box className="ink-backdrop app-shell">
+        <Box className="paper-bg app-shell">
           {!isMobile && (
             <nav aria-label="Ana menü" className="app-sidebar">
               <Sidebar />
@@ -45,7 +45,7 @@ export function AppLayout() {
               onClose={closeMobile}
               size={280}
               withCloseButton={false}
-              styles={{ content: { background: 'var(--ink-bg)' }, body: { padding: 0, height: '100%' } }}
+              styles={{ content: { background: 'var(--paper-side)' }, body: { padding: 0, height: '100%' } }}
             >
               <Sidebar onNavigate={closeMobile} />
             </Drawer>

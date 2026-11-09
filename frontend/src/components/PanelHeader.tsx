@@ -1,5 +1,6 @@
 import { IconChevronLeft, IconChevronRight } from '@tabler/icons-react'
 import type { ReactNode } from 'react'
+import { Scribble } from './illustrations'
 
 export type ViewType = 'timeGridWeek' | 'dayGridMonth' | 'timeGridDay'
 
@@ -13,7 +14,7 @@ interface HeaderProps {
   // Sayfa adı; `meta` verilirse büyük başlık meta olur, title el yazısı üst satıra iner.
   title: string
   meta?: string
-  // El yazısı üst satır (Caveat); verilmezse meta varken title kullanılır.
+  // El yazısı üst satır (Kalam); verilmezse meta varken title kullanılır.
   kicker?: string
   onToday?: () => void
   onPrev?: () => void
@@ -26,7 +27,7 @@ interface HeaderProps {
   children?: ReactNode
 }
 
-// İçerik başlığı (taslak: Pano/Takvim): el yazısı üst satır + büyük dönem başlığı; sağda görünüm ve ‹ Bugün ›.
+// İçerik başlığı (taslak: Eskiz-Pano): el yazısı üst satır + Kalam dönem başlığı + el çizimi alt çizgi; sağda görünüm ve ‹ Bugün ›.
 export function PanelHeader({
   title,
   meta,
@@ -43,13 +44,10 @@ export function PanelHeader({
   const small = kicker ?? (meta ? title : undefined)
   return (
     <header className="page-header">
-      <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0, flex: '1 1 220px' }}>
-        {small && (
-          <span className="hand" style={{ fontSize: 24 }}>
-            {small}
-          </span>
-        )}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 2, minWidth: 0, flex: '1 1 220px' }}>
+        {small && <span className="page-kicker">{small}</span>}
         <h1>{meta ?? title}</h1>
+        <Scribble width={250} />
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
         {children}
@@ -64,7 +62,7 @@ export function PanelHeader({
         )}
         {onPrev && (
           <button type="button" className="icon-btn" aria-label={prevLabel} onClick={onPrev}>
-            <IconChevronLeft size={18} stroke={2.2} aria-hidden />
+            <IconChevronLeft size={16} stroke={2} aria-hidden />
           </button>
         )}
         {onToday && (
@@ -74,7 +72,7 @@ export function PanelHeader({
         )}
         {onNext && (
           <button type="button" className="icon-btn" aria-label={nextLabel} onClick={onNext}>
-            <IconChevronRight size={18} stroke={2.2} aria-hidden />
+            <IconChevronRight size={16} stroke={2} aria-hidden />
           </button>
         )}
       </div>

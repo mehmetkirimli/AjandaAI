@@ -1,12 +1,8 @@
-/* Giriş ekranları (taslak: Main.dc.html) */
+/* Giriş ekranları (Eskiz Defter, ADR 0021 Karar 5f) */
 .auth-shell {
   min-height: 100dvh;
   display: flex;
-  color: #fff;
-  background:
-    radial-gradient(circle at 15% 20%, #3b1d6e 0%, transparent 45%),
-    radial-gradient(circle at 85% 85%, #0f4c5c 0%, transparent 45%),
-    var(--ink-bg);
+  color: var(--graphite);
 }
 
 .auth-hero {
@@ -16,41 +12,37 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  padding: 56px;
-  gap: 28px;
+  padding: 48px;
+  gap: 24px;
 }
 
 .auth-side {
-  width: 520px;
+  width: 480px;
   flex: none;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 48px;
+  padding: 48px 40px;
   box-sizing: border-box;
 }
 
+/* Spiral telli kâğıt kart */
 .auth-card {
   width: 100%;
   box-sizing: border-box;
-  padding: 40px;
-  border-radius: 24px;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.45);
+  padding: 40px 34px 32px;
   display: flex;
   flex-direction: column;
-  gap: 22px;
+  gap: 20px;
 }
 
 .auth-card .mantine-Input-input,
 .auth-card .mantine-PasswordInput-input {
-  height: 48px;
-  font-size: 15px;
+  height: 44px;
 }
 
 .auth-card .mantine-PasswordInput-innerInput {
-  height: 46px;
+  height: 42px;
 }
 
 .auth-links {
@@ -58,7 +50,7 @@
   justify-content: space-between;
   gap: 8px;
   flex-wrap: wrap;
-  font-size: 14px;
+  font-size: 13px;
 }
 
 @media (max-width: 1000px) {
@@ -67,13 +59,13 @@
   }
   .auth-side {
     width: 100%;
-    padding: 24px 16px;
+    padding: 40px 16px 24px;
   }
 }
 
 @media (max-width: 767.98px) {
   .auth-card {
-    padding: 24px 20px;
-    gap: 18px;
+    padding: 34px 20px 24px;
+    gap: 16px;
   }
 }

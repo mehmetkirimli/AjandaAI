@@ -68,7 +68,7 @@ export function LoginPage() {
             autoComplete="current-password"
             {...form.getInputProps('password')}
           />
-          <Button type="submit" variant="rainbow" loading={submitting} fullWidth h={52} radius={14} fz={16} mt="xs">
+          <Button type="submit" variant="ink" loading={submitting} fullWidth h={46} fz={14} mt="xs">
             Defterimi aç
           </Button>
           <Text ta="center" fz={14}>

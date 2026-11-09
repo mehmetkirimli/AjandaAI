@@ -1,109 +1,80 @@
-/* "Özel Defter" tasarım token'ları (ADR 0021 Karar 5e). Mantine stillerinden SONRA yüklenir.
-   Renk değerleri main.tsx'teki Mantine temasıyla ve lib/categoryColor.ts ile aynıdır. */
+/* "Eskiz Defter" tasarım token'ları (ADR 0021 Karar 5f). Mantine stillerinden SONRA yüklenir.
+   Değerler docs/design/eskiz taslaklarından; main.tsx'teki Mantine teması ve lib/categoryColor.ts ile aynıdır. */
 :root {
-  /* Dolgular (üstünde beyaz metin) */
-  --c-green: #15803d;
-  --c-teal: #0f766e;
-  --c-violet: #7c3aed;
-  --c-orange: #c2410c;
-  /* Canlı tonlar: yalnızca parlama, çerçeve, ikon, illüstrasyon */
-  --v-green: #4ade80;
-  --v-teal: #2dd4bf;
-  --v-violet: #a78bfa;
-  --v-orange: #fb923c;
-  /* Açık ikon tonları */
-  --l-green: #86efac;
-  --l-teal: #5eead4;
-  --l-violet: #c4b5fd;
-  --l-orange: #fdba74;
+  /* Kâğıt */
+  --paper-bg: #f2f1ed;
+  --paper: #fcfcfa;
+  --paper-strip: #e9e8e4;
+  --paper-side: #e4e3df;
+  --paper-dots: rgba(60, 60, 58, 0.2);
 
-  --ink-bg: #120d22;
-  --ink-card: #1b1530;
-  --ink-card-2: #241c3d;
-  --ink-field: rgba(0, 0, 0, 0.25);
-  --ink-line: rgba(255, 255, 255, 0.08);
-  --ink-line-strong: rgba(255, 255, 255, 0.14);
-  --ink-soft: rgba(255, 255, 255, 0.06);
-  --ink-ruled: rgba(255, 255, 255, 0.05);
+  /* Grafit kalem */
+  --graphite: #2b2a27;
+  --graphite-2: #5c5b56;
+  --muted: #6b6a65;
+  --faint: #8a8984;
+  --dash: #bdbcb6;
+  --hover: rgba(43, 42, 39, 0.05);
+  --highlight: rgba(120, 120, 115, 0.22);
+  --sketch-shadow: 3px 3px 0 rgba(43, 42, 39, 0.12);
+  --sketch-shadow-lg: 5px 5px 0 rgba(43, 42, 39, 0.14);
+  /* Hata metni: koyu terrakota (kâğıt üstünde ≥ 4.5:1). */
+  --danger: #9b3f22;
 
-  --grad-rainbow: linear-gradient(90deg, #15803d, #0f766e 35%, #7c3aed 70%, #c2410c);
-  --grad-rainbow-diag: linear-gradient(135deg, #15803d, #0f766e 40%, #7c3aed 75%, #c2410c);
-  --grad-vivid: linear-gradient(135deg, #4ade80, #2dd4bf, #a78bfa, #fb923c);
-  --grad-avatar: linear-gradient(135deg, #c2410c, #7c3aed);
-  --grad-today: linear-gradient(135deg, #7c3aed, #c2410c);
-  --glow-violet: 0 12px 30px rgba(124, 58, 237, 0.4);
+  /* Kalem çizgisi */
+  --pen: 1.6px solid var(--graphite);
+  --radius-sketch: 3px 8px 4px 7px;
+  --radius-btn: 255px 12px 225px 12px / 12px 225px 12px 255px;
 
-  --font-hand: 'Caveat', cursive;
+  --font-hand: 'Kalam', cursive;
   --font-mono: 'JetBrains Mono Variable', 'JetBrains Mono', ui-monospace, monospace;
 
-  /* Eski token adları (yönetim sayfaları vb.) yeni paletle eşlenir. */
-  --app-bg: var(--ink-bg);
-  --app-layer-1: rgba(0, 0, 0, 0.25);
-  --app-surface: var(--ink-card);
-  --app-surface-2: var(--ink-card-2);
-  --app-line: var(--ink-line);
-  --app-line-strong: var(--ink-line-strong);
-  --app-hover: rgba(255, 255, 255, 0.06);
-  --app-active: rgba(255, 255, 255, 0.1);
-  --app-chip: rgba(255, 255, 255, 0.08);
-  --app-text-muted: rgba(255, 255, 255, 0.8);
-  --app-text-faint: rgba(255, 255, 255, 0.65);
-  --app-icon-faint: rgba(255, 255, 255, 0.5);
-  --app-dash: rgba(255, 255, 255, 0.3);
-  --app-dash-hover: rgba(255, 255, 255, 0.55);
-  --app-popover-shadow: 0 20px 50px rgba(0, 0, 0, 0.55);
-
-  --mantine-color-body: var(--ink-bg);
-  --mantine-color-default-border: var(--ink-line-strong);
-  --mantine-color-dimmed: rgba(255, 255, 255, 0.72);
-}
-
-:root[data-mantine-color-scheme='dark'] {
-  --mantine-color-body: var(--ink-bg);
-  --mantine-color-text: #ffffff;
-  --mantine-color-dimmed: rgba(255, 255, 255, 0.72);
-  --mantine-color-default: rgba(255, 255, 255, 0.05);
-  --mantine-color-default-hover: rgba(255, 255, 255, 0.1);
-  --mantine-color-default-border: var(--ink-line-strong);
-  --mantine-color-placeholder: rgba(255, 255, 255, 0.45);
-  --mantine-color-anchor: var(--l-teal);
+  --mantine-color-body: var(--paper-bg);
+  --mantine-color-text: var(--graphite);
+  --mantine-color-dimmed: var(--muted);
+  --mantine-color-default: var(--paper);
+  --mantine-color-default-hover: var(--paper-strip);
+  --mantine-color-default-border: var(--graphite);
+  --mantine-color-placeholder: var(--faint);
+  --mantine-color-anchor: var(--graphite);
 }
 
 html,
 body {
-  background: var(--ink-bg);
+  background: var(--paper-bg);
   /* Mobilde yatay sayfa kaydırması olmasın; tablolar kendi kapsayıcılarında kayar. */
   overflow-x: hidden;
 }
 
 body {
   -webkit-font-smoothing: antialiased;
-  color: #fff;
+  color: var(--graphite);
+  font-size: 14px;
 }
 
-/* Zemin: köşelerde mor ve turkuaz ışık. */
-.ink-backdrop {
-  background:
-    radial-gradient(circle at 90% 0%, #3b1d6e 0%, transparent 40%),
-    radial-gradient(circle at 30% 100%, #0f4c5c 0%, transparent 40%),
-    var(--ink-bg);
+/* Zemin: noktalı ızgara. */
+.paper-bg {
+  background-color: var(--paper-bg);
+  background-image: radial-gradient(circle, var(--paper-dots) 1px, transparent 1.3px);
+  background-size: 22px 22px;
 }
 
 ::selection {
-  background: rgba(124, 58, 237, 0.45);
+  background: var(--highlight);
 }
 
 a {
-  color: var(--l-teal);
+  color: var(--graphite);
+  text-underline-offset: 3px;
 }
 
 a:hover {
-  color: #fff;
+  color: #000;
 }
 
-/* Odak halkası: klavye odağında her zaman görünür. */
+/* Odak halkası: klavye odağında her zaman görünür (grafit). */
 :focus-visible {
-  outline: 2px solid var(--v-teal);
+  outline: 2px solid var(--graphite);
   outline-offset: 2px;
 }
 
@@ -115,7 +86,7 @@ button:focus:not(:focus-visible) {
 /* Yazı aileleri */
 .hand {
   font-family: var(--font-hand);
-  font-weight: 600;
+  font-weight: 400;
   line-height: 1;
 }
 
@@ -124,19 +95,28 @@ button:focus:not(:focus-visible) {
   font-weight: 500;
 }
 
-/* Mantine form alanları: taslaktaki koyu, yuvarlak alanlar. */
+.muted {
+  color: var(--muted);
+}
+
+/* Fosforlu kalem çizgisi (seçili menü, vurgu). */
+.highlight {
+  background-image: linear-gradient(transparent 62%, var(--highlight) 62%, var(--highlight) 88%, transparent 88%);
+}
+
+/* Mantine form alanları: kâğıt zemin, ince grafit çizgi. */
 .mantine-Input-input,
 .mantine-PasswordInput-input {
-  background: var(--ink-field);
-  border-color: rgba(255, 255, 255, 0.16);
-  color: #fff;
+  background: var(--paper);
+  border: 1.4px solid var(--faint);
+  color: var(--graphite);
 }
 
 .mantine-Input-input:focus,
 .mantine-Input-input:focus-within,
 .mantine-PasswordInput-input:focus-within {
-  border-color: var(--v-teal);
-  box-shadow: 0 0 0 4px rgba(45, 212, 191, 0.18);
+  border-color: var(--graphite);
+  box-shadow: 0 0 0 2px var(--highlight);
 }
 
 .mantine-InputWrapper-label {
@@ -145,109 +125,121 @@ button:focus:not(:focus-visible) {
   margin-bottom: 6px;
 }
 
+.mantine-InputWrapper-description {
+  color: var(--muted);
+}
+
 .mantine-InputWrapper-error {
-  color: var(--l-orange);
+  color: var(--danger);
 }
 
 .mantine-Input-input[data-error] {
-  border-color: var(--v-orange);
-  color: #fff;
+  border-color: var(--danger);
+  color: var(--graphite);
 }
 
-/* Dört renkli gradyan ana eylem: <Button variant="rainbow">. */
-.mantine-Button-root[data-variant='rainbow'] {
-  background: var(--grad-rainbow);
-  color: #fff;
-  border: 0;
-  box-shadow: var(--glow-violet);
-  transition: filter 140ms ease, transform 140ms ease;
+/* Ana eylem: grafit dolu, kalemle çizilmiş kenar. <Button variant="ink">. */
+.mantine-Button-root[data-variant='ink'] {
+  background: var(--graphite);
+  color: var(--paper-bg);
+  border: 1.5px solid var(--graphite);
+  /* Geniş butonda taslağın elips kenarı leke gibi durur; kalem köşe kullanılır (sidebar butonu taslaktaki gibi). */
+  border-radius: var(--radius-sketch);
+  font-weight: 600;
+  transition: background 140ms ease, transform 140ms ease;
 }
 
-.mantine-Button-root[data-variant='rainbow']:hover {
-  filter: brightness(1.08);
+.mantine-Button-root[data-variant='ink']:hover {
+  background: #000;
 }
 
-.mantine-Button-root[data-variant='rainbow']:active {
+.mantine-Button-root[data-variant='ink']:active {
   transform: translateY(1px);
 }
 
-.mantine-Button-root[data-variant='rainbow']:disabled,
-.mantine-Button-root[data-variant='rainbow'][data-disabled] {
-  filter: grayscale(0.7) brightness(0.8);
-  box-shadow: none;
-  color: rgba(255, 255, 255, 0.7);
+.mantine-Button-root[data-variant='ink']:disabled,
+.mantine-Button-root[data-variant='ink'][data-disabled] {
+  background: var(--faint);
+  border-color: var(--faint);
+  color: var(--paper);
 }
 
-/* Cam (ikincil) buton: ince çerçeve, hafif zemin. <Button variant="glass">. */
-.mantine-Button-root[data-variant='glass'] {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid var(--ink-line-strong);
-  color: #fff;
+/* İkincil buton: grafit çerçeve, şeffaf. <Button variant="sketch">. */
+.mantine-Button-root[data-variant='sketch'] {
+  background: transparent;
+  border: 1.5px solid var(--graphite);
+  border-radius: 6px;
+  color: var(--graphite);
+  font-weight: 600;
 }
 
-.mantine-Button-root[data-variant='glass']:hover {
-  background: rgba(255, 255, 255, 0.1);
+.mantine-Button-root[data-variant='sketch']:hover {
+  background: var(--hover);
 }
 
-/* Alert: renkli kutular koyu dolgulu, metin beyaz. */
+.mantine-Button-root[data-variant='sketch']:disabled,
+.mantine-Button-root[data-variant='sketch'][data-disabled] {
+  border-color: var(--dash);
+  color: var(--faint);
+}
+
+/* Alert: kâğıt zemin, kalem çerçeve; renk yalnızca sol çizgide. */
 .mantine-Alert-root {
-  border: 1px solid var(--ink-line-strong);
+  background: var(--paper);
+  border: 1.4px solid var(--graphite);
+  border-left: 4px solid var(--alert-line, var(--graphite));
+  border-radius: 4px;
+}
+
+.mantine-Alert-root[data-variant='light'] {
+  --alert-line: var(--alert-color);
 }
 
 .mantine-Alert-message,
 .mantine-Alert-title {
-  color: #fff;
+  color: var(--graphite);
 }
 
-/* Kart (defter sayfası) */
-.ink-card {
-  border-radius: 20px;
-  background: var(--ink-card);
-  border: 1px solid var(--ink-line);
+.mantine-Alert-icon {
+  color: var(--graphite);
 }
 
-/* Çizgili sayfa zemini (32 px satır) */
-.ruled {
-  background-image: repeating-linear-gradient(
-    to bottom,
-    transparent 0,
-    transparent 31px,
-    var(--ink-ruled) 31px,
-    var(--ink-ruled) 32px
-  );
+/* Kart (defter sayfası): kâğıt, hafif düzensiz kalem çerçeve + ofset gölge. */
+.paper {
+  position: relative;
+  background: var(--paper);
+  border: var(--pen);
+  border-radius: var(--radius-sketch);
+  box-shadow: var(--sketch-shadow);
 }
 
-/* Spiral halkalar: beyaz telli defter. */
-.spiral {
-  height: 14px;
-  display: flex;
-  justify-content: space-around;
-  padding: 6px 14px 0;
-  flex: none;
+/* Spiral telli kart: tel üst kenardan ~14 px taşar. */
+.paper[data-spiral='true'] {
+  padding-top: 22px;
 }
 
-.spiral > span {
-  width: 7px;
-  height: 12px;
-  border-radius: 4px;
-  background: linear-gradient(#ffffff, #d6d0e8);
-  box-shadow: 0 2px 3px rgba(0, 0, 0, 0.5);
+/* El çizimi alt çizgi */
+.scribble {
+  display: block;
+  color: var(--graphite);
 }
 
-/* Gradyan rozet / avatar */
-.avatar-grad {
+/* Avatar: grafit çerçeveli daire, Kalam baş harf. */
+.avatar {
   border-radius: 50%;
-  background: var(--grad-avatar);
+  border: 1.5px solid var(--graphite);
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  font-family: var(--font-hand);
   font-weight: 700;
-  color: #fff;
+  color: var(--graphite);
+  background: var(--paper);
   flex: none;
 }
 
 /* Hareket: sayfa ve kart belirme. */
-@keyframes ink-page-in {
+@keyframes page-in {
   from {
     opacity: 0;
     transform: translateY(8px);
@@ -258,7 +250,7 @@ button:focus:not(:focus-visible) {
   }
 }
 
-@keyframes ink-card-in {
+@keyframes card-in {
   from {
     opacity: 0;
     transform: translateY(6px) scale(0.98);
@@ -270,11 +262,11 @@ button:focus:not(:focus-visible) {
 }
 
 .page-enter {
-  animation: ink-page-in 280ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  animation: page-in 280ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
 }
 
 .card-enter {
-  animation: ink-card-in 240ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  animation: card-in 240ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -289,52 +281,155 @@ button:focus:not(:focus-visible) {
 
 /* Komut paleti */
 .mantine-Spotlight-content {
-  background: var(--ink-card);
-  border: 1px solid var(--ink-line-strong);
-  box-shadow: var(--app-popover-shadow), 0 0 60px rgba(124, 58, 237, 0.25);
-  border-radius: 20px;
+  background: var(--paper);
+  border: var(--pen);
+  box-shadow: var(--sketch-shadow-lg);
+  border-radius: var(--radius-sketch);
   overflow: hidden;
-}
-
-.mantine-Spotlight-content::before {
-  content: '';
-  display: block;
-  height: 6px;
-  background: var(--grad-rainbow);
 }
 
 .mantine-Spotlight-search {
   background: transparent;
-  border-bottom: 1px solid var(--ink-line);
-  font-size: 16px;
+  border: 0;
+  border-bottom: 1.2px dashed var(--dash);
+  font-size: 15px;
+  color: var(--graphite);
 }
 
-.mantine-Spotlight-actionsGroup {
-  color: rgba(255, 255, 255, 0.75);
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+/* Grup başlığı (::before ile gelir) el yazısı; eylemler Inter kalır. */
+.mantine-Spotlight-actionsGroup::before {
+  color: var(--muted);
+  font-family: var(--font-hand);
+  font-size: 17px;
+  font-weight: 400;
+  text-transform: lowercase;
+  letter-spacing: 0;
 }
 
 .mantine-Spotlight-action {
-  border-radius: 12px;
+  border-radius: 4px;
   min-height: 44px;
+  color: var(--graphite);
 }
 
 .mantine-Spotlight-action[data-selected],
 .mantine-Spotlight-action:hover {
-  background: rgba(45, 212, 191, 0.16);
+  background: var(--highlight);
 }
 
 .mantine-Spotlight-action mark {
-  background: rgba(124, 58, 237, 0.45);
+  background: var(--highlight);
   color: inherit;
   font-weight: 700;
-  border-radius: 3px;
+  border-radius: 2px;
 }
 
-/* Bildirimler */
+/* Bildirimler, menüler, modallar, drawer'lar: kâğıt + kalem çerçeve. */
 .mantine-Notification-root {
-  border-radius: 14px;
+  background: var(--paper);
+  border: var(--pen);
+  border-radius: var(--radius-sketch);
+  box-shadow: var(--sketch-shadow-lg);
+}
+
+.mantine-Notification-title,
+.mantine-Notification-description {
+  color: var(--graphite);
+}
+
+.mantine-Menu-dropdown,
+.mantine-Popover-dropdown,
+.mantine-Combobox-dropdown,
+.mantine-Select-dropdown {
+  background: var(--paper);
+  border: var(--pen);
+  border-radius: 4px;
+  box-shadow: var(--sketch-shadow);
+}
+
+.mantine-Menu-item[data-hovered],
+.mantine-Combobox-option[data-combobox-selected],
+.mantine-Combobox-option:hover {
+  background: var(--highlight);
+}
+
+.mantine-Modal-content,
+.mantine-Drawer-content {
+  background: var(--paper);
+}
+
+.mantine-Modal-header,
+.mantine-Drawer-header {
+  background: var(--paper);
+}
+
+.mantine-Modal-content {
+  border: var(--pen);
+  border-radius: var(--radius-sketch);
+  box-shadow: var(--sketch-shadow-lg);
+}
+
+.mantine-Kbd-root {
+  background: transparent;
+  border: 1px solid var(--faint);
+  border-radius: 4px;
+  color: var(--graphite);
+  font-family: var(--font-mono);
+}
+
+.mantine-Badge-root {
+  border-radius: 4px;
+}
+
+.mantine-Badge-root[data-variant='light'],
+.mantine-Badge-root[data-variant='outline'] {
+  background: transparent;
+  border: 1.2px solid currentColor;
+}
+
+.mantine-Skeleton-root::after {
+  background: var(--paper-strip);
+}
+
+/* Tablolar (yönetim): kesikli satır çizgileri. */
+.mantine-Table-table {
+  --table-border-color: var(--dash);
+  background: var(--paper);
+}
+
+.mantine-Table-th {
+  font-weight: 600;
+  color: var(--graphite);
+  border-bottom: var(--pen) !important;
+}
+
+.mantine-Table-tr[data-hover]:hover,
+.mantine-Table-table[data-hover] .mantine-Table-tr:hover {
+  background: var(--hover);
+}
+
+.mantine-Table-td {
+  border-bottom: 1.2px dashed var(--dash);
+}
+
+.mantine-SegmentedControl-root {
+  background: transparent;
+  border: 1.5px solid var(--graphite);
+  border-radius: 6px;
+}
+
+.mantine-SegmentedControl-indicator {
+  background: var(--graphite);
+  border-radius: 3px;
+  box-shadow: none;
+}
+
+.mantine-SegmentedControl-label[data-active] {
+  color: var(--paper-bg) !important;
+}
+
+.mantine-Checkbox-input:checked,
+.mantine-Switch-input:checked + .mantine-Switch-track {
+  background: var(--graphite);
+  border-color: var(--graphite);
 }

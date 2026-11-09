@@ -25,7 +25,7 @@ export function CheckEmailPage() {
         <Alert color="teal" icon={<IconInfoCircle size={18} />} w="100%" title="Geliştirme notu">
           Geliştirme ortamında e-posta gönderilmez: doğrulama bağlantısı backend konsol çıktısında (log) yazılır.
         </Alert>
-        <Button component={Link} to="/login" variant="rainbow" fullWidth h={52} radius={14} fz={16}>
+        <Button component={Link} to="/login" variant="ink" fullWidth h={46} fz={14}>
           Giriş sayfasına git
         </Button>
       </Stack>

@@ -71,9 +71,10 @@ export const ROADMAP: RoadmapItem[] = [
 
 export const STATUS_ORDER: RoadmapStatus[] = ['Eklendi', 'Sırada', 'Planlandı', 'Fikir']
 
-export const STATUS_FILL: Record<RoadmapStatus, string> = {
-  Eklendi: '#15803D',
-  Sırada: '#0F766E',
-  Planlandı: '#7C3AED',
-  Fikir: '#C2410C',
+// Durum çizgisi: kategori paletinin solgun tonları (lib/categoryColor.ts TONES ile aynı).
+export const STATUS_LINE: Record<RoadmapStatus, string> = {
+  Eklendi: '#6f8f6a',
+  Sırada: '#5e8a8a',
+  Planlandı: '#7d7aa6',
+  Fikir: '#b07a5a',
 }

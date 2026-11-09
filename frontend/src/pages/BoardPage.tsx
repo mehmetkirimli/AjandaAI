@@ -150,13 +150,13 @@ export function BoardPage() {
   const goNext = () => setWeekStart((w) => w.add(7, 'day'))
 
   const errorBox = activitiesQuery.isError && (
-    <Box px={isMobile ? 16 : 28} pt="sm">
+    <Box px={isMobile ? 16 : 34} pt="sm">
       <Alert color="orange" icon={<IconAlertCircle size={16} />} title="Aktiviteler yüklenemedi">
         <Group justify="space-between">
           <Text size="sm">
             {activitiesQuery.error instanceof ApiError ? activitiesQuery.error.message : 'Beklenmeyen bir hata oluştu.'}
           </Text>
-          <Button size="compact-sm" variant="glass" onClick={() => activitiesQuery.refetch()}>
+          <Button size="compact-sm" variant="sketch" onClick={() => activitiesQuery.refetch()}>
             Tekrar dene
           </Button>
         </Group>

@@ -26,7 +26,7 @@ import { useActivityForm } from '../components/activity-form/context'
 import { ActivityDrawer } from '../components/ActivityDrawer'
 import { useReschedule } from '../hooks/useReschedule'
 import { categoryTone } from '../lib/categoryColor'
-import { MONO } from '../components/board/ActivityCard'
+import { Spiral } from '../components/illustrations'
 import { DAY_NAMES, formatDuration, moveToDay, timeDative } from '../lib/week'
 import './calendar.css'
 
@@ -43,7 +43,7 @@ function dayName(d: dayjs.Dayjs): string {
 function renderEvent(arg: EventContentArg) {
   const isSeries = arg.event.extendedProps.seriesId != null
   const repeatIcon = isSeries ? <IconRepeat size={12} style={{ marginLeft: 4, opacity: 0.6, verticalAlign: 'middle' }} /> : null
-  const mono = { fontFamily: MONO, color: '#ffffff' }
+  const mono = { fontFamily: 'var(--font-mono)', color: 'var(--graphite-2)' }
   const month = arg.view.type === 'dayGridMonth'
   const ellipsis = { overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } as const
   if (month || arg.event.allDay) {
@@ -103,7 +103,7 @@ export default function CalendarPage() {
   const events = useMemo<EventInput[]>(
     () =>
       (items ?? []).map((a) => {
-        // Pano hapıyla aynı kural: iptal veya kategorisiz gri, aksi halde kategori rengi (shade 7).
+        // Pano kartıyla aynı kural: iptal veya kategorisiz gri çizgi, aksi halde kategori çizgisi.
         const category = categoriesQuery.data?.find((c) => c.id === a.categoryId)
         const known = categoriesQuery.data ? category !== undefined : true
         const neutral = a.status === 'Cancelled' || !known
@@ -115,10 +115,9 @@ export default function CalendarPage() {
           end: a.isAllDay ? undefined : a.end,
           allDay: a.isAllDay,
           extendedProps: { seriesId: a.seriesId ?? null },
-          // Pano kartıyla aynı dil: kategori renginin ~%12 tonu (opak, zeminle karışık) + 4 px tam renk sol çizgi.
-          // Kategori gradyanı calendar.css'te sınıfla verilir (FullCalendar backgroundColor gradyan almaz).
-          classNames: [`ev-${tone}`],
-          textColor: '#ffffff',
+          // Pano kartıyla aynı dil: kâğıt zemin + 3 px solgun kategori çizgisi (calendar.css'te sınıfla).
+          classNames: [`ev-${tone}`, ...(a.status === 'Completed' ? ['ev-done'] : [])],
+          textColor: '#2b2a27',
           // Tüm gün etkinliğinin süresi uzatılmaz (IsAllDay değişimi F3'ün işi).
           durationEditable: !a.isAllDay,
         }
@@ -218,7 +217,7 @@ export default function CalendarPage() {
         onPrev={() => api()?.prev()}
         onNext={() => api()?.next()}
       >
-        {activitiesQuery.isFetching && <Loader size={16} color="var(--v-teal)" aria-label="Yükleniyor" />}
+        {activitiesQuery.isFetching && <Loader size={16} color="var(--graphite)" aria-label="Yükleniyor" />}
       </PanelHeader>
 
       {activitiesQuery.isError && (
@@ -228,7 +227,7 @@ export default function CalendarPage() {
               <Text size="sm">
                 {activitiesQuery.error instanceof ApiError ? activitiesQuery.error.message : 'Beklenmeyen bir hata oluştu.'}
               </Text>
-              <Button size="compact-sm" variant="glass" onClick={() => void activitiesQuery.refetch()}>
+              <Button size="compact-sm" variant="sketch" onClick={() => void activitiesQuery.refetch()}>
                 Tekrar dene
               </Button>
             </Group>
@@ -238,6 +237,7 @@ export default function CalendarPage() {
 
       <div className="cal-wrap">
       <div className="cal-card">
+      <Spiral />
       <FullCalendar
         ref={calendarRef}
         plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
@@ -262,7 +262,7 @@ export default function CalendarPage() {
           return arg.view.type === 'dayGridMonth' ? short : (
             <>
               {short}
-              <b style={{ fontSize: 18 }}>{d.date()}</b>
+              <b className="cal-daynum">{d.date()}</b>
             </>
           )
         }}

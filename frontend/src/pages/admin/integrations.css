@@ -1,27 +1,31 @@
+/* Entegrasyonlar ve Yol Haritası (Eskiz Defter) */
 .rm-count {
   display: flex;
   align-items: center;
-  padding: 6px 12px;
-  border-radius: 10px;
+  min-height: 30px;
+  padding: 0 10px;
+  border: 1.2px solid var(--graphite);
+  border-left-width: 3px;
+  border-radius: 0 4px 4px 0;
+  background: var(--paper);
 }
 
 .rm-hero {
-  border-radius: 22px;
-  padding: 22px 24px;
-  background: linear-gradient(120deg, #0f766e, #7c3aed 60%, #c2410c);
+  margin-top: 14px;
+  padding: 30px 24px 22px;
   display: flex;
   gap: 22px;
   align-items: center;
   flex-wrap: wrap;
-  box-shadow: 0 20px 50px rgba(124, 58, 237, 0.35);
 }
 
 .rm-hero-icon {
-  width: 72px;
-  height: 72px;
+  width: 64px;
+  height: 64px;
   flex: none;
-  border-radius: 20px;
-  background: rgba(255, 255, 255, 0.2);
+  box-sizing: border-box;
+  border: 1.6px solid var(--graphite);
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -31,7 +35,8 @@
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 18px;
-  margin-top: 20px;
+  row-gap: 32px;
+  margin-top: 34px;
 }
 
 @media (max-width: 1100px) {
@@ -41,10 +46,10 @@
 }
 
 .rm-col {
-  padding: 16px;
+  padding: 26px 14px 14px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
   min-width: 0;
 }
 
@@ -52,6 +57,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
+  padding-bottom: 4px;
 }
 
 .rm-dot {
@@ -62,47 +68,59 @@
 }
 
 .rm-row {
-  border-radius: 14px;
-  padding: 10px 12px;
+  padding: 8px 10px;
+  border-left: 3px solid var(--dash);
   display: flex;
   gap: 10px;
   align-items: center;
   min-width: 0;
 }
 
+.rm-row + .rm-row {
+  border-top: 1.2px dashed var(--dash);
+}
+
+.rm-row[data-dashed='true'] {
+  border-left-style: dashed;
+}
+
 .rm-badge {
   font-size: 11px;
-  font-weight: 700;
-  padding: 3px 8px;
-  border-radius: 8px;
+  font-weight: 600;
+  padding: 2px 7px;
+  border: 1px solid var(--graphite);
+  border-left-width: 3px;
+  border-radius: 0 3px 3px 0;
   flex: none;
 }
 
 .rm-model {
-  border-radius: 14px;
   padding: 12px;
-  background: linear-gradient(135deg, rgba(15, 118, 110, 0.45), rgba(124, 58, 237, 0.35));
-  border: 1px solid rgba(94, 234, 212, 0.4);
+  border: 1.4px dashed var(--faint);
+  border-radius: 4px;
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
 
 .rm-model-mark {
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.18);
+  width: 34px;
+  height: 34px;
+  box-sizing: border-box;
+  border: 1.5px solid var(--graphite);
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: 800;
+  font-family: var(--font-hand);
+  font-size: 18px;
+  font-weight: 700;
   flex: none;
 }
 
 .rm-tool {
   font-size: 11px;
-  padding: 3px 8px;
-  border-radius: 6px;
-  background: rgba(0, 0, 0, 0.3);
+  padding: 2px 7px;
+  border: 1px solid var(--faint);
+  border-radius: 3px;
 }

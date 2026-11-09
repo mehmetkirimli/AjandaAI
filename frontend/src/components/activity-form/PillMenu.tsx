@@ -26,10 +26,10 @@ export function PillMenu<T extends string | number>({ ariaLabel, value, options,
     <Menu position="bottom-start" width={220} withinPortal>
       <Menu.Target>
         <Button
-          variant="glass"
+          variant="sketch"
           h={44}
           px={14}
-          radius={12}
+          radius={6}
           fz={14}
           aria-label={ariaLabel}
           title={label}

@@ -1,4 +1,3 @@
-import { IconRepeat } from '@tabler/icons-react'
 import type { CSSProperties } from 'react'
 import type { ActivityListItem } from '../../api/types'
 import { categoryLook, UNCATEGORIZED } from '../../lib/categoryColor'
@@ -7,42 +6,34 @@ import { activityTime } from '../../lib/week'
 interface Props {
   item: ActivityListItem
   categoryName: string
-  // Sürükleme katmanında (DragOverlay) kart hafifçe eğilir ve gölge alır.
+  // Sürükleme katmanında (DragOverlay) kart kâğıt parçası gibi hafifçe eğilir.
   overlay?: boolean
-  // Hafta sonu kartında yatay, tek satır hap.
+  // Hafta sonu kartında tek satır: çizgi + başlık + saat.
   inline?: boolean
   style?: CSSProperties
 }
 
-export const MONO = "'JetBrains Mono Variable', 'JetBrains Mono', ui-monospace, monospace"
-
-// Özel Defter kartı: kategori gradyanı, ikon kutusu, beyaz başlık, monospace saat.
+// Eskiz kartı (taslak: Eskiz-Pano): 3 px solgun kategori çizgisi, grafit ikon ve başlık, mono saat.
+// Seri ↻, tamamlanan ✓ + üstü çizili, yüksek öncelik "!".
 export function ActivityCard({ item, categoryName, overlay = false, inline = false, style }: Props) {
-  const neutral = item.status === 'Cancelled' || categoryName === UNCATEGORIZED
+  const cancelled = item.status === 'Cancelled'
+  const done = item.status === 'Completed'
+  const neutral = cancelled || categoryName === UNCATEGORIZED
   const look = categoryLook(item.categoryId, categoryName, neutral)
   const Icon = look.icon
-  const time = activityTime(item, inline)
-  const cancelled = item.status === 'Cancelled'
+  const marks = `${item.seriesId != null ? ' ↻' : ''}${done ? ' ✓' : ''}`
 
   return (
     <div
       className="act-card"
       data-overlay={overlay}
+      data-inline={inline}
+      data-done={done}
+      data-cancelled={cancelled}
       title={`${item.title} · ${activityTime(item)} · ${categoryName}`}
-      style={{
-        background: look.gradient,
-        boxShadow: look.shadow,
-        padding: inline ? '10px 12px' : undefined,
-        ...style,
-      }}
+      style={{ '--cat': look.line, ...style } as CSSProperties}
     >
-      {inline ? (
-        <Icon size={16} color="#fff" aria-hidden style={{ flex: 'none' }} />
-      ) : (
-        <span className="act-icon" aria-hidden>
-          <Icon size={16} color="#fff" />
-        </span>
-      )}
+      {!inline && <Icon size={16} stroke={1.7} color="var(--graphite)" aria-hidden style={{ flex: 'none', marginTop: 2 }} />}
       <span
         style={{
           display: 'flex',
@@ -53,21 +44,15 @@ export function ActivityCard({ item, categoryName, overlay = false, inline = fal
           flex: 1,
         }}
       >
-        <span className="act-title" style={{ textDecoration: cancelled ? 'line-through' : undefined }}>
-          {item.title}
+        <span className="act-title">{item.title}</span>
+        <span className="act-time">
+          {activityTime(item, inline)}
+          {marks}
         </span>
-        <span className="act-time">{time}</span>
       </span>
-      {(item.seriesId != null || item.priority === 'High') && (
-        <span style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, flex: 'none' }}>
-          {item.seriesId != null && <IconRepeat size={13} aria-label="Seri" color="#fff" />}
-          {item.priority === 'High' && (
-            <span
-              aria-label="Yüksek öncelik"
-              title="Yüksek öncelik"
-              style={{ width: 8, height: 8, borderRadius: '50%', background: '#fff', boxShadow: '0 0 0 2px rgba(255,255,255,0.35)' }}
-            />
-          )}
+      {item.priority === 'High' && (
+        <span aria-label="Yüksek öncelik" title="Yüksek öncelik" className="mono" style={{ fontSize: 13, fontWeight: 700, flex: 'none' }}>
+          !
         </span>
       )}
     </div>

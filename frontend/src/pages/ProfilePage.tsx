@@ -1,12 +1,13 @@
-import { Alert, Button, PasswordInput, Select, SimpleGrid, Stack, Text, TextInput, Title } from '@mantine/core'
+import { Alert, Button, PasswordInput, Select, SimpleGrid, Stack, Text, TextInput } from '@mantine/core'
 import { useForm } from '@mantine/form'
 import { notifications } from '@mantine/notifications'
 import { IconAlertCircle, IconLock, IconUser } from '@tabler/icons-react'
 import dayjs from 'dayjs'
-import { useMemo, useState, type ReactNode } from 'react'
+import { useMemo, useState } from 'react'
 import { changePassword, updateProfile } from '../api/auth'
 import { useAuth } from '../auth/context'
-import { NoteAndPencil } from '../components/illustrations'
+import { CardTitle } from '../components/CardTitle'
+import { NoteAndPencil, Scribble, Spiral } from '../components/illustrations'
 import { ClaudeConnectionCard } from './ClaudeConnectionCard'
 import './profile.css'
 import { splitErrors } from '../lib/formErrors'
@@ -53,10 +54,10 @@ function ProfileInfoCard() {
   })
 
   return (
-    <section className="ink-card" style={{ padding: 22, height: '100%' }}>
+    <section className="paper" style={{ padding: 22, height: '100%' }}>
       <form onSubmit={submit} noValidate>
         <Stack>
-          <CardTitle icon={<IconUser size={18} color="#fff" />} gradient="linear-gradient(135deg, #0F766E, #15803D)">Kişisel bilgiler</CardTitle>
+          <CardTitle icon={<IconUser size={18} stroke={1.7} />}>Kişisel bilgiler</CardTitle>
           {errors.length > 0 && (
             <Alert color="orange" icon={<IconAlertCircle size={16} />}>
               {errors.map((m) => (
@@ -79,7 +80,7 @@ function ProfileInfoCard() {
             allowDeselect={false}
             {...form.getInputProps('timeZoneId')}
           />
-          <Button type="submit" loading={submitting} disabled={!dirty} fullWidth h={48} radius={14} fz={15} variant="rainbow" style={{ background: dirty ? 'linear-gradient(90deg, #15803D, #0F766E)' : undefined }}>
+          <Button type="submit" loading={submitting} disabled={!dirty} fullWidth h={44} fz={14} variant="ink">
             Kaydet
           </Button>
         </Stack>
@@ -121,10 +122,10 @@ function PasswordCard() {
   })
 
   return (
-    <section className="ink-card" style={{ padding: 22, height: '100%' }}>
+    <section className="paper" style={{ padding: 22, height: '100%' }}>
       <form onSubmit={submit} noValidate>
         <Stack>
-          <CardTitle icon={<IconLock size={18} color="#fff" />} gradient="linear-gradient(135deg, #7C3AED, #C2410C)">Şifre değiştir</CardTitle>
+          <CardTitle icon={<IconLock size={18} stroke={1.7} />}>Şifre değiştir</CardTitle>
           {errors.length > 0 && (
             <Alert color="orange" icon={<IconAlertCircle size={16} />}>
               {errors.map((m) => (
@@ -149,10 +150,10 @@ function PasswordCard() {
             {...form.getInputProps('confirm')}
           />
           <Text fz={13} style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}>
-            <IconAlertCircle size={16} color="var(--l-orange)" style={{ flex: 'none' }} aria-hidden />
+            <IconAlertCircle size={16} color="var(--graphite)" style={{ flex: 'none' }} aria-hidden />
             Şifren değişince tüm cihazlarda oturumun kapanır.
           </Text>
-          <Button type="submit" loading={submitting} fullWidth h={48} radius={14} fz={15} variant="rainbow" style={{ background: 'linear-gradient(90deg, #7C3AED, #C2410C)' }}>
+          <Button type="submit" loading={submitting} fullWidth h={44} fz={14} variant="ink">
             Şifreyi güncelle
           </Button>
         </Stack>
@@ -161,48 +162,32 @@ function PasswordCard() {
   )
 }
 
-function CardTitle({ icon, gradient, children }: { icon: ReactNode; gradient: string; children: string }) {
-  return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-      <span style={{ width: 36, height: 36, borderRadius: 10, background: gradient, display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 'none' }} aria-hidden>
-        {icon}
-      </span>
-      <Title order={2} fz={19} fw={700}>
-        {children}
-      </Title>
-    </div>
-  )
-}
-
 export function ProfilePage() {
   const { user } = useAuth()
   if (!user) return null
 
   return (
-    <div className="page-body" style={{ display: 'flex', flexDirection: 'column', gap: 20, paddingTop: 24 }}>
-      {/* Defter kapağı: gradyan kapak, solda beyaz spiral, avatar ve ad. */}
-      <section className="profile-cover">
-        <div className="profile-spine" aria-hidden>
-          {Array.from({ length: 6 }, (_, i) => (
-            <span key={i} />
-          ))}
-        </div>
+    <div className="page-body" style={{ display: 'flex', flexDirection: 'column', gap: 24, paddingTop: 34 }}>
+      {/* Defter kapağı: kâğıt kapak, üstte spiral tel, avatar ve ad. */}
+      <section className="profile-cover paper">
+        <Spiral />
         <div className="profile-avatar" aria-hidden>
           {initials(user.displayName)}
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 2, minWidth: 0 }}>
-          <span className="hand" style={{ fontSize: 24 }}>
+          <span className="hand muted" style={{ fontSize: 20 }}>
             bu defter şuna ait:
           </span>
-          <h1 style={{ margin: 0, fontSize: 34, fontWeight: 800, letterSpacing: '-0.02em', lineHeight: 1.1, overflowWrap: 'anywhere' }}>
+          <h1 style={{ margin: 0, fontFamily: 'var(--font-hand)', fontSize: 38, fontWeight: 700, lineHeight: 1.05, overflowWrap: 'anywhere' }}>
             {user.displayName}
           </h1>
-          <span style={{ fontSize: 14, overflowWrap: 'anywhere' }}>
+          <Scribble width={220} />
+          <span style={{ fontSize: 13, color: 'var(--graphite-2)', overflowWrap: 'anywhere', marginTop: 4 }}>
             {user.email} · {user.role === 'Admin' ? 'Admin' : 'Kullanıcı'} · Üyelik: {dayjs(user.createdAt).format('D MMMM YYYY')}
           </span>
         </div>
         <div style={{ flex: 1 }} />
-        <NoteAndPencil width={150} style={{ alignSelf: 'center' }} />
+        <NoteAndPencil width={130} style={{ alignSelf: 'center' }} />
       </section>
       {/* key: kayıttan dönen yeni me ile form başlangıç değerleri yenilenir. */}
       <SimpleGrid cols={{ base: 1, md: 2 }} spacing={18}>

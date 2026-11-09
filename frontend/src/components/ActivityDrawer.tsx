@@ -11,6 +11,7 @@ import { deactivateActivity, deactivateSeries, fetchActivity } from '../api/acti
 import { ApiError } from '../api/client'
 import { useAuth } from '../auth/context'
 import { categoryLook } from '../lib/categoryColor'
+import { Spiral } from './illustrations'
 import { frequencyLabel } from '../lib/recurrence'
 import { useActivityForm } from './activity-form/context'
 import { ReminderSection } from './ReminderSection'
@@ -119,8 +120,8 @@ export function ActivityDrawer({ activityId, onClose, categoryName }: Props) {
   })
 
   return (
-    <Drawer opened={activityId !== null} onClose={onClose} position="right" size={isMobile ? '100%' : 'md'} title={<span className="hand" style={{ fontSize: 24 }}>sayfa detayı</span>}
-      styles={{ content: { background: 'var(--ink-card)' }, header: { background: 'var(--ink-card)' } }}
+    <Drawer opened={activityId !== null} onClose={onClose} position="right" size={isMobile ? '100%' : 'md'} title={<span className="hand muted" style={{ fontSize: 20 }}>sayfa detayı</span>}
+      styles={{ content: { borderLeft: isMobile ? undefined : 'var(--pen)' } }}
     >
       {query.isPending && (
         <Stack gap="md" aria-busy="true" aria-label="Yükleniyor">
@@ -191,7 +192,7 @@ export function ActivityDrawer({ activityId, onClose, categoryName }: Props) {
           <Divider />
           <Group justify="space-between">
             <Button
-              variant="rainbow"
+              variant="ink"
               h={44}
               leftSection={<IconPencil size={16} />}
               onClick={() => {
@@ -243,24 +244,24 @@ export function ActivityDrawer({ activityId, onClose, categoryName }: Props) {
   )
 }
 
-// Üst kart: kategori gradyanı + ikon, beyaz başlık (Özel Defter aktivite kartının büyüğü).
+// Üst kart: spiral telli kâğıt, 3 px kategori çizgisi, grafit ikon ve Kalam başlık (eskiz kartının büyüğü).
 function DrawerHero({ title, categoryId, categoryName, status, neutral }: { title: string; categoryId: number; categoryName: string; status: string; neutral: boolean }) {
   const look = categoryLook(categoryId, categoryName, neutral)
   const Icon = look.icon
   return (
-    <div style={{ borderRadius: 18, padding: 16, background: look.gradient, boxShadow: look.shadow, display: 'flex', gap: 12, alignItems: 'center' }}>
-      <span className="act-icon" style={{ width: 44, height: 44, borderRadius: 12 }} aria-hidden>
-        <Icon size={22} color="#fff" />
-      </span>
+    <div className="paper" style={{ marginTop: 14, padding: '24px 16px 14px', display: 'flex', gap: 12, alignItems: 'center' }}>
+      <Spiral />
+      <span aria-hidden style={{ width: 3, alignSelf: 'stretch', background: look.line, flex: 'none' }} />
+      <Icon size={22} stroke={1.7} aria-hidden style={{ flex: 'none' }} />
       <div style={{ minWidth: 0, flex: 1 }}>
         <Title order={3} style={{ overflowWrap: 'anywhere' }}>
           {title}
         </Title>
         <Group gap={6} mt={4}>
-          <Badge variant="white" c="#1b1530">
+          <Badge variant="outline" color="graphite">
             {categoryName}
           </Badge>
-          <Badge variant="outline" color="white">
+          <Badge variant="outline" color="graphite">
             {status}
           </Badge>
         </Group>

@@ -1,6 +1,5 @@
 import { useDraggable, useDroppable } from '@dnd-kit/core'
 import { Skeleton } from '@mantine/core'
-import { IconPlus } from '@tabler/icons-react'
 import type { Dayjs } from 'dayjs'
 import type { ReactNode } from 'react'
 import type { ActivityListItem } from '../../api/types'
@@ -28,7 +27,7 @@ export function DraggableCard({
   item: ActivityListItem
   categoryName: string
   onOpen: (id: number) => void
-  // Verilirse kartın yerine bu içerik sürüklenir (mobil liste).
+  // Verilirse kartın yerine bu içerik sürüklenir (mobil liste, hafta sonu satırı).
   children?: ReactNode
 }) {
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({ id: item.id })
@@ -45,10 +44,8 @@ export function DraggableCard({
         WebkitTouchCallout: 'none',
         userSelect: 'none',
         outlineOffset: 2,
-        borderRadius: 12,
         minWidth: 0,
         opacity: isDragging ? 0.35 : 1,
-        filter: isDragging ? 'grayscale(0.6)' : undefined,
       }}
     >
       {children ?? <ActivityCard item={item} categoryName={categoryName} />}
@@ -60,46 +57,59 @@ function LoadingCards({ count }: { count: number }) {
   return (
     <>
       {Array.from({ length: count }, (_, i) => (
-        <Skeleton key={i} h={48} radius={12} style={{ opacity: 0.35 }} />
+        <Skeleton key={i} h={44} radius={3} />
       ))}
     </>
   )
 }
 
-// Hafta içi gün kartı: beyaz spiral halkalar + çizgili sayfa; bugün gradyan çerçeve + parlama.
+function DayHead({ day, index, isToday }: { day: Dayjs; index: number; isToday: boolean }) {
+  if (isToday) {
+    return (
+      <div className="day-head" style={{ alignItems: 'center' }}>
+        <span className="day-today-badge">{day.format('D')}</span>
+        <span style={{ display: 'flex', flexDirection: 'column' }}>
+          <span className="day-name">{DAY_NAMES[index]}</span>
+          <span className="hand muted" style={{ fontSize: 15 }}>
+            bugün
+          </span>
+        </span>
+      </div>
+    )
+  }
+  return (
+    <div className="day-head">
+      <span className="day-num">{day.format('D')}</span>
+      <span className="day-name">{DAY_NAMES[index]}</span>
+    </div>
+  )
+}
+
+// Hafta içi gün kartı (taslak: Eskiz-Pano): spiral tel, kalem çerçeve; bugün = daire içinde tarih.
 export function DayColumn({ day, index, items, categoryName, loading, isToday, onOpen, onAddActivity }: Props) {
   const { setNodeRef, isOver } = useDroppable({ id: `day-${dayKey(day)}` })
   const empty = !loading && items.length === 0
 
   return (
-    <section ref={setNodeRef} className="day-card" data-today={isToday} data-over={isOver} aria-label={`${day.format('D')} ${DAY_NAMES[index]}`}>
+    <section
+      ref={setNodeRef}
+      className="day-card"
+      data-shape={index}
+      data-over={isOver}
+      aria-label={`${day.format('D')} ${DAY_NAMES[index]}`}
+    >
       <Spiral />
-      {isToday ? (
-        <div className="day-head" style={{ alignItems: 'center' }}>
-          <span className="day-today-badge">{day.format('D')}</span>
-          <span style={{ display: 'flex', flexDirection: 'column' }}>
-            <span style={{ fontSize: 14, fontWeight: 700 }}>{DAY_NAMES[index]}</span>
-            <span className="hand" style={{ fontSize: 18 }}>
-              bugün
-            </span>
-          </span>
-        </div>
-      ) : (
-        <div className="day-head">
-          <span className="day-num">{day.format('D')}</span>
-          <span style={{ fontSize: 14 }}>{DAY_NAMES[index]}</span>
-        </div>
-      )}
+      <DayHead day={day} index={index} isToday={isToday} />
 
       {empty ? (
         <button type="button" className="day-empty" onClick={() => onAddActivity(day)} aria-label={`${DAY_NAMES[index]} gününe aktivite ekle`}>
-          <EmptyPage width={84} />
-          <span className="hand" style={{ fontSize: 20 }}>
-            {isOver ? 'Buraya bırak' : 'Boş sayfa, yeni fırsat'}
+          <EmptyPage width={56} />
+          <span className="hand" style={{ fontSize: 17 }}>
+            {isOver ? 'buraya bırak' : 'boş sayfa, yeni fırsat'}
           </span>
         </button>
       ) : (
-        <div className="day-body ruled">
+        <div className="day-body">
           {loading ? (
             <LoadingCards count={index % 2 === 0 ? 2 : 1} />
           ) : (
@@ -108,10 +118,12 @@ export function DayColumn({ day, index, items, categoryName, loading, isToday, o
             ))
           )}
           {!loading && (
-            <button type="button" className="day-add" onClick={() => onAddActivity(day)}>
-              <IconPlus size={14} stroke={2.4} aria-hidden />
-              Ekle
-            </button>
+            <>
+              <div className="day-rule" aria-hidden />
+              <button type="button" className="day-add" onClick={() => onAddActivity(day)} aria-label={`${DAY_NAMES[index]} gününe aktivite ekle`}>
+                + ekle
+              </button>
+            </>
           )}
         </div>
       )}
@@ -119,39 +131,25 @@ export function DayColumn({ day, index, items, categoryName, loading, isToday, o
   )
 }
 
-// Hafta sonu: iki geniş yatay kart.
+// Hafta sonu: belirgin yükseklikte kart, içerik alt alta (taslak: 256 px).
 export function WeekendCard({ day, index, items, categoryName, loading, isToday, onOpen, onAddActivity }: Props) {
   const { setNodeRef, isOver } = useDroppable({ id: `day-${dayKey(day)}` })
   const empty = !loading && items.length === 0
   return (
     <section
       ref={setNodeRef}
-      className="weekend-card"
-      data-idx={index - 5}
-      data-today={isToday}
+      className="day-card"
+      data-shape={index}
       data-over={isOver}
       aria-label={`${day.format('D')} ${DAY_NAMES[index]}`}
     >
-      <div style={{ display: 'flex', flexDirection: 'column', flex: 'none' }}>
-        <span className="day-num">{day.format('D')}</span>
-        <span style={{ fontSize: 14 }}>{DAY_NAMES[index]}</span>
-        {isToday && (
-          <span className="hand" style={{ fontSize: 18 }}>
-            bugün
-          </span>
-        )}
-      </div>
+      <Spiral />
+      <DayHead day={day} index={index} isToday={isToday} />
       {empty ? (
-        <button
-          type="button"
-          className="day-empty"
-          style={{ flexDirection: 'row', justifyContent: 'flex-start', minHeight: 64 }}
-          onClick={() => onAddActivity(day)}
-          aria-label={`${DAY_NAMES[index]} gününe aktivite ekle`}
-        >
-          {index === 6 ? <CoffeeCup width={56} /> : <EmptyPage width={56} />}
-          <span className="hand" style={{ fontSize: 22, textAlign: 'left' }}>
-            {isOver ? 'Buraya bırak' : index === 6 ? 'Dinlenme günü, keyfine bak' : 'Hafta sonu, boş sayfa'}
+        <button type="button" className="day-empty" onClick={() => onAddActivity(day)} aria-label={`${DAY_NAMES[index]} gününe aktivite ekle`}>
+          {index === 6 ? <CoffeeCup width={46} color="#8a8984" /> : <EmptyPage width={56} />}
+          <span className="hand" style={{ fontSize: 17 }}>
+            {isOver ? 'buraya bırak' : index === 6 ? 'dinlenme günü, keyfine bak' : 'hafta sonu, boş sayfa'}
           </span>
         </button>
       ) : (
@@ -166,16 +164,15 @@ export function WeekendCard({ day, index, items, categoryName, loading, isToday,
                 </DraggableCard>
               ))
             )}
-            {!loading && (
-              <button type="button" className="day-add" style={{ padding: '0 14px', height: 44 }} onClick={() => onAddActivity(day)}>
-                <IconPlus size={14} stroke={2.4} aria-hidden />
-                Ekle
-              </button>
-            )}
           </div>
-          <span className="hand" style={{ fontSize: 22, flex: 'none' }}>
-            hafta sonu
-          </span>
+          {!loading && (
+            <div className="weekend-foot">
+              <button type="button" className="day-add" style={{ padding: '0 14px', margin: 0 }} onClick={() => onAddActivity(day)} aria-label={`${DAY_NAMES[index]} gününe aktivite ekle`}>
+                + ekle
+              </button>
+              {index === 6 ? <CoffeeCup width={46} /> : <span className="weekend-note">hafta sonu ☼</span>}
+            </div>
+          )}
         </>
       )}
     </section>

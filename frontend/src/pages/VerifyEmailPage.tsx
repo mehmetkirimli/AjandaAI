@@ -36,39 +36,39 @@ export function VerifyEmailPage() {
         {state.kind === 'loading' && (
           <>
             <Center h={72}>
-              <Loader color="var(--v-teal)" />
+              <Loader color="var(--graphite)" />
             </Center>
             <Text>Doğrulanıyor…</Text>
           </>
         )}
         {state.kind === 'success' && (
           <>
-            <ThemeIcon size={72} radius={22} color="#15803D">
-              <IconCircleCheck size={42} />
+            <ThemeIcon size={72} radius="50%" variant="outline" color="graphite" style={{ borderWidth: 1.8 }}>
+              <IconCircleCheck size={40} stroke={1.5} />
             </ThemeIcon>
             <Text fw={600} fz="lg">
               E-postan doğrulandı!
             </Text>
-            <Text ta="center" style={{ opacity: 0.8 }}>
+            <Text ta="center" c="dimmed">
               Artık giriş yapabilirsin.
             </Text>
-            <Button component={Link} to="/login" variant="rainbow" fullWidth h={52} radius={14} fz={16}>
+            <Button component={Link} to="/login" variant="ink" fullWidth h={46} fz={14}>
               Giriş yap
             </Button>
           </>
         )}
         {state.kind === 'invalid' && (
           <>
-            <ThemeIcon size={72} radius={22} color="#C2410C">
-              <IconCircleX size={42} />
+            <ThemeIcon size={72} radius="50%" variant="outline" color="red" style={{ borderWidth: 1.8 }}>
+              <IconCircleX size={40} stroke={1.5} />
             </ThemeIcon>
             <Text fw={600} fz="lg">
               Bağlantı geçersiz
             </Text>
-            <Text ta="center" style={{ opacity: 0.8 }}>
+            <Text ta="center" c="dimmed">
               {state.message} Süresi dolmuş veya daha önce kullanılmış olabilir.
             </Text>
-            <Button component={Link} to="/register" variant="glass" fullWidth h={48}>
+            <Button component={Link} to="/register" variant="sketch" fullWidth h={44}>
               Yeniden kayıt ol
             </Button>
             <Button component={Link} to="/login" variant="subtle" color="gray" fullWidth h={44}>

@@ -70,8 +70,8 @@ function CategoryRow({
       style={{
         transform: CSS.Transform.toString(transform),
         transition,
-        borderBottom: '1px solid var(--app-line)',
-        background: isDragging ? 'var(--app-layer-1)' : undefined,
+        borderBottom: '1px solid var(--dash)',
+        background: isDragging ? 'var(--hover)' : undefined,
         position: 'relative',
         zIndex: isDragging ? 1 : undefined,
       }}
