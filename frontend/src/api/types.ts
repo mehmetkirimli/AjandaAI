@@ -218,3 +218,27 @@ export interface PersonalAccessTokenCreated {
   createdAt: string
   expiresAt: string
 }
+
+// POST /api/assistant/chat (ADR 0025 §4). Konuşma sunucuda saklanmaz; geçmişi istemci yollar.
+export interface AssistantChatMessage {
+  role: 'user' | 'assistant'
+  text: string
+}
+
+export interface AssistantChatRequest {
+  message: string
+  history: AssistantChatMessage[]
+}
+
+// Öneri gövdesi POST /api/activities (activity) veya /api/activities/series (series) ile birebir aynıdır.
+export interface AssistantProposal {
+  kind: 'activity' | 'series'
+  activity?: ActivityUpdateRequest | null
+  series?: SeriesCreateRequest | null
+}
+
+export interface AssistantChatResponse {
+  reply: string
+  proposals: AssistantProposal[]
+  usedTools: string[]
+}

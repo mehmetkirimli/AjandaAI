@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<title>AjandaAI Asistan Paneli</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Kalam:wght@400;700&amp;family=Inter:wght@400;500;600&amp;family=JetBrains+Mono:wght@500&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#2b2a27}a:hover{color:#000000}
+</style>
+</helmet>
+<div style="width: 1280px; height: 800px; box-sizing: border-box; position: relative; display: flex; background-color: #f2f1ed; color: #2b2a27; font-family: 'Inter', system-ui, sans-serif; overflow: hidden">
+  <svg width="0" height="0" style="position: absolute" aria-hidden="true"><defs><pattern id="spiral" width="17" height="26" patternUnits="userSpaceOnUse"><ellipse cx="8.5" cy="19.5" rx="2.7" ry="2.5" fill="#3d3c38"></ellipse><path d="M6.8 19.5 C5.4 7.5 12.2 2.4 11.8 13.5" fill="none" stroke="#3a3935" stroke-width="2" stroke-linecap="round"></path><path d="M7.4 17 C6.6 8.6 10.9 5.2 11 10.5" fill="none" stroke="#d4d3cd" stroke-width="0.7" stroke-linecap="round"></path></pattern></defs></svg>
+
+  <nav aria-label="Ana menü" style="width: 220px; flex-shrink: 0; box-sizing: border-box; padding: 26px 18px; display: flex; flex-direction: column; gap: 4px; background: #e4e3df; border-right: 1.5px solid #3a3833; opacity: 0.55">
+    <span style="font-family: 'Kalam', cursive; font-size: 26px; font-weight: 700; padding: 0 6px 22px">AjandaAI</span>
+    <span style="height: 40px; display: flex; align-items: center; padding: 0 10px; font-size: 14px">Pano</span>
+    <span style="height: 40px; display: flex; align-items: center; padding: 0 10px; font-size: 14px">Takvim</span>
+  </nav>
+  <div style="flex: 1; background-color: #f2f1ed; background-image: radial-gradient(circle, rgba(60,60,58,0.2) 1px, transparent 1.3px); background-size: 22px 22px; opacity: 0.55; padding: 28px 34px">
+    <span style="font-family: 'Kalam', cursive; font-size: 38px; font-weight: 700">9 – 15 Kasım 2026</span>
+  </div>
+  <div style="position: absolute; inset: 0; background: rgba(43,42,39,0.12)"></div>
+
+  <aside aria-label="Asistan" style="position: absolute; top: 18px; right: 18px; bottom: 18px; width: 420px; box-sizing: border-box; background: #fcfcfa; border: 1.6px solid #2b2a27; border-radius: 4px 8px 5px 7px; box-shadow: 5px 5px 0 rgba(43,42,39,0.14); display: flex; flex-direction: column">
+    <svg aria-hidden="true" height="26" style="position: absolute; top: -14px; left: 14px; width: calc(100% - 28px); overflow: visible"><rect width="100%" height="26" fill="url(#spiral)"></rect></svg>
+
+    <header style="padding: 22px 18px 12px; display: flex; align-items: center; gap: 10px; border-bottom: 1.2px dashed #bdbcb6">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#2b2a27" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.6 4.2L18 9l-4.4 1.6L12 15l-1.6-4.4L6 9l4.4-1.8z"></path><path d="M18.5 15l.7 1.8l1.8.7l-1.8.7l-.7 1.8l-.7-1.8l-1.8-.7l1.8-.7z"></path></svg>
+      <div style="display: flex; flex-direction: column">
+        <span style="font-family: 'Kalam', cursive; font-size: 24px; font-weight: 700; line-height: 1">asistan</span>
+        <span style="font-size: 12px; color: #6b6a65">ajandanı benim için düzenler</span>
+      </div>
+      <div style="flex: 1"></div>
+      <button type="button" aria-label="Yeni sohbet" style="width: 36px; height: 36px; border: 1.4px solid #2b2a27; border-radius: 6px; background: transparent; display: flex; align-items: center; justify-content: center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2b2a27" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M4 12a8 8 0 1 0 2.3-5.7"></path><path d="M4 4v4h4"></path></svg></button>
+      <button type="button" aria-label="Kapat" style="width: 36px; height: 36px; border: 1.4px solid #2b2a27; border-radius: 6px; background: transparent; display: flex; align-items: center; justify-content: center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2b2a27" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg></button>
+    </header>
+
+    <div style="flex: 1; overflow: hidden; padding: 16px 18px; display: flex; flex-direction: column; gap: 14px; background-image: repeating-linear-gradient(to bottom, transparent 0, transparent 27px, rgba(60,60,58,0.07) 27px, rgba(60,60,58,0.07) 28px)">
+
+      <div style="align-self: flex-end; max-width: 78%; background: #2b2a27; color: #f5f4f0; padding: 10px 13px; border-radius: 10px 10px 2px 10px; font-size: 14px; line-height: 1.45">Cumartesi hava güzelse sabah 10 gibi yürüyüş ekler misin?</div>
+
+      <div style="display: flex; gap: 6px; flex-wrap: wrap">
+        <span style="display: flex; align-items: center; gap: 5px; height: 26px; padding: 0 9px; border: 1.2px dashed #8a8984; border-radius: 13px; font-size: 12px; color: #5c5b56"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#5c5b56" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M7 18a5 5 0 1 1 1-9.9A6 6 0 0 1 19 10a4 4 0 0 1-1 8z"></path></svg>hava durumuna baktı</span>
+        <span style="display: flex; align-items: center; gap: 5px; height: 26px; padding: 0 9px; border: 1.2px dashed #8a8984; border-radius: 13px; font-size: 12px; color: #5c5b56"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#5c5b56" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="1"></rect><path d="M16 3v4M8 3v4M3 10h18"></path></svg>boş saatleri buldu</span>
+      </div>
+
+      <div style="max-width: 92%; font-size: 14px; line-height: 1.55">
+        Cumartesi sabahı İstanbul'da <b>18°C, kapalı</b>, yağmur 13:00'ten sonra. Yürüyüş için uygun.
+        Ama <b>10:00–11:00 dolu</b> (Kitap, 10 sayfa). En yakın boşluk:
+      </div>
+
+      <div style="border: 1.6px solid #2b2a27; border-radius: 6px 3px 7px 4px; background: #ffffff; box-shadow: 3px 3px 0 rgba(43,42,39,0.12); padding: 12px 14px; display: flex; flex-direction: column; gap: 10px">
+        <div style="display: flex; gap: 10px; align-items: center">
+          <span style="width: 3px; align-self: stretch; background: #6f8f6a"></span>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2b2a27" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="13" cy="4" r="1.6"></circle><path d="M9 20l2-6l3 2v5M8 11l3-3l3 2l3 1M11 8l-1 5"></path></svg>
+          <span style="flex: 1; display: flex; flex-direction: column"><span style="font-size: 15px; font-weight: 600">Yürüyüş</span><span style="font-size: 12px; color: #5c5b56">Spor, Sağlık · Cumartesi 14 Kasım</span></span>
+          <span style="font-family: 'JetBrains Mono', monospace; font-size: 12.5px">11:00 – 12:00</span>
+        </div>
+        <div style="display: flex; gap: 8px">
+          <button type="button" style="flex: 1; height: 38px; border: 0; border-radius: 6px; background: #2b2a27; color: #f5f4f0; font-family: inherit; font-size: 13px; font-weight: 600">Deftere yaz</button>
+          <button type="button" style="height: 38px; padding: 0 14px; border: 1.4px solid #2b2a27; border-radius: 6px; background: transparent; color: #2b2a27; font-family: inherit; font-size: 13px">08:00 olsun</button>
+          <button type="button" style="height: 38px; padding: 0 14px; border: 1.4px solid #2b2a27; border-radius: 6px; background: transparent; color: #2b2a27; font-family: inherit; font-size: 13px">Vazgeç</button>
+        </div>
+      </div>
+
+      <span style="font-family: 'Kalam', cursive; font-size: 16px; color: #6b6a65">yanına ince bir rüzgârlık al, rüzgâr 22 km/sa.</span>
+    </div>
+
+    <div style="padding: 0 18px 10px; display: flex; gap: 6px; flex-wrap: wrap">
+      <button type="button" style="height: 30px; padding: 0 11px; border: 1.2px solid #8a8984; border-radius: 15px; background: transparent; font-family: inherit; font-size: 12px; color: #2b2a27">Bu hafta neler var?</button>
+      <button type="button" style="height: 30px; padding: 0 11px; border: 1.2px solid #8a8984; border-radius: 15px; background: transparent; font-family: inherit; font-size: 12px; color: #2b2a27">Yarın 2 saat boşluk bul</button>
+      <button type="button" style="height: 30px; padding: 0 11px; border: 1.2px solid #8a8984; border-radius: 15px; background: transparent; font-family: inherit; font-size: 12px; color: #2b2a27">Her pazartesi spor ekle</button>
+    </div>
+
+    <form style="margin: 0 14px 14px; border: 1.6px solid #2b2a27; border-radius: 6px; background: #ffffff; display: flex; align-items: flex-end; gap: 8px; padding: 8px 8px 8px 12px">
+      <label for="mesaj" style="position: absolute; width: 1px; height: 1px; overflow: hidden">Mesaj</label>
+      <textarea id="mesaj" rows="2" style="flex: 1; border: 0; outline: none; resize: none; font-family: 'Kalam', cursive; font-size: 18px; color: #2b2a27; background: transparent; line-height: 1.3">aklına geleni yaz…</textarea>
+      <button type="button" aria-label="Gönder" style="width: 40px; height: 40px; border: 0; border-radius: 6px; background: #2b2a27; display: flex; align-items: center; justify-content: center"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#f5f4f0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6l-6 6"></path></svg></button>
+    </form>
+    <span style="padding: 0 18px 12px; font-size: 11px; color: #6b6a65">Gemini · ücretsiz katman · demo verisiyle kullan</span>
+  </aside>
+
+  <button type="button" aria-label="Asistanı aç" style="position: absolute; left: 248px; bottom: 26px; height: 44px; padding: 0 16px; border: 1.6px solid #2b2a27; border-radius: 22px; background: #fcfcfa; box-shadow: 3px 3px 0 rgba(43,42,39,0.14); display: flex; align-items: center; gap: 8px; font-family: 'Kalam', cursive; font-size: 18px; color: #2b2a27; opacity: 0.55">asistana sor</button>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":800}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
+</body>
+</html>

@@ -54,3 +54,4 @@ cevap burada olmalıdır. Bir kuralı değiştirmeden önce ilgili ADR okunur.
 - [0022 - Tekrarlayan aktiviteler: seri olarak toplu oluşturma](0022-tekrarlayan-aktivite-serisi.md)
 - [0023 - Admin ekranları ve kategori sıralaması](0023-admin-ekranlari-ve-kategori-sirasi.md)
 - [0024 - MCP sunucusu ve kişisel erişim anahtarı](0024-mcp-sunucusu-ve-kisisel-erisim-anahtari.md)
+- [0025 - Uygulama içi asistan (chatbot)](0025-uygulama-ici-asistan.md)

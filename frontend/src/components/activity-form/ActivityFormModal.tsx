@@ -127,16 +127,34 @@ function initialValues(request: FormRequest): Values {
   // Varsayılan: bir sonraki tam saat, 1 saat süre.
   const start = request.start ? dayjs(request.start) : dayjs().add(1, 'hour').startOf('hour')
   const end = request.end ? dayjs(request.end) : start.add(1, 'hour')
+  const p = request.prefill
+  const fromPrefill: Partial<Values> = p
+    ? {
+        title: p.title ?? '',
+        description: p.description ?? '',
+        categoryId: p.categoryId ?? null,
+        ...(p.status ? { status: p.status as ActivityStatus } : {}),
+        ...(p.priority ? { priority: p.priority } : {}),
+        ...(p.energyLevel ? { energyLevel: p.energyLevel as Level } : {}),
+        location: p.location ?? '',
+        estimatedBudget: p.estimatedBudget ?? 0,
+        isFlexible: p.isFlexible ?? false,
+        reminderMinutes: p.reminderMinutesBefore ? String(p.reminderMinutesBefore) : '0',
+      }
+    : {}
+  const rec = p?.recurrence
   return {
     ...base,
+    ...fromPrefill,
     isAllDay: request.isAllDay ?? false,
     startDate: start.format(DATE),
     startTime: request.isAllDay ? '09:00' : start.format(TIME),
     endDate: end.format(DATE),
     endTime: request.isAllDay ? '10:00' : end.format(TIME),
-    repeat: request.repeat ?? false,
-    daysOfWeek: [isoDay(start)],
-    until: defaultUntil(start, 'Daily'),
+    repeat: request.repeat ?? Boolean(rec),
+    frequency: (rec?.frequency as Frequency | undefined) ?? 'Daily',
+    daysOfWeek: rec?.daysOfWeek.length ? rec.daysOfWeek : [isoDay(start)],
+    until: rec?.until ? dayjs(rec.until).format(DATE) : defaultUntil(start, 'Daily'),
   }
 }
 
@@ -162,7 +180,7 @@ export function ActivityFormModal({ request, onClose }: Props) {
   const initial = useMemo(() => initialValues(request), [request])
   const form = useForm<Values>({ initialValues: initial })
   const [moreOpen, setMoreOpen] = useState(
-    Boolean(editing && (editing.location || editing.estimatedBudget > 0 || editing.isFlexible)),
+    Boolean(initial.location || Number(initial.estimatedBudget) > 0 || initial.isFlexible),
   )
   const [confirmClose, setConfirmClose] = useState(false)
   const [generalErrors, setGeneralErrors] = useState<string[]>([])
@@ -201,6 +219,7 @@ export function ActivityFormModal({ request, onClose }: Props) {
       void queryClient.invalidateQueries({ queryKey: ['activities'] })
       if (result.id !== undefined) void queryClient.invalidateQueries({ queryKey: ['activity', result.id] })
       notifications.show({ color: 'teal', message: result.message, autoClose: 2500 })
+      if (request.mode === 'create') request.onSaved?.()
       onClose()
     },
     onError: (error) => {

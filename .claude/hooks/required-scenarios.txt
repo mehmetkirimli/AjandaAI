@@ -1,7 +1,7 @@
 # quality-gate.ps1 için aktif aşamanın zorunlu senaryoları (bkz. docs/auth-test-senaryolari.md).
 # Takım lideri her aşamada günceller. Satır başına bir kimlik; # sonrası yorumdur.
 # Liste aşamalar ilerledikçe BİRİKİR: önceki aşamaların kimlikleri kalır (testleri silinmesin).
-# Aktif aşama: v2.3 adım 3 - /mcp ve araçlar (ADR 0024 §2). Tamamlananlar: 2b, MCP adım 2, F4, F3b, P2 (+ AUTH-49, P3), P4, P5, P6, P7
+# Aktif aşama: v2.4a - uygulama içi asistan (ADR 0025). Tamamlananlar: v2.3 (MCP, PAST), 2b, MCP adım 2, F4, F3b, P2 (+ AUTH-49, P3), P4, P5, P6, P7
 
 # v2.3 adım 3 - /mcp ucu ve araçlar (docs/mcp-test-senaryolari.md)
 MCP-10
@@ -152,3 +152,28 @@ AUTH-68
 # Log
 AUTH-70
 AUTH-71
+
+# v2.4a - asistan (docs/asistan-test-senaryolari.md)
+ASSIST-01
+ASSIST-02
+ASSIST-03
+ASSIST-10
+ASSIST-11
+ASSIST-12
+ASSIST-13
+ASSIST-14
+ASSIST-15
+ASSIST-16
+ASSIST-17
+ASSIST-20
+ASSIST-21
+ASSIST-22
+ASSIST-23
+ASSIST-24
+ASSIST-25
+ASSIST-30
+ASSIST-31
+ASSIST-40
+ASSIST-41
+ASSIST-42
+ASSIST-43

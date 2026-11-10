@@ -62,6 +62,15 @@ claude mcp add hava --scope user -- cmd /c npx -y -p open-meteo-mcp-server open-
 
 claude mcp add harita --scope user -- cmd /c npx -y @cyanheads/openstreetmap-mcp-server@0.7.1
 ```
+**Windows'ta zaman aşımı / `ENOENT package.json` hatası:** ilk açılışta npx indirmesi 30 saniyelik bağlanma süresini
+aşarsa önbellekte yarım klasör kalır ve sonraki her deneme `ENOENT ... package.json` verir. Çözüm: yarım klasörü
+sil (`%LOCALAPPDATA%\npm-cache\_npx\<kod>`), paketi kalıcı kur ve kaydı kurulu sürüme yönlendir. Harita için:
+```
+npm install -g @cyanheads/openstreetmap-mcp-server@0.7.1
+claude mcp remove harita --scope user
+claude mcp add harita --scope user -- cmd /c openstreetmap-mcp-server
+```
+
 Kontrol: `claude mcp list` → dördü de `Connected`. Önce `C:\Users\mehmet.kirimli\.ajandaai` klasörünü oluştur
 (hafıza dosyası orada durur; npx önbelleğinde durursa güncellemede silinir).
 
@@ -83,3 +92,27 @@ Kontrol: `claude mcp list` → dördü de `Connected`. Önce `C:\Users\mehmet.ki
 `MessageTemplate`, `RenderedMessage`, `Properties` (`RequestPath`, `StatusCode`, `Elapsed`, `UserId`,
 `ClientIp`, `RequestId`, `SourceContext`...). Her HTTP isteği bir Information kaydıdır; auth olayları
 (kayıt, giriş, hatalı giriş, oturum yenileme) ve iş olayları ayrı mesajlarla yazılır.
+
+## Geliştirme MCP'leri (2026-11-10)
+Ürün değil, geliştirme yardımcısı: Claude Code'un bizim işimizi hızlandırması için. Hepsi ücretsiz, anahtarsız.
+
+| Sunucu | Ne işe yarar | Yayıncı |
+|---|---|---|
+| `@playwright/mcp` | Tarayıcıyı açar, panelde tıklar, ekran görüntüsü alır (frontend kabulü) | Microsoft (resmi) |
+| `@modelcontextprotocol/server-postgres` | Veritabanına salt okunur sorgu | MCP (referans; arşivlendi, çalışır) |
+| `@upstash/context7-mcp` | Kütüphanelerin güncel belgeleri (Mantine, Google.GenAI, EF Core…) | Upstash |
+
+```
+claude mcp add playwright --scope user -- cmd /c npx -y @playwright/mcp@latest
+
+claude mcp add postgres-okuma --scope user -- cmd /c npx -y @modelcontextprotocol/server-postgres postgresql://ajandaai_okuma:ajandaai_okuma@localhost:5434/ajandaai
+
+claude mcp add context7 --scope user -- cmd /c npx -y @upstash/context7-mcp
+```
+
+**Bilinçli sınırlar**
+- **Postgres:** uygulamanın kullanıcısı (`ajandaai`) VERİLMEZ. Ayrı `ajandaai_okuma` rolü
+  (`docker/postgres-init/02-okuma-kullanicisi.sql`): yalnızca SELECT; token tabloları ve `users.password_hash`
+  okunamaz. Yeni tablolar otomatik okunabilir olur (default privileges). Şifre yerel geliştirme içindir.
+- **Playwright:** ilk açılışta tarayıcı indirir (birkaç yüz MB); `ENOENT` çıkarsa yukarıdaki npx önbellek çözümü.
+- **Context7:** anahtarsız kullanımda istek sınırı var; normal kullanımda yeter.

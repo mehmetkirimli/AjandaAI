@@ -4,6 +4,7 @@ import { useMemo } from 'react'
 import { Outlet, useLocation } from 'react-router-dom'
 import { LayoutContext, type LayoutState } from '../layout/context'
 import { ActivityFormProvider } from './activity-form/ActivityFormProvider'
+import { AssistantPanel } from './assistant/AssistantPanel'
 import { CommandPalette } from './CommandPalette'
 import { MobileNav } from './MobileNav'
 import { Sidebar } from './Sidebar'
@@ -37,6 +38,8 @@ export function AppLayout() {
             </div>
           </main>
         </Box>
+        {/* Asistan yalnızca panoda ve takvimde (ADR 0025 §5); konuşma sayfa geçişlerinde korunur. */}
+        <AssistantPanel available={pathname === '/' || pathname === '/calendar'} isMobile={isMobile} />
         {isMobile && (
           <>
             <MobileNav onOpenMenu={openMobile} />

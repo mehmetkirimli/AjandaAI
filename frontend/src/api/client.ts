@@ -131,7 +131,8 @@ export function refreshAccessToken(): Promise<boolean> {
 
 function toError(status: number, envelope: ApiEnvelope<unknown> | null): ApiError {
   if (status === 429) {
-    return new ApiError(429, 'Çok fazla deneme yaptınız. Lütfen bir dakika bekleyip tekrar deneyin.')
+    // Backend kendi Türkçe mesajını gönderdiyse (örn. asistan kotası) onu göster.
+    return new ApiError(429, envelope?.message || 'Çok fazla deneme yaptınız. Lütfen bir dakika bekleyip tekrar deneyin.')
   }
   const message = envelope?.message || 'Beklenmeyen bir hata oluştu. Lütfen tekrar deneyin.'
   return new ApiError(status, message, envelope?.errors ?? [])
