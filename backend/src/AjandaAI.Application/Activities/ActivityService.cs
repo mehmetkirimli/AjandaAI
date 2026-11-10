@@ -105,40 +105,15 @@ public class ActivityService
     public async Task<ApiResponse<ActivitySeriesCreatedDto>> CreateSeriesAsync(ActivitySeriesCreateDto dto, CancellationToken cancellationToken = default)
     {
         var userId = _currentUser.UserId;
-        var result = await _seriesValidator.ValidateAsync(dto, cancellationToken);
-        if (!result.IsValid)
+        var check = await CheckSeriesAsync(dto, cancellationToken);
+        if (check.Errors.Count > 0)
         {
-            return SeriesFail(userId, result.Errors.Select(e => e.ErrorMessage).ToList());
+            return SeriesFail(userId, check.Errors);
         }
 
-        var zone = await GetUserZoneAsync(userId, cancellationToken);
-        var now = _time.GetUtcNow();
-        if (!PastStartRule.IsAllowed(dto.Start, now, zone))
-        {
-            return SeriesFail(userId, new List<string> { PastStartRule.Message });
-        }
-
+        var (_, zone, mask, expansion) = check;
         var recurrence = dto.Recurrence!;
-        var mask = recurrence.Frequency == Domain.Enums.RecurrenceFrequency.Weekly
-            ? RecurrenceExpander.ToMask(recurrence.DaysOfWeek!)
-            : 0;
-
-        var firstDate = RecurrenceExpander.LocalDateOf(dto.Start, zone);
-        if (recurrence.Until < firstDate)
-        {
-            return SeriesFail(userId, new List<string> { "Bitiş tarihi başlangıç gününden önce olamaz." });
-        }
-
-        var expansion = RecurrenceExpander.Expand(dto.Start, dto.End, dto.IsAllDay, zone, recurrence.Frequency, mask, recurrence.Until);
-        if (expansion.TooMany)
-        {
-            return SeriesFail(userId, new List<string> { "Bir seri en fazla 366 aktivite içerebilir." });
-        }
-        if (expansion.Occurrences.Count == 0)
-        {
-            return SeriesFail(userId, new List<string> { "Bu kuralla hiç aktivite oluşmuyor." });
-        }
-
+        var now = _time.GetUtcNow();
         var occurrences = expansion.Occurrences;
         var series = new ActivitySeries
         {
@@ -200,6 +175,56 @@ public class ActivityService
         var count = await _repository.DeactivateSeriesFromAsync(seriesId, userId, fromUtc, _time.GetUtcNow(), cancellationToken);
         _logger.LogInformation("Seri pasife alındı {SeriesId} {UserId} {Count}", seriesId, userId, count);
         return ApiResponse<SeriesDeactivatedDto>.Ok(new SeriesDeactivatedDto(count), "Seri durduruldu.");
+    }
+
+    /// <summary>
+    /// Oluşturmayla aynı doğrulama (validator + 30 gün kuralı), yazmadan. Asistanın öneri aracı kullanır (ADR 0025 §3).
+    /// Boş liste = geçerli.
+    /// </summary>
+    public async Task<List<string>> ValidateCreateAsync(ActivityCreateDto dto, CancellationToken cancellationToken = default)
+    {
+        var result = await _createValidator.ValidateAsync(dto, cancellationToken);
+        if (!result.IsValid)
+            return result.Errors.Select(e => e.ErrorMessage).ToList();
+        return await IsStartAllowedAsync(_currentUser.UserId, dto.Start, cancellationToken)
+            ? new List<string>()
+            : new List<string> { PastStartRule.Message };
+    }
+
+    /// <summary>Seri oluşturmayla aynı doğrulama (validator, 30 gün, bitiş tarihi, oluşum sayısı), yazmadan.</summary>
+    public async Task<List<string>> ValidateSeriesAsync(ActivitySeriesCreateDto dto, CancellationToken cancellationToken = default) =>
+        (await CheckSeriesAsync(dto, cancellationToken)).Errors;
+
+    private sealed record SeriesCheck(List<string> Errors, TimeZoneInfo Zone, int Mask, RecurrenceExpansion Expansion);
+
+    private async Task<SeriesCheck> CheckSeriesAsync(ActivitySeriesCreateDto dto, CancellationToken cancellationToken)
+    {
+        var empty = new RecurrenceExpansion(Array.Empty<Occurrence>(), false, default);
+        SeriesCheck Fail(string error, TimeZoneInfo zone) => new(new List<string> { error }, zone, 0, empty);
+
+        var result = await _seriesValidator.ValidateAsync(dto, cancellationToken);
+        if (!result.IsValid)
+            return new SeriesCheck(result.Errors.Select(e => e.ErrorMessage).ToList(), TimeZoneInfo.Utc, 0, empty);
+
+        var zone = await GetUserZoneAsync(_currentUser.UserId, cancellationToken);
+        if (!PastStartRule.IsAllowed(dto.Start, _time.GetUtcNow(), zone))
+            return Fail(PastStartRule.Message, zone);
+
+        var recurrence = dto.Recurrence!;
+        var mask = recurrence.Frequency == Domain.Enums.RecurrenceFrequency.Weekly
+            ? RecurrenceExpander.ToMask(recurrence.DaysOfWeek!)
+            : 0;
+
+        if (recurrence.Until < RecurrenceExpander.LocalDateOf(dto.Start, zone))
+            return Fail("Bitiş tarihi başlangıç gününden önce olamaz.", zone);
+
+        var expansion = RecurrenceExpander.Expand(dto.Start, dto.End, dto.IsAllDay, zone, recurrence.Frequency, mask, recurrence.Until);
+        if (expansion.TooMany)
+            return Fail("Bir seri en fazla 366 aktivite içerebilir.", zone);
+        if (expansion.Occurrences.Count == 0)
+            return Fail("Bu kuralla hiç aktivite oluşmuyor.", zone);
+
+        return new SeriesCheck(new List<string>(), zone, mask, expansion);
     }
 
     private ApiResponse<ActivitySeriesCreatedDto> SeriesFail(int userId, List<string> errors)

@@ -13,5 +13,6 @@ public enum ResultType
     Conflict,
     Error,
     Accepted,
-    Unauthorized
+    Unauthorized,
+    ServiceUnavailable
 }

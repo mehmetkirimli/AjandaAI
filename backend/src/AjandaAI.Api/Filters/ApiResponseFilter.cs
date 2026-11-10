@@ -56,6 +56,7 @@ public class ApiResponseFilter : IAsyncResultFilter
         ResultType.Conflict => StatusCodes.Status409Conflict,
         ResultType.Accepted => StatusCodes.Status202Accepted,
         ResultType.Unauthorized => StatusCodes.Status401Unauthorized,
+        ResultType.ServiceUnavailable => StatusCodes.Status503ServiceUnavailable,
         _ => StatusCodes.Status500InternalServerError
     };
 }

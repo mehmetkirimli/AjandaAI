@@ -48,6 +48,10 @@ public class ApiResponse<T> : IApiResponse
     public static ApiResponse<T> Unauthorized(string message) =>
         new() { Success = false, Message = message, ResultType = ResultType.Unauthorized };
 
+    // 503: bağımlı dış servis kullanılamıyor (asistan yapılandırılmadı / sağlayıcı yoğun, ADR 0025).
+    public static ApiResponse<T> ServiceUnavailable(string message) =>
+        new() { Success = false, Message = message, ResultType = ResultType.ServiceUnavailable };
+
     public static ApiResponse<T> Error(string message, List<string>? errors = null) =>
         new() { Success = false, Message = message, Errors = errors ?? new(), ResultType = ResultType.Error };
 }

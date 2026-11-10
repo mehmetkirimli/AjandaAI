@@ -2,6 +2,7 @@ using System.Data.Common;
 using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading.RateLimiting;
+using AjandaAI.Api.Assistant;
 using AjandaAI.Api.Auth;
 using AjandaAI.Api.Filters;
 using AjandaAI.Api.Logging;
@@ -129,6 +130,39 @@ builder.Services.AddRateLimiter(options =>
                     mcpRateLimit.GetValue("WindowSeconds", McpEndpoint.DefaultWindowSeconds)),
                 QueueLimit = 0
             }));
+
+    // /api/assistant (ADR 0025 §4): kullanıcı başına dakikada 10 (uç politikası) + günde 200 (global limiter,
+    // yalnızca asistan yolunda; diğer uçlar sınırsız geçer). Reddedilen asistan isteği Türkçe mesaj alır.
+    var assistantRateLimit = builder.Configuration.GetSection("RateLimiting:Assistant");
+    static string AssistantPartition(HttpContext httpContext) =>
+        httpContext.User.FindFirst(JwtOptions.UserIdClaim)?.Value
+            ?? httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+    options.AddPolicy(AssistantRateLimit.PolicyName, httpContext =>
+        RateLimitPartition.GetFixedWindowLimiter(AssistantPartition(httpContext), _ => new FixedWindowRateLimiterOptions
+        {
+            PermitLimit = assistantRateLimit.GetValue("PermitLimit", AssistantRateLimit.DefaultPermitLimit),
+            Window = TimeSpan.FromSeconds(
+                assistantRateLimit.GetValue("WindowSeconds", AssistantRateLimit.DefaultWindowSeconds)),
+            QueueLimit = 0
+        }));
+    options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(httpContext =>
+        httpContext.Request.Path.StartsWithSegments(AssistantRateLimit.PathPrefix)
+            ? RateLimitPartition.GetFixedWindowLimiter("assistant-day:" + AssistantPartition(httpContext),
+                _ => new FixedWindowRateLimiterOptions
+                {
+                    PermitLimit = assistantRateLimit.GetValue("DailyLimit", AssistantRateLimit.DefaultDailyLimit),
+                    Window = TimeSpan.FromDays(1),
+                    QueueLimit = 0
+                })
+            : RateLimitPartition.GetNoLimiter(string.Empty));
+    options.OnRejected = async (context, cancellationToken) =>
+    {
+        if (context.HttpContext.Request.Path.StartsWithSegments(AssistantRateLimit.PathPrefix))
+        {
+            await context.HttpContext.Response.WriteAsJsonAsync(
+                ApiResponse<object>.Fail(AssistantRateLimit.RejectedMessage), cancellationToken);
+        }
+    };
 });
 
 builder.Services.AddControllers(options =>
