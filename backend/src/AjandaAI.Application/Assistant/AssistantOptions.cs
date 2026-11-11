@@ -9,8 +9,8 @@ public sealed class AssistantOptions
     public string? ApiKey { get; set; }
 
     /// <summary>Model adı; ücretsiz katmandaki bir flash modeli.</summary>
-    public string Model { get; set; } = "gemini-3.5-flash";
+    public string Model { get; set; } = "gemini-3.5-flash-lite";
 
     /// <summary>Ana model yoğunken (503) denenecek yedek model; boşsa yedek yok.</summary>
-    public string? FallbackModel { get; set; } = "gemini-3.5-flash-lite";
+    public string? FallbackModel { get; set; } = "gemini-3.5-flash";
 }

@@ -17,6 +17,9 @@ public class User
 
     public string TimeZoneId { get; set; } = string.Empty;
 
+    // Varsayılan konum: yalnızca şehir/ilçe serbest metni (örn. "Üsküdar, İstanbul"); tam adres tutulmaz. Asistan kullanır.
+    public string? Location { get; set; }
+
     // Şifre hash'i (PasswordHasher). Gerçek değer P2'de atanır.
     public string PasswordHash { get; set; } = string.Empty;
 

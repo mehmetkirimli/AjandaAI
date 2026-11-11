@@ -126,7 +126,8 @@ public class AssistantService
         var zone = user is not null && TimeZoneInfo.TryFindSystemTimeZoneById(user.TimeZoneId, out var z) ? z : TimeZoneInfo.Utc;
         var now = TimeZoneInfo.ConvertTime(_time.GetUtcNow(), zone);
 
-        return string.Join("\n",
+        return string.Join("\n", new[]
+        {
             "Sen AjandaAI'nin ajanda asistanısın. Her zaman Türkçe, kısa ve net yanıt ver.",
             "Düz metin yaz: Markdown (**, #, *) KULLANMA; liste gerekiyorsa her maddeyi yeni satırda \"- \" ile başlat.",
             $"Kullanıcının saat dilimi: {zone.Id} (UTC{now:zzz}).",
@@ -136,6 +137,11 @@ public class AssistantService
             "Tarih ve saatleri kullanıcının saat diliminde, offset'li ISO 8601 biçiminde ver.",
             "Kayıt eklemeden önce ne ekleyeceğini özetle ve aktivite_oner ya da seri_oner aracını kullan. " +
             "Bu araçlar kaydı yazmaz; kullanıcı öneri kartında onaylayınca kayıt oluşur. Kaydın eklendiğini söyleme.",
-            "Bir araç hata dönerse hatayı kullanıcıya anlaşılır biçimde açıkla.");
+            "Bir araç hata dönerse hatayı kullanıcıya anlaşılır biçimde açıkla.",
+            // Varsayılan konum (ASSIST-62/63): yalnızca kullanıcı girdiyse eklenir.
+            string.IsNullOrWhiteSpace(user?.Location)
+                ? null
+                : $"Kullanıcının varsayılan konumu: {user.Location}. Hava durumu veya yer sorularında konum belirtilmemişse bunu kullan."
+        }.Where(l => l is not null));
     }
 }

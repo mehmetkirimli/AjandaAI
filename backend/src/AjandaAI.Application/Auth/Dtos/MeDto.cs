@@ -5,4 +5,4 @@ using AjandaAI.Domain.Enums;
 
 namespace AjandaAI.Application.Auth.Dtos;
 
-public record MeDto(int Id, string Email, string DisplayName, string TimeZoneId, UserRole Role, DateTimeOffset CreatedAt);
+public record MeDto(int Id, string Email, string DisplayName, string TimeZoneId, UserRole Role, DateTimeOffset CreatedAt, string? Location = null);

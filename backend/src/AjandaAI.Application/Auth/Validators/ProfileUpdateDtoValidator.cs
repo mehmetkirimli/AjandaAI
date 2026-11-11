@@ -20,5 +20,8 @@ public class ProfileUpdateDtoValidator : AbstractValidator<ProfileUpdateDto>
             .NotEmpty().WithMessage("Saat dilimi zorunludur.")
             .MaximumLength(64).WithMessage("Saat dilimi en fazla 64 karakter olabilir.")
             .Must(TimeZoneRules.IsValid).WithMessage("Saat dilimi geçersiz. IANA formatında olmalı, örn: Europe/Istanbul");
+
+        RuleFor(x => x.Location)
+            .Must(l => l is null || l.Trim().Length <= 100).WithMessage("Konum en fazla 100 karakter olabilir.");
     }
 }

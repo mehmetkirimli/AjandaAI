@@ -26,6 +26,9 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
             .IsRequired()
             .HasMaxLength(64);
 
+        builder.Property(u => u.Location)
+            .HasMaxLength(100);
+
         // Hash uzunlugu PasswordHasher cikti formatina baglidir; 512 rahat sigar.
         builder.Property(u => u.PasswordHash)
             .IsRequired()

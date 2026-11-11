@@ -75,6 +75,7 @@ public class ProfileService
 
         user.DisplayName = dto.DisplayName.Trim();
         user.TimeZoneId = dto.TimeZoneId.Trim();
+        user.Location = string.IsNullOrWhiteSpace(dto.Location) ? null : dto.Location.Trim();
         user.UpdatedAt = DateTimeOffset.UtcNow;
         await _users.UpdateAsync(user, cancellationToken);
         _logger.LogInformation("Profil güncellendi {UserId}", user.Id);
@@ -124,5 +125,5 @@ public class ProfileService
         return user is { IsActive: true } ? user : null;
     }
 
-    private static MeDto ToDto(User u) => new(u.Id, u.Email, u.DisplayName, u.TimeZoneId, u.Role, u.CreatedAt);
+    private static MeDto ToDto(User u) => new(u.Id, u.Email, u.DisplayName, u.TimeZoneId, u.Role, u.CreatedAt, u.Location);
 }
