@@ -32,6 +32,8 @@ export interface Me {
   timeZoneId: string
   role: UserRole
   createdAt: string
+  /** Varsayılan konum (şehir/ilçe); asistan kullanır. */
+  location?: string | null
 }
 
 export interface RegisterRequest {

@@ -40,8 +40,8 @@ export async function logout(): Promise<void> {
   }
 }
 
-export function updateProfile(displayName: string, timeZoneId: string): Promise<Me> {
-  return request<Me>('/api/auth/me', { method: 'PUT', body: { displayName, timeZoneId } })
+export function updateProfile(displayName: string, timeZoneId: string, location: string | null): Promise<Me> {
+  return request<Me>('/api/auth/me', { method: 'PUT', body: { displayName, timeZoneId, location } })
 }
 
 // Başarıda backend tüm oturumları kapatır; çağıran yerel oturumu temizlemelidir.

@@ -26,26 +26,31 @@ function ProfileInfoCard() {
   const zones = useMemo(() => timeZoneOptions(user?.timeZoneId ?? 'Europe/Istanbul'), [user?.timeZoneId])
 
   const form = useForm({
-    initialValues: { displayName: user?.displayName ?? '', timeZoneId: user?.timeZoneId ?? 'Europe/Istanbul' },
+    initialValues: {
+      displayName: user?.displayName ?? '', timeZoneId: user?.timeZoneId ?? 'Europe/Istanbul',
+      location: user?.location ?? '',
+    },
     validate: {
       displayName: (v) => (v.trim().length === 0 ? 'Görünen ad zorunludur.' : null),
       timeZoneId: (v) => (v ? null : 'Saat dilimi seçin.'),
+      location: (v) => (v.trim().length > 100 ? 'Konum en fazla 100 karakter olabilir.' : null),
     },
   })
 
   const dirty =
-    form.values.displayName.trim() !== user?.displayName || form.values.timeZoneId !== user?.timeZoneId
+    form.values.displayName.trim() !== user?.displayName || form.values.timeZoneId !== user?.timeZoneId ||
+    form.values.location.trim() !== (user?.location ?? '')
 
   const submit = form.onSubmit(async (values) => {
     setSubmitting(true)
     setErrors([])
     try {
-      const me = await updateProfile(values.displayName.trim(), values.timeZoneId)
+      const me = await updateProfile(values.displayName.trim(), values.timeZoneId, values.location.trim() || null)
       updateUser(me)
-      form.setValues({ displayName: me.displayName, timeZoneId: me.timeZoneId })
+      form.setValues({ displayName: me.displayName, timeZoneId: me.timeZoneId, location: me.location ?? '' })
       notifications.show({ color: 'teal', title: 'Kaydedildi', message: 'Profil bilgilerin güncellendi.' })
     } catch (e) {
-      const { fields, general } = splitErrors(e, { displayName: ['görünen ad'], timeZoneId: ['saat dilimi'] })
+      const { fields, general } = splitErrors(e, { displayName: ['görünen ad'], timeZoneId: ['saat dilimi'], location: ['konum'] })
       form.setErrors(fields)
       setErrors(general)
     } finally {
@@ -79,6 +84,13 @@ function ProfileInfoCard() {
             searchable
             allowDeselect={false}
             {...form.getInputProps('timeZoneId')}
+          />
+          <TextInput
+            label="Konumum"
+            placeholder="Üsküdar, İstanbul"
+            maxLength={100}
+            description="Şehir ve ilçe yeterli (örn. Üsküdar, İstanbul). Asistan hava ve yer sorularında kullanır; tam adres yazma."
+            {...form.getInputProps('location')}
           />
           <Button type="submit" loading={submitting} disabled={!dirty} fullWidth h={44} fz={14} variant="ink">
             Kaydet
@@ -191,7 +203,7 @@ export function ProfilePage() {
       </section>
       {/* key: kayıttan dönen yeni me ile form başlangıç değerleri yenilenir. */}
       <SimpleGrid cols={{ base: 1, md: 2 }} spacing={18}>
-        <ProfileInfoCard key={`${user.displayName}|${user.timeZoneId}`} />
+        <ProfileInfoCard key={`${user.displayName}|${user.timeZoneId}|${user.location ?? ''}`} />
         <PasswordCard />
       </SimpleGrid>
       <ClaudeConnectionCard />

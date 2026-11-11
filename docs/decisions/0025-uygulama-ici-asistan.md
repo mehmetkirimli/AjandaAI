@@ -17,6 +17,12 @@ Kısıtlar:
 - Paket `Google.GenAI` 2.0.0 (googleapis, net8.0). Anahtar AI Studio'dan, ürün sahibinin Google hesabıyla.
 - Model ayardan okunur (`Assistant:Model`; 2026-11-10 denemesi: `gemini-3.5-flash` ücretsiz katmanda çalışıyor, `3.8-flash` yoğunlukta 503,
   `2.5-flash` yeni kullanıcıya kapalı).
+- **Kota gerçeği (2026-11-11 kabul denemesi):** `gemini-3.5-flash` ücretsiz katmanda proje başına **günde 20 istek**;
+  bir sohbet mesajı araç turlarıyla 2–4 istek harcar (≈ günde 5–10 mesaj, tüm kullanıcılar için ortak). Bu yüzden
+  ana model `gemini-3.5-flash-lite` (daha hızlı, kotası daha geniş), yedek `gemini-3.5-flash` (`Assistant:FallbackModel`).
+  Yoğunluk/kota (429/5xx): 1,5 sn sonra bir kez daha, sonra yedek model, sonra 503. SDK'nın kendi yeniden denemesi
+  kapalı (varsayılanı 5 deneme × 60 sn'ye kadar beklemeydi → cevap ~2 dk sürüyordu), istek zaman aşımı 30 sn.
+  Sonuç: kullanıcı başına "günde 200" sınırı ücretsiz katmanda pratikte ulaşılamaz; gerçek tavan Google kotasıdır.
 - Anahtar repoya GİRMEZ: Development'ta `dotnet user-secrets` (`Assistant:ApiKey`), Production'da ortam değişkeni.
   Anahtar yoksa asistan uçları "asistan yapılandırılmadı" der; uygulamanın geri kalanı etkilenmez.
 - **Veri koşulu (bilinçli kabul):** ücretsiz katmanda içerik Google ürünlerini geliştirmek için kullanılabilir ve insanlar

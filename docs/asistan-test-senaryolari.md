@@ -28,6 +28,15 @@ Gerçek modelle uçtan uca deneme lider kabulünde elle yapılır.
 | ASSIST-16 | Yer arama aynı sorguyla iki kez | İkinci sonuç önbellekten; dış servise saniyede en fazla 1 istek, uygulama User-Agent'ı |
 | ASSIST-17 | Tatil aracı aynı yıl için iki kez; dış servis hata verir | İkinci sonuç önbellekten; hata modele Türkçe döner, sohbet devam eder |
 
+## Varsayılan konum (ürün sahibi kararı, 2026-11-11)
+Profilde yalnızca şehir/ilçe metni ("Üsküdar, İstanbul"); tam adres tutulmaz (ücretsiz katmanda Google'a gider).
+| Id | Senaryo | Beklenen |
+|---|---|---|
+| ASSIST-60 | Kullanıcı profilinden konumunu girer / değiştirir / siler | `GET/PUT /api/auth/me` ile döner ve kaydedilir; boş bırakılabilir |
+| ASSIST-61 | Konum 100 karakterden uzun | 400, Türkçe doğrulama mesajı |
+| ASSIST-62 | Konumu olan kullanıcı sohbet eder | Sistem talimatı konumu içerir ("yer belirtilmezse bunu kullan") |
+| ASSIST-63 | Konumu olmayan kullanıcı | Sistem talimatında konum yok; model sorar |
+
 ## Admin araçları ve kişisel hafıza (ürün sahibi kararı, 2026-11-10)
 | Id | Senaryo | Beklenen |
 |---|---|---|

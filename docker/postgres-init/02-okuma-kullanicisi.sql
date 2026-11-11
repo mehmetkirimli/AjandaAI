@@ -9,4 +9,4 @@ ALTER DEFAULT PRIVILEGES FOR ROLE ajandaai IN SCHEMA public GRANT SELECT ON TABL
 -- Gizli veri kapalı: token tabloları ve şifre özeti okunamaz.
 REVOKE SELECT ON refresh_tokens, email_verification_tokens, personal_access_tokens FROM ajandaai_okuma;
 REVOKE SELECT ON users FROM ajandaai_okuma;
-GRANT SELECT (id, email, display_name, time_zone_id, created_at, updated_at, is_active, email_confirmed_at, role) ON users TO ajandaai_okuma;
+GRANT SELECT (id, email, display_name, time_zone_id, created_at, updated_at, is_active, email_confirmed_at, role, location) ON users TO ajandaai_okuma;

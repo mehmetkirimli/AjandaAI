@@ -59,4 +59,6 @@ Detaylar `docs/` altındadır — ilgili konuda çalışmadan önce o dosyayı o
 
 Agent'larla iş yapılırken kalite kapısı, review agent ve görev tanımı kuralları
 [ADR 0020](docs/decisions/0020-kalite-kapisi-ve-review-agent.md)'dedir.
-Backend agent'ları `backend/`, web-agent `frontend/` içinde çalışır.
+Backend agent'ları `backend/`, web-agent `frontend/` içinde çalışır. Dış araştırma (web) yalnızca
+`research-agent` ile yapılır; kod yazan agent'ların web erişimi kapalıdır (bilinçli). Görev başlıkları
+`[agent-adı] …` biçiminde yazılır ki Agent map'te hangi agent'ın çalıştığı görünsün.
