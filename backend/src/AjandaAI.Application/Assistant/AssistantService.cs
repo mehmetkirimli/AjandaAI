@@ -128,6 +128,7 @@ public class AssistantService
 
         return string.Join("\n",
             "Sen AjandaAI'nin ajanda asistanısın. Her zaman Türkçe, kısa ve net yanıt ver.",
+            "Düz metin yaz: Markdown (**, #, *) KULLANMA; liste gerekiyorsa her maddeyi yeni satırda \"- \" ile başlat.",
             $"Kullanıcının saat dilimi: {zone.Id} (UTC{now:zzz}).",
             $"Bugün (kullanıcının yerel tarihi): {now.ToString("yyyy-MM-dd dddd", Turkish)}, saat {now:HH:mm}.",
             "Yalnızca sana verilen araçları kullan; araçların sağlamadığı bilgiyi uydurma.",

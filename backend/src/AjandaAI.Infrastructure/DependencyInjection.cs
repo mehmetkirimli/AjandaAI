@@ -51,6 +51,8 @@ public static class DependencyInjection
         var assistantOptions = new AssistantOptions { ApiKey = assistantSection["ApiKey"] };
         if (!string.IsNullOrWhiteSpace(assistantSection["Model"]))
             assistantOptions.Model = assistantSection["Model"]!;
+        if (assistantSection["FallbackModel"] is { } fallbackModel)
+            assistantOptions.FallbackModel = fallbackModel;
         services.AddSingleton(assistantOptions);
         services.AddSingleton<IAssistantModel>(new GeminiAssistantModel(assistantOptions));
         AddAssistantTools(services);
@@ -77,7 +79,7 @@ public static class DependencyInjection
     /// </summary>
     public const string AssistantHttpHandlerKey = "assistant-external-http";
 
-    public const string AssistantUserAgent = "AjandaAI/1.0 (yerel geliştirme)";
+    public const string AssistantUserAgent = "AjandaAI/1.0 (local development)";
 
     // Asistan araçları (ADR 0025 §3): kapalı araç listesi ("Assistant:DisabledTools") ve dış servis istemcileri.
     private static void AddAssistantTools(IServiceCollection services)

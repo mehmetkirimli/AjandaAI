@@ -10,4 +10,7 @@ public sealed class AssistantOptions
 
     /// <summary>Model adı; ücretsiz katmandaki bir flash modeli.</summary>
     public string Model { get; set; } = "gemini-3.5-flash";
+
+    /// <summary>Ana model yoğunken (503) denenecek yedek model; boşsa yedek yok.</summary>
+    public string? FallbackModel { get; set; } = "gemini-3.5-flash-lite";
 }

@@ -15,7 +15,10 @@ internal sealed class GeminiAssistantModel : IAssistantModel, IDisposable
             return;
 
         _client = new Client(apiKey: options.ApiKey);
-        Client = _client.AsIChatClient(options.Model);
+        var fallback = string.IsNullOrWhiteSpace(options.FallbackModel) || options.FallbackModel == options.Model
+            ? null
+            : _client.AsIChatClient(options.FallbackModel);
+        Client = new BusyRetryChatClient(_client.AsIChatClient(options.Model), fallback);
     }
 
     public IChatClient? Client { get; }
